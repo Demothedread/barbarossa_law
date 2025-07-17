@@ -76,3 +76,58 @@ def main(argv):
 
 if __name__ == '__main__':
     raise SystemExit(main(sys.argv))
+import csv
+import sqlite3
+import os
+
+CSV_PATH = os.path.join(os.path.dirname(__file__), '..', 'qa (3).csv')
+DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'law_quiz.db')
+
+def create_schema(conn):
+    c = conn.cursor()
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS questions (
+            id TEXT PRIMARY KEY,
+            subject TEXT,
+            prompt TEXT,
+            question TEXT,
+            choice_a TEXT,
+            choice_b TEXT,
+            choice_c TEXT,
+            choice_d TEXT,
+            answer TEXT,
+            explanation TEXT
+        )
+    ''')
+    conn.commit()
+
+def load_csv_to_db(csv_path, db_path):
+    conn = sqlite3.connect(db_path)
+    create_schema(conn)
+    with open(csv_path, newline='', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        rows = 0
+        for row in reader:
+            vals = (
+                row['idx'],
+                row.get('subject', None) or '',
+                row.get('prompt', None) or '',
+                row.get('question', None) or '',
+                row.get('choice_a', None) or '',
+                row.get('choice_b', None) or '',
+                row.get('choice_c', None) or '',
+                row.get('choice_d', None) or '',
+                row.get('answer', None) or '',
+                row.get('gold_passage', None) or ''
+            )
+            try:
+                conn.execute('''INSERT OR REPLACE INTO questions (id, subject, prompt, question, choice_a, choice_b, choice_c, choice_d, answer, explanation) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', vals)
+                rows += 1
+            except Exception as e:
+                print(f"Skipping row {row.get('idx', '?')}: {e}")
+    conn.commit()
+    conn.close()
+    print(f"Loaded {rows} questions into {db_path}")
+
+if __name__ == '__main__':
+    load_csv_to_db(CSV_PATH, DB_PATH)
