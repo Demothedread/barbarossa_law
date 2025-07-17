@@ -3,7 +3,7 @@
 A simple web-based quiz framework for reviewing law questions.
 
 ## Synopsis
-LawQuizzer presents a configurable quiz with timers, navigation, answer elimination, and text highlighting.
+LawQuizzer presents a configurable quiz with timers, navigation, answer elimination, text highlighting, and a post-quiz review that shows each question with correct answers and explanations.
 
 ## Prerequisites
 - Node.js 20+
@@ -24,11 +24,12 @@ Host the contents of `src/` on any static hosting service.
 
 ## FAQ
 **Q:** How do I change questions?
-**A:** Edit the question data inside `src/js/quizApp.js`.
+**A:** Edit the question data inside `src/js/question-data.js`.
 
 ## Use Cases
 - Quick review sessions for law exam preparation.
 - Practicing timed multiple-choice questions.
+- Tracking performance by topic with average time spent.
 
 ## End-to-End Tests
 Run Jest unit tests with:
