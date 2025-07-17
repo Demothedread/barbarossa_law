@@ -10,7 +10,9 @@
     "timer": "1.8 minutes per question",
     "navigation": "Prev/Next question",
     "elimination": "Cross out answers",
-    "highlight": "Highlight text with colors"
+    "highlight": "Highlight text with colors",
+    "review": "Post quiz review with explanations",
+    "progress": "Stats per topic"
   },
   "relations": {},
   "notes": {}

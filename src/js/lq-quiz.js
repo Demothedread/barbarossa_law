@@ -1,15 +1,13 @@
 import { Timer } from './lq-timer.js';
 
-const questions = [
-  {
-    text: 'Sample question 1?',
-    choices: ['A', 'B', 'C', 'D'],
-  },
-  {
-    text: 'Sample question 2?',
-    choices: ['A', 'B', 'C', 'D'],
-  },
-];
+/**
+ * Render a single answer choice with elimination toggle.
+ * @param {string} text
+ * @param {number} index
+ * @param {(i:number)=>void} onSelect
+ * @param {(i:number,el:boolean)=>void} onEliminate
+ * @returns {HTMLElement}
+ */
 
 function createChoice(text, index, onSelect, onEliminate) {
   const li = document.createElement('li');
@@ -68,9 +66,11 @@ function renderQuestion(container, q, state) {
   container.appendChild(list);
 }
 
-export function createQuiz(num) {
+export function createQuiz(num, manager, tracker, onComplete) {
   const container = document.createElement('div');
   container.className = 'quiz';
+  const questions = Array.from({ length: num }, () => manager.next());
+  tracker.records = [];
   const state = {
     current: 0,
     answers: new Array(num).fill(null),
@@ -97,16 +97,28 @@ export function createQuiz(num) {
   });
   timer.start();
 
+  function recordCurrent() {
+    tracker.stop(state.answers[state.current], questions[state.current].correct);
+  }
+
   function showQuestion(index) {
+    recordCurrent();
     state.current = index;
-    renderQuestion(questionContainer, questions[index % questions.length], state);
+    tracker.start(questions[index]);
+    renderQuestion(questionContainer, questions[index], state);
   }
 
   prev.addEventListener('click', () => {
     if (state.current > 0) showQuestion(state.current - 1);
   });
   next.addEventListener('click', () => {
-    if (state.current < num - 1) showQuestion(state.current + 1);
+    if (state.current < num - 1) {
+      showQuestion(state.current + 1);
+    } else {
+      recordCurrent();
+      timer.stop();
+      onComplete(questions, state.answers);
+    }
   });
 
   showQuestion(0);

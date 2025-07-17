@@ -2,6 +2,8 @@
   --bg-color: #fff;
   --text-color: #000;
   --elim-color: #888;
+  --correct-color: #0a0;
+  --incorrect-color: #a00;
 }
 
 body {
@@ -18,8 +20,17 @@ body {
 }
 
 .start-menu,
-.quiz {
+.quiz,
+.review {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+.correct {
+  color: var(--correct-color, green);
+}
+
+.incorrect {
+  color: var(--incorrect-color, red);
 }
