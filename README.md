@@ -1,8 +1,42 @@
-# Lawquizzer
+# LawQuizzer
 
-Utilities for working with law-related quiz questions.
+A simple web-based quiz framework for reviewing law questions.
 
-## Overview
+## Synopsis
+LawQuizzer presents a configurable quiz with timers, navigation, answer elimination, and text highlighting.
+
+## Prerequisites
+- Node.js 20+
+
+## Install
+```bash
+npm install
+```
+
+## Start
+Serve the `src/` directory with any static server. For example:
+```bash
+npx serve src
+```
+
+## Deployment
+Host the contents of `src/` on any static hosting service.
+
+## FAQ
+**Q:** How do I change questions?
+**A:** Edit the question data inside `src/js/quizApp.js`.
+
+## Use Cases
+- Quick review sessions for law exam preparation.
+- Practicing timed multiple-choice questions.
+
+## End-to-End Tests
+Run Jest unit tests with:
+```bash
+npm test
+```
+
+## CSV-toSQL Setup Overview
 This repository provides a simple script to convert a CSV file of questions
 into a set of SQL statements. It does **not** include the actual question data.
 
@@ -31,3 +65,4 @@ The resulting `output.sql` can be executed in SQLite or a similar database.
 Accessing the OpenAI vector stores referenced by ID is not possible from this
 environment due to network restrictions. You will need to download `qa.csv`
 and any additional files manually before running the script.
+

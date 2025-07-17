@@ -1,0 +1,17 @@
+{
+  "entities": {
+    "LawQuizzer": {
+      "type": "project",
+      "description": "Web-based quiz framework"
+    }
+  },
+  "features": {
+    "startMenu": "User selects number of questions",
+    "timer": "1.8 minutes per question",
+    "navigation": "Prev/Next question",
+    "elimination": "Cross out answers",
+    "highlight": "Highlight text with colors"
+  },
+  "relations": {},
+  "notes": {}
+}
