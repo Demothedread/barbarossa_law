@@ -1,0 +1,25 @@
+:root {
+  --bg-color: #fff;
+  --text-color: #000;
+  --elim-color: #888;
+}
+
+body {
+  background-color: var(--bg-color, white);
+  color: var(--text-color, black);
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 1rem;
+}
+
+.eliminated button:first-child {
+  text-decoration: line-through;
+  color: var(--elim-color, gray);
+}
+
+.start-menu,
+.quiz {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
