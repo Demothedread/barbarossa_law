@@ -1,16 +1,20 @@
 import csv
-import random
-import time
-import sys
 import os
+import random
+import sys
+import time
 from datetime import datetime
 
-CSV_PATH = os.path.join(os.path.dirname(__file__), '..', 'qa (3).csv')
+CSV_PATH = os.path.join(os.path.dirname(__file__), '..', 'qa.csv')
 LOG_PATH = os.path.join(os.path.dirname(__file__), '..', 'quiz_log.csv')
 
 QUESTION_TIME_MINUTES = 1.8
 
 def load_questions(csv_path):
+    if not os.path.isfile(csv_path):
+        print(f"Error: CSV file not found at {csv_path}")
+        print("Please ensure 'qa.csv' exists in the parent directory of this script.")
+        sys.exit(1)
     questions = []
     with open(csv_path, newline='', encoding='utf-8') as f:
         reader = csv.DictReader(f)

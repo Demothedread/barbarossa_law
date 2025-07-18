@@ -1,69 +1,89 @@
-# LawQuizzer
+ # LawQuizzer
 
-A simple web-based quiz framework for reviewing law questions.
+ LawQuizzer is a simple web-based quiz platform for reviewing law exam questions. It provides a static front-end for a seamless quiz-taking experience and a Flask-based API to serve questions and log results.
 
-## Synopsis
-LawQuizzer presents a configurable quiz with timers, navigation, answer elimination, text highlighting, and a post-quiz review that shows each question with correct answers and explanations.
+ ## Prerequisites
 
-## Prerequisites
-- Node.js 20+
+ - Node.js v20+
+ - Python 3.x
+ - pip (Python package installer)
+ - Python packages: Flask (install via `pip install Flask`)
 
-## Install
-```bash
-npm install
-```
+ ## Installation
 
-## Start
-Serve the `src/` directory with any static server. For example:
-```bash
-npx serve src
-```
+ 1. Clone the repository and navigate into it:
 
-## Deployment
-Host the contents of `src/` on any static hosting service.
+    ```bash
+    git clone <repo-url>
+    cd lawquizzer
+    ```
 
-## FAQ
-**Q:** How do I change questions?
-**A:** Edit the question data inside `src/js/question-data.js`.
+ 2. Install JavaScript dependencies:
 
-## Use Cases
-- Quick review sessions for law exam preparation.
-- Practicing timed multiple-choice questions.
-- Tracking performance by topic with average time spent.
+    ```bash
+    npm install
+    ```
 
-## End-to-End Tests
-Run Jest unit tests with:
-```bash
-npm test
-```
+ 3. Install Python dependencies:
 
-## CSV-toSQL Setup Overview
-This repository provides a simple script to convert a CSV file of questions
-into a set of SQL statements. It does **not** include the actual question data.
+    ```bash
+    pip install Flask
+    ```
+             
+ ## Starting the Application
 
-The original CSV is expected to come from an external vector store and must
-contain the following columns:
+ Use the provided npm script to launch both the back-end API and front-end server:
 
-- Question ID
-- Subject Topic
-- Question Call
-- Answer Choice A
-- Answer Choice B
-- Answer Choice C
-- Answer Choice D
-- Correct Answer
-- Explanation
+ ```bash
+ npm start
+ ```
 
-Duplicate questions (by text of `Question Call`) are ignored when exporting.
+ This runs the `start.sh` script to:
+ - Start the Flask API on http://localhost:5001
+ - Serve the static front-end from `src/` on http://localhost:3000
 
-## Usage
-```
-python scripts/csv_to_sql.py path/to/qa.csv output.sql
-```
-The resulting `output.sql` can be executed in SQLite or a similar database.
+ Press `Ctrl+C` to stop both services.
 
-## Limitations
-Accessing the OpenAI vector stores referenced by ID is not possible from this
-environment due to network restrictions. You will need to download `qa.csv`
-and any additional files manually before running the script.
+ ### Manual Startup (Optional)
+ 1. Start the Flask API:
+    ```bash
+    python3 scripts/flask_api.py
+    ```
+    The API will be available at http://localhost:5001/api
 
+ 2. In another terminal, serve the front-end:
+    ```bash
+    npx serve src
+    ```
+    The front-end will be available at http://localhost:3000
+
+ ## Running Tests
+
+ Run the Jest unit tests:
+
+ ```bash
+ npm test
+ ```
+
+ ## Project Structure
+
+ - `src/`: Static front-end (HTML, CSS, JavaScript)
+ - `scripts/`: Helper scripts
+   - `flask_api.py`: Flask API server
+   - `law_quiz.py`: CLI quiz runner (Python)
+   - `csv_to_sql.py`: Convert CSV to SQL for DB import
+ - `qa.csv`: Sample questions dataset
+ - `law_quiz.db`: SQLite DB for the API
+ - `start.sh`: Startup script to launch API and front-end
+ - `tests/`: Jest tests for core logic
+
+ ## FAQ
+
+ **Q:** How do I change questions?
+ **A:**
+ - For the front-end CLI version, edit `src/js/question-data.js`.
+ - For the API version, update the SQLite database (`law_quiz.db`) via `scripts/csv_to_sql.py` and reload data.
+
+ ## License
+
+ Specify your license here.

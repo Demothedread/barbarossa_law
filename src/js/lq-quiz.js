@@ -38,12 +38,30 @@ function renderQuestion(container, q, state) {
   container.appendChild(text);
   // Highlight support
   const highlightControls = document.createElement('div');
+  highlightControls.className = 'highlight-controls';
+  
+  let activeHighlightColor = null;
+  
   ['yellow', 'cyan', 'lime'].forEach((color) => {
     const btn = document.createElement('button');
     btn.style.backgroundColor = color;
-    btn.title = 'Highlight';
+    btn.title = `Highlight text in ${color}`;
+    btn.className = 'highlight-btn';
     btn.onclick = () => {
-      document.getSelection && document.execCommand('hiliteColor', false, color);
+      // Toggle active state
+      if (activeHighlightColor === color) {
+        activeHighlightColor = null;
+        document.querySelectorAll('.highlight-btn').forEach(b => b.classList.remove('active'));
+      } else {
+        activeHighlightColor = color;
+        document.querySelectorAll('.highlight-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        // Apply highlight if text is already selected
+        if (document.getSelection && document.getSelection().toString().length > 0) {
+          document.execCommand('hiliteColor', false, color);
+        }
+      }
     };
     highlightControls.appendChild(btn);
   });
@@ -67,7 +85,8 @@ function renderQuestion(container, q, state) {
   container.appendChild(list);
 }
 
-export function createQuiz(questions, opts, onComplete) {
+// Dynamic/API-based quiz creator: accepts question array, options, and onComplete callback
+export function createApiQuiz(questions, opts, onComplete) {
   const total = questions.length;
   const container = document.createElement('div');
   container.className = 'quiz';
@@ -88,8 +107,49 @@ export function createQuiz(questions, opts, onComplete) {
   prev.textContent = '< Prev';
   const next = document.createElement('button');
   next.textContent = 'Next >';
+  
+  // Add finish quiz button
+  const finishButton = document.createElement('button');
+  finishButton.textContent = 'End Exam';
+  finishButton.className = 'finish-button';
+  finishButton.onclick = () => {
+    // Create confirmation modal
+    const confirmModal = document.createElement('div');
+    confirmModal.className = 'confirm-modal';
+    
+    const modalContent = document.createElement('div');
+    modalContent.className = 'modal-content';
+    
+    const message = document.createElement('p');
+    message.textContent = 'Are you sure you want to end the exam?';
+    
+    const btnContainer = document.createElement('div');
+    
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.onclick = () => document.body.removeChild(confirmModal);
+    
+    const confirmBtn = document.createElement('button');
+    confirmBtn.textContent = 'Yes, End Exam';
+    confirmBtn.className = 'confirm-btn';
+    confirmBtn.onclick = () => {
+      document.body.removeChild(confirmModal);
+      finishQuiz();
+    };
+    
+    btnContainer.appendChild(cancelBtn);
+    btnContainer.appendChild(confirmBtn);
+    
+    modalContent.appendChild(message);
+    modalContent.appendChild(btnContainer);
+    confirmModal.appendChild(modalContent);
+    
+    document.body.appendChild(confirmModal);
+  };
+  
   nav.appendChild(prev);
   nav.appendChild(next);
+  nav.appendChild(finishButton);
   container.appendChild(nav);
 
   // Timer
@@ -146,4 +206,22 @@ export function createQuiz(questions, opts, onComplete) {
 
   showQuestion(0);
   return container;
+}
+// Static quiz creator: accepts number of questions, a QuestionManager, a ProgressTracker, and onComplete callback
+function createStaticQuiz(count, questionManager, progressTracker, onComplete) {
+  const container = document.createElement('div');
+  container.className = 'quiz';
+  // Basic static quiz placeholder. Extend with UI logic as needed.
+  return container;
+}
+
+/**
+ * createQuiz dispatcher: static or API-based quiz creator
+ * @param {...*} args - arguments for static (count, qm, tracker, onComplete) or dynamic (questions, opts, onComplete)
+ */
+export function createQuiz(...args) {
+  if (typeof args[0] === 'number') {
+    return createStaticQuiz(...args);
+  }
+  return createApiQuiz(...args);
 }

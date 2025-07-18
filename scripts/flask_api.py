@@ -56,5 +56,30 @@ def api_log():
         f.write(str(data)+'\n')
     return jsonify({'success': True})
 
+@app.route('/')
+def index():
+    return jsonify({'message': 'Welcome to the Law Quiz API'})
+
+def flask_cors(app):
+    @app.after_request
+    def add_cors_headers(response):
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+        return response
+
+    @app.route('/api/health', methods=['GET'])
+    def health_check():
+        return jsonify({'status': 'ok'})    
+    
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
+    flask_cors(app)
+    print(f"Starting Flask API server on port 5001...")
+    print(f"Database path: {DB_PATH}")
+    print(f"Database exists: {os.path.exists(DB_PATH)}")
+    print("Visit http://localhost:5001/api/questions to test the API")
+    print("Visit http://localhost:5001/api/subjects to get available subjects")
+    print("Press Ctrl+C to stop the server")
+
+    

@@ -3,11 +3,91 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Law Quizzer</title>
+  <title>Law Quizzer - Interactive Legal Knowledge Testing</title>
+  <meta name="description" content="Test your legal knowledge with our comprehensive law quiz platform featuring multiple subjects and detailed explanations." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/review-enhancements.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>">
 </head>
 <body>
-  <div id="app"></div>
+  <header class="header">
+    <div class="header-content">
+      <h1 class="logo">
+        <span class="logo-icon">⚖️</span>
+        Law Quizzer
+      </h1>
+      <nav class="nav">
+        <button id="homeBtn" class="nav-btn active">Home</button>
+        <button id="statisticsBtn" class="nav-btn">Statistics</button>
+        <button id="aboutBtn" class="nav-btn">About</button>
+      </nav>
+    </div>
+  </header>
+
+  <main id="app" class="main-content">
+    <!-- Loading state -->
+    <div id="loading" class="loading" style="display: none;">
+      <div class="loading-spinner"></div>
+      <p>Loading questions...</p>
+    </div>
+    
+    <!-- Error state -->
+    <div id="error" class="error-state" style="display: none;">
+      <div class="error-icon">⚠️</div>
+      <h2>Something went wrong</h2>
+      <p id="errorMessage">Unable to load questions. Please check your connection and try again.</p>
+      <button id="retryBtn" class="btn btn-primary">Try Again</button>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <p>&copy; 2024 Law Quizzer. Designed for educational purposes.</p>
+      <div class="footer-links">
+        <a href="#" class="footer-link">Privacy Policy</a>
+        <a href="#" class="footer-link">Terms of Use</a>
+        <a href="#" class="footer-link">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Modals -->
+  <div id="aboutModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>About Law Quizzer</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Law Quizzer is an interactive platform designed to help law students and legal professionals test their knowledge across various legal subjects.</p>
+        <ul>
+          <li>📚 Comprehensive question database</li>
+          <li>⏱️ Customizable timer settings</li>
+          <li>📊 Detailed performance analytics</li>
+          <li>💡 Explanation for each answer</li>
+          <li>🎯 Subject-specific quizzes</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div id="statisticsModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Your Statistics</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="statsContent">
+          <p>Complete a quiz to see your statistics!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script type="module" src="js/lq-main.js"></script>
 </body>
 </html>

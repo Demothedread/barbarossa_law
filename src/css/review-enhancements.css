@@ -1,0 +1,234 @@
+/* Enhanced styles for quiz review features */
+
+/* Highlight controls */
+.highlight-controls {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.highlight-btn {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.highlight-btn:hover {
+  transform: scale(1.1);
+}
+
+.highlight-btn.active {
+  border-color: #000;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Finish button and confirmation modal */
+.finish-button {
+  background-color: var(--warning-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  margin-left: 16px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.finish-button:hover {
+  background-color: #a22;
+}
+
+.confirm-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  width: 90%;
+  max-width: 500px;
+  text-align: center;
+}
+
+.modal-content p {
+  font-size: 18px;
+  margin-bottom: 24px;
+}
+
+.modal-content div {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.modal-content button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.confirm-btn {
+  background-color: var(--error-color);
+  color: white;
+}
+
+/* Review screen enhancements */
+.review-header {
+  background-color: var(--card-background);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(22, 38, 77, 0.1);
+  position: sticky;
+  top: 80px;
+  z-index: 10;
+}
+
+.score-summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.total-score h3 {
+  color: var(--primary-color);
+  margin: 0 0 8px 0;
+}
+
+.total-score p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.subject-score h4 {
+  margin: 0;
+  color: var(--secondary-color);
+}
+
+.question-review-container {
+  background-color: var(--card-background);
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(22, 38, 77, 0.1);
+}
+
+.question-review {
+  margin-bottom: 16px;
+}
+
+.prompt-review {
+  background-color: #f5f5f5;
+  padding: 16px;
+  border-left: 4px solid var(--secondary-color);
+  margin-bottom: 16px;
+  border-radius: 4px;
+}
+
+.question-text-review {
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 24px;
+}
+
+.choices-review {
+  list-style-type: none;
+  padding: 0;
+  margin: 0 0 24px 0;
+}
+
+.choices-review li {
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+}
+
+.choice-letter {
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+.correct-answer {
+  background-color: rgba(21, 132, 59, 0.1);
+  border-color: var(--success-color) !important;
+}
+
+.incorrect-answer {
+  background-color: rgba(164, 60, 37, 0.1);
+  border-color: var(--error-color) !important;
+}
+
+.user-selected {
+  font-weight: 500;
+}
+
+.user-selected::after {
+  content: " ← Your answer";
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+.gold-explanation {
+  background-color: rgba(255, 223, 128, 0.2);
+  border-left: 4px solid #f5b700;
+  padding: 16px;
+  margin-top: 8px;
+  font-style: italic;
+  border-radius: 4px;
+}
+
+.explanation-title {
+  margin: 24px 0 8px 0;
+  color: var(--text-secondary);
+}
+
+.review-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+}
+
+.review-navigation button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+.review-navigation button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.question-counter {
+  font-weight: 500;
+}
+
+/* Highlighted text */
+.highlighted {
+  display: inline;
+  padding: 0 1px;
+}
