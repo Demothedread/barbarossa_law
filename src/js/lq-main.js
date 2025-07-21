@@ -1,7 +1,9 @@
-import { fetchQuestions, logQuizAttempt } from './lq-api.js';
+import { fetchQuestionsByType, logQuizAttempt } from './lq-api.js';
+import { createQuestionGenerator } from './lq-question-generator.js';
 import { createQuiz } from './lq-quiz.js';
 import { createReview } from './lq-review.js';
 import { createStartMenu } from './lq-start-menu.js';
+import { createStatisticsPage } from './lq-statistics.js';
 
 const app = document.getElementById('app');
 const loadingEl = document.getElementById('loading');
@@ -9,25 +11,31 @@ const errorEl = document.getElementById('error');
 
 // Navigation and modal elements
 const homeBtn = document.getElementById('homeBtn');
+const generatorBtn = document.getElementById('generatorBtn');
 const statisticsBtn = document.getElementById('statisticsBtn');
 const aboutBtn = document.getElementById('aboutBtn');
 const aboutModal = document.getElementById('aboutModal');
-const statisticsModal = document.getElementById('statisticsModal');
 const retryBtn = document.getElementById('retryBtn');
 
 // State management
 let currentPage = 'home';
 let quizHistory = JSON.parse(localStorage.getItem('lawQuizHistory') || '[]');
 
+// Generate and store a user ID if one doesn't exist yet
+if (!localStorage.getItem('userId')) {
+  const userId = 'user_' + Math.random().toString(36).substring(2, 15);
+  localStorage.setItem('userId', userId);
+}
+
 async function startQuiz(opts) {
   showLoading('Loading questions...');
   
   try {
-    const res = await fetchQuestions(opts.n, opts.subject);
+    const res = await fetchQuestionsByType(opts.n, opts.subject, opts.questionType);
     const questions = res.questions;
     
     if (!questions || !questions.length) {
-      showError('No questions available. Try a different subject or number.');
+      showError('No questions available. Try a different subject, question type, or number.');
       return;
     }
     
@@ -104,65 +112,47 @@ function navigateToHome() {
   init();
 }
 
-function showStatistics() {
-  const statsContent = document.getElementById('statsContent');
+async function showQuestionGenerator() {
+  currentPage = 'generator';
+  updateNavigation();
+  hideLoading();
+  hideError();
   
-  if (quizHistory.length === 0) {
-    statsContent.innerHTML = '<p>Complete a quiz to see your statistics!</p>';
-  } else {
-    const totalQuizzes = quizHistory.length;
-    const totalQuestions = quizHistory.reduce((sum, quiz) => sum + quiz.meta.total, 0);
-    const totalCorrect = quizHistory.reduce((sum, quiz) => sum + quiz.meta.correct, 0);
-    const avgScore = ((totalCorrect / totalQuestions) * 100).toFixed(1);
-    
-    // Subject breakdown
-    const subjectStats = {};
-    quizHistory.forEach(quiz => {
-      const subject = quiz.opts.subject || 'All Subjects';
-      if (!subjectStats[subject]) {
-        subjectStats[subject] = { total: 0, correct: 0, quizzes: 0 };
-      }
-      subjectStats[subject].total += quiz.meta.total;
-      subjectStats[subject].correct += quiz.meta.correct;
-      subjectStats[subject].quizzes += 1;
-    });
-    
-    let html = `
-      <div class="stats-overview">
-        <h4>Overall Performance</h4>
-        <p><strong>Total Quizzes:</strong> ${totalQuizzes}</p>
-        <p><strong>Total Questions:</strong> ${totalQuestions}</p>
-        <p><strong>Overall Average:</strong> ${avgScore}%</p>
-      </div>
-      <div class="stats-subjects">
-        <h4>Performance by Subject</h4>
-    `;
-    
-    Object.entries(subjectStats).forEach(([subject, stats]) => {
-      const subjectAvg = ((stats.correct / stats.total) * 100).toFixed(1);
-      html += `
-        <div class="subject-stat">
-          <strong>${subject}:</strong> ${subjectAvg}% 
-          (${stats.correct}/${stats.total} questions, ${stats.quizzes} quizzes)
-        </div>
-      `;
-    });
-    
-    html += '</div>';
-    statsContent.innerHTML = html;
+  app.innerHTML = '';
+  const generatorPage = createQuestionGenerator(startQuiz);
+  app.appendChild(generatorPage);
+}
+
+async function showStatistics() {
+  currentPage = 'statistics';
+  updateNavigation();
+  hideLoading();
+  hideError();
+  
+  app.innerHTML = '';
+  showLoading('Loading statistics...');
+  
+  try {
+    const statsPage = await createStatisticsPage();
+    hideLoading();
+    app.appendChild(statsPage);
+  } catch (error) {
+    console.error('Error loading statistics:', error);
+    hideLoading();
+    showError('Failed to load statistics. Please try again.');
   }
-  
-  statisticsModal.style.display = 'flex';
 }
 
 function updateNavigation() {
   homeBtn.classList.toggle('active', currentPage === 'home');
-  statisticsBtn.classList.remove('active');
+  generatorBtn.classList.toggle('active', currentPage === 'generator');
+  statisticsBtn.classList.toggle('active', currentPage === 'statistics');
   aboutBtn.classList.remove('active');
 }
 
 // Event listeners
 homeBtn.addEventListener('click', navigateToHome);
+generatorBtn.addEventListener('click', showQuestionGenerator);
 statisticsBtn.addEventListener('click', showStatistics);
 aboutBtn.addEventListener('click', () => {
   aboutModal.style.display = 'flex';

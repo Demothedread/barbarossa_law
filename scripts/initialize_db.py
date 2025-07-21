@@ -36,7 +36,44 @@ def create_schema(conn):
         choice_d TEXT,
         answer TEXT,
         gold_passage TEXT,
-        gold_idx TEXT
+        gold_idx TEXT,
+        generated INTEGER DEFAULT 0
+    )
+    ''')
+    
+    # Check if 'generated' column exists, if not add it
+    cursor.execute("PRAGMA table_info(questions)")
+    columns = [row[1] for row in cursor.fetchall()]
+    if 'generated' not in columns:
+        print("Adding 'generated' column to questions table...")
+        cursor.execute('ALTER TABLE questions ADD COLUMN generated INTEGER DEFAULT 0')
+    
+    # Create AI explanations table
+    print("Creating question_explanations table...")
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS question_explanations (
+        question_id TEXT PRIMARY KEY,
+        ai_explanation TEXT,
+        created_at TEXT,
+        updated_at TEXT,
+        FOREIGN KEY (question_id) REFERENCES questions(idx)
+    )
+    ''')
+    
+    # Create quiz history table
+    print("Creating quiz_history table...")
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS quiz_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT,
+        subject TEXT,
+        correct INTEGER,
+        total INTEGER,
+        duration_seconds INTEGER,
+        questions_json TEXT,
+        answers_json TEXT,
+        negative_time BOOLEAN,
+        created_at TEXT
     )
     ''')
     
@@ -50,14 +87,64 @@ def import_questions(conn):
         print(f"Error: SQL file not found at {SQL_PATH}")
         return False
     
+    # Check if questions already exist
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM questions")
+    existing_count = cursor.fetchone()[0]
+    
+    response = 'R'  # Default to replace
+    
+    if existing_count > 0:
+        print(f"Database already contains {existing_count} questions.")
+        response = input("Do you want to (R)eplace all questions, (S)kip import, or (A)dd new ones? [R/S/A]: ").upper()
+        
+        if response == 'S':
+            print("Skipping import - using existing questions.")
+            return True
+        elif response == 'R':
+            print("Clearing existing questions...")
+            cursor.execute("DELETE FROM questions")
+            cursor.execute("DELETE FROM question_explanations")  # Clear related explanations
+            conn.commit()
+        elif response == 'A':
+            print("Will attempt to add new questions (duplicates will be skipped)...")
+        else:
+            print("Invalid choice. Skipping import.")
+            return True
+    
     # Read SQL file
     with open(SQL_PATH, 'r', encoding='utf-8') as f:
         sql_script = f.read()
     
     # Execute SQL script
     try:
-        conn.executescript(sql_script)
-        conn.commit()
+        if existing_count > 0 and response == 'A':
+            # For adding new questions, we need to handle duplicates gracefully
+            # Split the script into individual INSERT statements
+            statements = sql_script.split('INSERT INTO questions')
+            
+            successful_inserts = 0
+            skipped_duplicates = 0
+            
+            for i, statement in enumerate(statements[1:]):  # Skip the first empty part
+                try:
+                    full_statement = 'INSERT INTO questions' + statement.split(';')[0] + ';'
+                    cursor.execute(full_statement)
+                    successful_inserts += 1
+                except sqlite3.IntegrityError:
+                    # This is a duplicate, skip it
+                    skipped_duplicates += 1
+                except sqlite3.Error as e:
+                    print(f"Error in statement {i+1}: {e}")
+            
+            conn.commit()
+            print(f"Added {successful_inserts} new questions, skipped {skipped_duplicates} duplicates.")
+        else:
+            # Replace mode or fresh import
+            conn.executescript(sql_script)
+            conn.commit()
+            print("Questions imported successfully.")
+        
         return True
     except sqlite3.Error as e:
         print(f"Error importing SQL: {e}")

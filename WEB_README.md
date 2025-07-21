@@ -10,6 +10,8 @@ A comprehensive web-based quiz application for testing legal knowledge across va
 - 📊 **Performance Analytics**: Track your progress with detailed statistics
 - 💡 **Answer Explanations**: Learn from detailed explanations after each quiz
 - 🎨 **Text Highlighting**: Highlight important parts of questions during the quiz
+- 🤖 **AI Question Generator**: Generate new questions using OpenAI's vector store
+- 🔧 **Question Type Selection**: Choose between original MBE questions, AI-generated questions, or a mix
 - 📱 **Responsive Design**: Works seamlessly on desktop, tablet, and mobile devices
 
 ## Quick Start
@@ -18,6 +20,7 @@ A comprehensive web-based quiz application for testing legal knowledge across va
 
 - Python 3.7+ installed
 - A web browser
+- OpenAI API key (optional, for AI question generation and explanations)
 
 ### Setup
 
@@ -27,14 +30,26 @@ A comprehensive web-based quiz application for testing legal knowledge across va
    pip install -r requirements.txt
    ```
 
-2. **Start the Backend API Server**
+2. **Configure OpenAI API Key (Optional)**
+   Create a `.env-local` file in the project root:
+   ```bash
+   OPENAI_API_KEY=your_openai_api_key_here
+   VECTOR_STORE_ID=vs_6875b6f14b788191aed0702450e5ca49
+   ```
+
+3. **Initialize Database**
+   ```bash
+   python scripts/initialize_db.py
+   ```
+
+4. **Start the Backend API Server**
    ```bash
    cd backend
    python server.py
    ```
    The API server will start on `http://localhost:5001`
 
-3. **Start the Frontend Development Server**
+5. **Start the Frontend Development Server**
    ```bash
    # In a new terminal, from the project root
    python dev-server.py
@@ -59,14 +74,15 @@ npx serve .
 
 ## Usage
 
-1. **Home Page**: Choose number of questions, subject, and timing
-2. **Quiz Interface**: 
+1. **Home Page**: Choose number of questions, subject, question type (MBE/Generated/Mix), and timing
+2. **Question Generator**: Generate new AI-powered questions using OpenAI's vector store
+3. **Quiz Interface**: 
    - Answer questions with A/B/C/D buttons
    - Use the ✖ buttons to eliminate wrong choices
    - Highlight important text in questions
    - Navigate between questions with Prev/Next
-3. **Results**: View detailed breakdown of answers and explanations
-4. **Statistics**: Track your performance over time across different subjects
+4. **Results**: View detailed breakdown of answers and explanations
+5. **Statistics**: Track your performance over time across different subjects
 
 ## File Structure
 
@@ -81,8 +97,10 @@ src/
     ├── lq-quiz.js      # Quiz interface and logic
     ├── lq-review.js    # Results and review screen
     ├── lq-start-menu.js # Quiz configuration screen
+    ├── lq-question-generator.js # AI question generation interface
     ├── lq-timer.js     # Timer utilities
     ├── lq-progress.js  # Progress tracking
+    ├── lq-statistics.js # Statistics and analytics
     └── lq-question-manager.js # Question selection logic
 
 backend/
@@ -97,7 +115,12 @@ dev-server.py           # Development server for frontend
 The backend provides these REST endpoints:
 
 - `GET /api/subjects` - Get all available subjects
-- `GET /api/questions?n=10&subject=...` - Get random questions
+- `GET /api/questions?n=10&subject=...&type=...` - Get random questions with type filtering
+- `POST /api/extract-questions` - Generate new questions from vector store
+- `GET /api/vector-store/status` - Check vector store connection status
+- `POST /api/explanations` - Get AI-generated explanations for questions
+- `POST /api/quiz-history` - Save quiz results and performance data
+- `GET /api/quiz-history` - Get quiz history and statistics
 - `POST /api/log` - Log quiz attempts
 - `GET /api/health` - Health check
 

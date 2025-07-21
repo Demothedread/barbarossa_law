@@ -1,4 +1,5 @@
-import { Timer } from './lq-timer.js';
+
+import { fetchAIExplanations } from './lq-api.js';
 
 function createChoice(text, index, selected, eliminated, onSelect, onEliminate) {
   const li = document.createElement('li');
@@ -95,7 +96,28 @@ export function createApiQuiz(questions, opts, onComplete) {
     answers: new Array(total).fill(null), // index of choice
     eliminated: {}, // { qIndex: { [choiceIdx]: true } }
     startTime: Date.now(),
+    aiExplanations: null, // Store fetched explanations
+    backgroundFetchStarted: false
   };
+
+  // Start fetching AI explanations in the background
+  const startBackgroundFetch = async () => {
+    if (state.backgroundFetchStarted) return;
+    state.backgroundFetchStarted = true;
+    
+    try {
+      console.log('Starting background fetch of AI explanations...');
+      const questionIds = questions.map(q => q.idx);
+      state.aiExplanations = await fetchAIExplanations(questionIds);
+      console.log('Background AI explanations fetch completed');
+    } catch (error) {
+      console.error('Background AI explanations fetch failed:', error);
+      state.aiExplanations = {};
+    }
+  };
+
+  // Start the background fetch immediately when quiz starts
+  startBackgroundFetch();
 
   const questionContainer = document.createElement('div');
   container.appendChild(questionContainer);
@@ -158,16 +180,49 @@ export function createApiQuiz(questions, opts, onComplete) {
   container.appendChild(timerDisplay);
   let timerStop = false;
   let timerVal = totalSecs;
+  let isNegativeTime = false;
+  
   const timerTick = () => {
     if (timerStop) return;
-    timerDisplay.textContent = `Time: ${Math.floor(timerVal/60)}m ${timerVal%60}s`;
+    
     if (timerVal > 0) {
+      timerDisplay.textContent = `Time: ${Math.floor(timerVal/60)}m ${timerVal%60}s`;
       timerVal--;
-      setTimeout(timerTick, 1000);
     } else {
-      finishQuiz();
+      // When time is up, continue counting but in negative
+      isNegativeTime = true;
+      const negativeSeconds = Math.abs(timerVal);
+      timerDisplay.textContent = `Time: -${Math.floor(negativeSeconds/60)}m ${negativeSeconds%60}s`;
+      timerDisplay.classList.add('negative-time');
+      timerVal--;
+      
+      // If this is the first second of overtime, show a notification
+      if (negativeSeconds === 1) {
+        const timeUpNotice = document.createElement('div');
+        timeUpNotice.className = 'time-up-notice';
+        timeUpNotice.textContent = 'Time is up! You can still complete the exam, but you are now in overtime.';
+        
+        // Add close button
+        const closeBtn = document.createElement('button');
+        closeBtn.innerHTML = '&times;';
+        closeBtn.onclick = () => container.removeChild(timeUpNotice);
+        timeUpNotice.appendChild(closeBtn);
+        
+        container.insertBefore(timeUpNotice, questionContainer);
+        
+        // Auto-dismiss after 10 seconds
+        setTimeout(() => {
+          if (container.contains(timeUpNotice)) {
+            container.removeChild(timeUpNotice);
+          }
+        }, 10000);
+      }
     }
+    
+    // Always continue the timer
+    setTimeout(timerTick, 1000);
   };
+  
   timerTick();
 
   function showQuestion(index) {
@@ -190,7 +245,7 @@ export function createApiQuiz(questions, opts, onComplete) {
   function finishQuiz() {
     timerStop = true;
     const duration = Math.ceil((Date.now() - state.startTime) / 1000);
-    // meta: correct, total, duration, answers, eliminated
+    // meta: correct, total, duration, answers, eliminated, and pre-fetched AI explanations
     let correct = 0;
     questions.forEach((q, i) => {
       if (state.answers[i] !== null &&
@@ -200,7 +255,10 @@ export function createApiQuiz(questions, opts, onComplete) {
       correct,
       total,
       duration_s: duration,
-      eliminated: state.eliminated
+      eliminated: state.eliminated,
+      negative_time: isNegativeTime,
+      timer: opts.timer,
+      aiExplanations: state.aiExplanations // Pass pre-fetched explanations
     });
   }
 
@@ -208,7 +266,7 @@ export function createApiQuiz(questions, opts, onComplete) {
   return container;
 }
 // Static quiz creator: accepts number of questions, a QuestionManager, a ProgressTracker, and onComplete callback
-function createStaticQuiz(count, questionManager, progressTracker, onComplete) {
+function createStaticQuiz(_count, _questionManager, _progressTracker, _onComplete) {
   const container = document.createElement('div');
   container.className = 'quiz';
   // Basic static quiz placeholder. Extend with UI logic as needed.

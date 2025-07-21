@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "sequentialthinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
+    },
+    "oxylabs": {
+      "command": "uvx",
+      "args": [
+        "oxylabs-mcp"
+      ],
+      "env": {
+        "OXYLABS_USERNAME": "pseudo_eMo3q",
+        "OXYLABS_PASSWORD": "Jonathan_Reback1!"
+      }
+    }
+  }
+}

@@ -1,7 +1,7 @@
-import { fetchSubjects, fetchQuestions } from './lq-api.js';
+import { fetchQuestionsByType, fetchSubjects } from './lq-api.js';
 
 /**
- * Create a start menu allowing users to choose number, subject, and timer options.
+ * Create a start menu allowing users to choose number, subject, question type, and timer options.
  * @param {(opts:object)=>void} onStart Callback invoked when quiz should start.
  * @returns {HTMLElement}
  */
@@ -32,6 +32,29 @@ export function createStartMenu(onStart) {
   labelSub.appendChild(selectSub);
   form.appendChild(labelSub);
 
+  // Question Type
+  const labelType = document.createElement('label');
+  labelType.textContent = ' Question Type: ';
+  const selectType = document.createElement('select');
+  
+  const mixOpt = document.createElement('option');
+  mixOpt.value = 'mix';
+  mixOpt.textContent = 'Mix (All Questions)';
+  selectType.appendChild(mixOpt);
+  
+  const mbeOpt = document.createElement('option');
+  mbeOpt.value = 'mbe';
+  mbeOpt.textContent = 'MBE Only';
+  selectType.appendChild(mbeOpt);
+  
+  const generatedOpt = document.createElement('option');
+  generatedOpt.value = 'generated';
+  generatedOpt.textContent = 'AI Generated Only';
+  selectType.appendChild(generatedOpt);
+  
+  labelType.appendChild(selectType);
+  form.appendChild(labelType);
+
   // Timer setting
   const labelTimer = document.createElement('label');
   labelTimer.textContent = ' Minutes per Question: ';
@@ -59,26 +82,29 @@ export function createStartMenu(onStart) {
     });
   });
 
-  // If you want to limit number to what's available for subject:
+  // If you want to limit number to what's available for subject and type:
   async function updateMax() {
     let subject = selectSub.value;
+    let questionType = selectType.value;
     let n = 999;
     try {
-      const res = await fetchQuestions(999, subject);
+      const res = await fetchQuestionsByType(999, subject, questionType);
       n = res.available || 999;
     } catch {}
     inputNum.max = n;
     if (parseInt(inputNum.value) > n) inputNum.value = n;
   }
   selectSub.addEventListener('change', updateMax);
+  selectType.addEventListener('change', updateMax);
   updateMax();
 
   form.onsubmit = (e) => {
     e.preventDefault();
     const n = parseInt(inputNum.value, 10); 
     const subject = selectSub.value;
+    const questionType = selectType.value;
     const timer = parseFloat(inputTimer.value);
-    onStart({n, subject, timer});
+    onStart({n, subject, questionType, timer});
   };
 
   container.appendChild(form);

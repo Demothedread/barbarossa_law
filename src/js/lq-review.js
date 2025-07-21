@@ -1,3 +1,5 @@
+import { fetchAIExplanations, saveQuizHistory } from './lq-api.js';
+
 /**
  * Create a review screen summarizing answers and stats.
  */
@@ -45,7 +47,9 @@ function createApiReview(questions, answers, meta) {
   // Create state for question-by-question navigation
   const state = {
     currentQuestion: 0,
-    totalQuestions: questions.length
+    totalQuestions: questions.length,
+    aiExplanations: meta.aiExplanations || null, // Use pre-fetched explanations if available
+    loadingExplanations: false
   };
   
   // Create fixed summary header
@@ -126,6 +130,74 @@ function createApiReview(questions, answers, meta) {
   
   container.appendChild(navControls);
   
+  // Fetch AI explanations as soon as review screen loads (if not already available)
+  async function loadAIExplanations() {
+    // If explanations are already available from background fetch, skip the API call
+    if (state.aiExplanations !== null && Object.keys(state.aiExplanations).length > 0) {
+      console.log('Using pre-fetched AI explanations from background fetch');
+      // Still save quiz history
+      try {
+        const negativeTime = meta.duration_s > (questions.length * 60 * meta.timer || 0);
+        await saveQuizHistory({
+          user_id: localStorage.getItem('userId') || 'anonymous',
+          subject: questions[0]?.subject || '',
+          correct: meta.correct,
+          total: meta.total,
+          duration_seconds: meta.duration_s,
+          questions: questions.map(q => q.idx),
+          answers: answers,
+          negative_time: negativeTime
+        });
+      } catch (error) {
+        console.error('Failed to save quiz history:', error);
+      }
+      return;
+    }
+    
+    if (state.loadingExplanations) return;
+    
+    state.loadingExplanations = true;
+    
+    // Create loading indicator
+    const loadingEl = document.createElement('div');
+    loadingEl.className = 'ai-loading';
+    loadingEl.textContent = 'Loading AI explanations...';
+    container.appendChild(loadingEl);
+    
+    try {
+      console.log('Fetching AI explanations (fallback)...');
+      // Get question IDs
+      const questionIds = questions.map(q => q.idx);
+      state.aiExplanations = await fetchAIExplanations(questionIds);
+      
+      // Save quiz history with completion info
+      const negativeTime = meta.duration_s > (questions.length * 60 * meta.timer || 0);
+      await saveQuizHistory({
+        user_id: localStorage.getItem('userId') || 'anonymous',
+        subject: questions[0]?.subject || '',
+        correct: meta.correct,
+        total: meta.total,
+        duration_seconds: meta.duration_s,
+        questions: questions.map(q => q.idx),
+        answers: answers,
+        negative_time: negativeTime
+      });
+    } catch (error) {
+      console.error('Failed to load AI explanations:', error);
+      state.aiExplanations = {};
+    } finally {
+      state.loadingExplanations = false;
+      if (container.contains(loadingEl)) {
+        container.removeChild(loadingEl);
+      }
+      // Re-render current question with AI explanations
+      renderQuestion();
+    }
+  }
+  
+  // Start loading AI explanations
+  loadAIExplanations();
+  
   // Function to render current question
   function renderQuestion() {
     const idx = state.currentQuestion;
@@ -186,10 +258,10 @@ function createApiReview(questions, answers, meta) {
     
     questionBlock.appendChild(choicesList);
     
-    // Add explanation
+    // Add gold passage explanation
     if (q.gold_passage && q.gold_passage.trim()) {
       const explanationTitle = document.createElement('h4');
-      explanationTitle.textContent = 'Rule of Law Explanation:';
+      explanationTitle.textContent = 'Rule of Law:';
       explanationTitle.className = 'explanation-title';
       
       const explanationBox = document.createElement('div');
@@ -198,6 +270,55 @@ function createApiReview(questions, answers, meta) {
       
       questionBlock.appendChild(explanationTitle);
       questionBlock.appendChild(explanationBox);
+    }
+    
+    // Add AI explanations if available
+    if (state.aiExplanations && state.aiExplanations[q.idx]) {
+      const aiData = state.aiExplanations[q.idx];
+      
+      const aiTitle = document.createElement('h4');
+      aiTitle.textContent = 'AI Analysis of Answer Choices:';
+      aiTitle.className = 'explanation-title ai-title';
+      questionBlock.appendChild(aiTitle);
+      
+      // Create container for AI explanations
+      const aiContainer = document.createElement('div');
+      aiContainer.className = 'ai-explanations';
+      
+      // Add explanation for each choice
+      const letters = ['A', 'B', 'C', 'D'];
+      letters.forEach((letter) => {
+        if (!aiData.explanations || !aiData.explanations[letter]) return;
+        
+        const choiceExp = document.createElement('div');
+        const isCorrect = letter === q.answer;
+        
+        choiceExp.className = isCorrect ? 
+          'ai-explanation-choice correct' : 
+          'ai-explanation-choice incorrect';
+          
+        // Create header with choice letter
+        const choiceHeader = document.createElement('div');
+        choiceHeader.className = 'ai-choice-header';
+        choiceHeader.innerHTML = `<strong>Choice ${letter}:</strong>`;
+        choiceExp.appendChild(choiceHeader);
+        
+        // Create explanation text
+        const expText = document.createElement('p');
+        expText.className = isCorrect ? 'correct-text' : 'incorrect-text';
+        expText.innerHTML = aiData.explanations[letter];
+        choiceExp.appendChild(expText);
+        
+        aiContainer.appendChild(choiceExp);
+      });
+      
+      questionBlock.appendChild(aiContainer);
+    } else if (state.loadingExplanations) {
+      // Show loading indicator for AI explanations
+      const loadingEl = document.createElement('div');
+      loadingEl.className = 'ai-loading';
+      loadingEl.textContent = 'Loading AI explanations...';
+      questionBlock.appendChild(loadingEl);
     }
     
     questionContainer.appendChild(questionBlock);

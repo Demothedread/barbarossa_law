@@ -1,5 +1,8 @@
 /* Enhanced styles for quiz review features */
 
+/* Chart.js CDN inclusion */
+@import url('https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css');
+
 /* Highlight controls */
 .highlight-controls {
   display: flex;
@@ -231,4 +234,180 @@
 .highlighted {
   display: inline;
   padding: 0 1px;
+}
+
+/* AI Explanations */
+.ai-loading {
+  padding: 16px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  margin: 16px 0;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.ai-title {
+  margin-top: 32px;
+}
+
+.ai-explanations {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.ai-explanation-choice {
+  padding: 16px;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+}
+
+.ai-explanation-choice.correct {
+  background-color: rgba(21, 132, 59, 0.05);
+  border-left: 4px solid var(--success-color);
+}
+
+.ai-explanation-choice.incorrect {
+  background-color: rgba(164, 60, 37, 0.05);
+  border-left: 4px solid var(--error-color);
+}
+
+.ai-choice-header {
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.correct-text {
+  color: var(--success-color);
+  font-weight: 500;
+}
+
+.incorrect-text {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* Negative time indicator */
+.negative-time {
+  color: var(--error-color);
+  font-weight: bold;
+}
+
+.time-up-notice {
+  background-color: rgba(164, 60, 37, 0.1);
+  border: 1px solid var(--error-color);
+  color: var(--error-color);
+  padding: 12px;
+  margin-bottom: 16px;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.time-up-notice button {
+  background: none;
+  border: none;
+  color: var(--error-color);
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+/* Statistics Page */
+.statistics-page {
+  padding: 24px 0;
+}
+
+.stats-header {
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.stats-summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.stats-card {
+  background-color: var(--card-background);
+  border-radius: 8px;
+  padding: 24px;
+  min-width: 160px;
+  box-shadow: 0 2px 8px rgba(22, 38, 77, 0.1);
+  text-align: center;
+}
+
+.stats-card h3 {
+  font-size: 32px;
+  margin: 0 0 8px 0;
+  color: var(--primary-color);
+}
+
+.stats-card p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.stats-section {
+  background-color: var(--card-background);
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(22, 38, 77, 0.1);
+}
+
+.stats-section h3 {
+  margin-top: 0;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 12px;
+}
+
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+}
+
+.stats-table th,
+.stats-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.stats-table th {
+  font-weight: 600;
+  color: var(--text-primary);
+  background-color: #f5f7fa;
+}
+
+.stats-table tr:hover {
+  background-color: #f9fafc;
+}
+
+.pass {
+  color: var(--success-color);
+  font-weight: 500;
+}
+
+.no-pass {
+  color: var(--error-color);
+}
+
+.chart-container {
+  height: 300px;
+  position: relative;
+  margin-top: 24px;
+}
+
+.no-stats {
+  text-align: center;
+  padding: 48px;
+  color: var(--text-secondary);
 }

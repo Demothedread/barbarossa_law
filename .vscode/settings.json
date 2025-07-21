@@ -1,0 +1,16 @@
+{
+    "github.copilot.chat.codesearch.enabled": true,
+    "github.copilot.chat.agent.terminal.allowList": {
+        "\"/.*/\"": true
+    },
+    "github.copilot.chat.agent.thinkingTool": true,
+    "github.copilot.chat.editor.temporalContext.enabled": true,
+    "github.copilot.nextEditSuggestions.enabled": true,
+    "github.copilot.chat.completionContext.typescript.mode": "sidecar",
+    "github.copilot.chat.generateTests.codeLens": true,
+    "github.copilot.chat.edits.temporalContext.enabled": true,
+    "github.copilot.chat.notebook.followCellExecution.enabled": true,
+    "chat.agent.maxRequests": 30,
+    "python.analysis.addHoverSummaries": true,
+    "terminal.integrated.tabs.defaultIcon": "terminal"
+}
