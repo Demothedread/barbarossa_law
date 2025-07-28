@@ -1,0 +1,117 @@
+/* Review Integration Styles */
+
+/* Choice containers with integrated explanations */
+.choice-container {
+    margin-bottom: 1rem;
+    border: 1px solid #ddd;
+    min-width: 75vh;
+    max-height: 30vh;
+    border-radius: 8px;
+    border-style: dashed;
+    padding
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.choice-container.correct-choice {
+    border-color: var(--draper-emerald);
+    background-color: var(--draper-mint);
+}
+
+.choice-container.user-incorrect {
+    border-color: #dc3545;
+    background-color: #ffebee;
+}
+
+.choice-container.user-choice {
+    border-width: 2px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Choice headers */
+.choice-header {
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background-color 0.2s ease;
+}
+
+.choice-header:hover {
+    background-color: #e9ecef;
+}
+
+.choice-header.correct-answer {
+    background-color: var(--draper-mint);
+    border-bottom-color: var(--draper-emerald);
+}
+
+.choice-header.incorrect-answer {
+    background-color: #ffebee;
+    border-bottom-color: #dc3545;
+}
+
+.choice-letter {
+    font-weight: bold;
+    min-width: 1.5rem;
+}
+
+.choice-letter.correct {
+    color: var(--draper-emerald);
+}
+
+.choice-text {
+    flex: 1;
+}
+
+.correct-indicator {
+    color: var(--draper-emerald);
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+/* AI explanation content */
+.ai-explanation-content {
+    padding: 1rem;
+    background-color: #f0f8ff;
+    border-top: 1px solid #ddd;
+    display: none;
+}
+
+.ai-explanation-content.expanded {
+    display: block;
+}
+
+.ai-explanation-content.correct-explanation {
+    background-color: #f0fff0;
+    border-top-color: var(--draper-emerald);
+}
+
+.ai-explanation-content.incorrect-explanation {
+    background-color: #fff5f5;
+    border-top-color: #dc3545;
+}
+
+.ai-explanation-header {
+    font-weight: bold;
+    color: var(--draper-black);
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.ai-explanation-text {
+    line-height: 1.6;
+    color: var(--draper-black);
+}
+
+/* Golden glow animation for quiz choices */
+.choices-list li {
+    transition: all 0.3s ease;
+}
+
+.choices-list li:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}

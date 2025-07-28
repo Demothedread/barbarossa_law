@@ -1,89 +1,91 @@
- # LawQuizzer
 
- LawQuizzer is a simple web-based quiz platform for reviewing law exam questions. It provides a static front-end for a seamless quiz-taking experience and a Flask-based API to serve questions and log results.
+# Law Quizzer
 
- ## Prerequisites
+A modern, AI-powered web and CLI quiz platform for California Bar Exam and legal study. Features advanced analytics, digital scratch paper, and seamless user experience.
 
- - Node.js v20+
- - Python 3.x
- - pip (Python package installer)
- - Python packages: Flask (install via `pip install Flask`)
+## Features
 
- ## Installation
+- **Interactive Web Quiz**: Responsive UI with timer, progress, and digital scratch paper
+- **AI Explanations**: OpenAI-powered, subtopic-classified answer explanations
+- **Subject & Subtopic Selection**: Filter by subject and subtopic (CA Bar breakdown)
+- **Customizable Timing**: Set minutes per question, pause/resume timer
+- **Performance Analytics**: Track scores, overtime, and subtopic mastery
+- **Text Highlighting**: Three-color highlight system for question text
+- **Question Types**: MBE, AI-generated, or mixed
+- **CLI Mode**: Standalone Python script for terminal quizzes
+- **Digital Scratch Paper**: Slide-out notepad, persistent during exam, copy/download as .txt
 
- 1. Clone the repository and navigate into it:
+## Quick Start
 
-    ```bash
-    git clone <repo-url>
-    cd lawquizzer
-    ```
+### Prerequisites
+- Python 3.8+
+- Node.js v20+
+- pip (Python package installer)
+- OpenAI API key (optional, for AI features)
 
- 2. Install JavaScript dependencies:
+### Installation
 
-    ```bash
-    npm install
-    ```
+```bash
+# Clone and enter repo
+git clone <repo-url>
+cd lawquizzer
 
- 3. Install Python dependencies:
+# Install JS dependencies
+npm install
 
-    ```bash
-    pip install Flask
-    ```
-             
- ## Starting the Application
+# Install Python backend dependencies
+cd backend
+pip install -r requirements.txt
+cd ..
 
- Use the provided npm script to launch both the back-end API and front-end server:
+# Initialize database
+python scripts/initialize_db.py
+```
 
- ```bash
- npm start
- ```
+### Configuration
+- To enable AI explanations, set `OPENAI_API_KEY` in your environment or `.env` file.
 
- This runs the `start.sh` script to:
- - Start the Flask API on http://localhost:5001
- - Serve the static front-end from `src/` on http://localhost:3000
+### Running the App
 
- Press `Ctrl+C` to stop both services.
+```bash
+npm start
+```
+- Launches Flask API (http://localhost:5001) and static server (http://localhost:3000)
 
- ### Manual Startup (Optional)
- 1. Start the Flask API:
-    ```bash
-    python3 scripts/flask_api.py
-    ```
-    The API will be available at http://localhost:5001/api
+### CLI Mode
 
- 2. In another terminal, serve the front-end:
-    ```bash
-    npx serve src
-    ```
-    The front-end will be available at http://localhost:3000
+```bash
+python scripts/law_quiz.py
+```
 
- ## Running Tests
+## Usage
+- **Start Quiz**: Choose number, subject, subtopic, type, and timer
+- **During Quiz**: Answer, highlight, eliminate, use scratch paper (📝 tab)
+- **Review**: See AI explanations, subtopic, and performance breakdown
+- **Analytics**: Track progress by subject, subtopic, and over time
 
- Run the Jest unit tests:
+## Digital Scratch Paper
+- Click the 📝 tab to open/close
+- Notes persist throughout the exam (localStorage)
+- Copy to clipboard or download as .txt
 
- ```bash
- npm test
- ```
+## Project Structure
+- `src/`: Frontend (HTML, CSS, JS)
+- `backend/`: Flask API, AI explanation service
+- `scripts/`: DB and CLI tools
+- `qa.csv`: Question dataset
+- `law_quiz.db`: SQLite database
+- `tests/`: Jest unit tests
 
- ## Project Structure
+## Testing
 
- - `src/`: Static front-end (HTML, CSS, JavaScript)
- - `scripts/`: Helper scripts
-   - `flask_api.py`: Flask API server
-   - `law_quiz.py`: CLI quiz runner (Python)
-   - `csv_to_sql.py`: Convert CSV to SQL for DB import
- - `qa.csv`: Sample questions dataset
- - `law_quiz.db`: SQLite DB for the API
- - `start.sh`: Startup script to launch API and front-end
- - `tests/`: Jest tests for core logic
+```bash
+npm test
+```
+- Runs Jest tests for frontend logic
 
- ## FAQ
+## License
+Specify your license here.
 
- **Q:** How do I change questions?
- **A:**
- - For the front-end CLI version, edit `src/js/question-data.js`.
- - For the API version, update the SQLite database (`law_quiz.db`) via `scripts/csv_to_sql.py` and reload data.
-
- ## License
-
- Specify your license here.
+---
+For full documentation, see code comments and in-app help. All other README files have been consolidated here.

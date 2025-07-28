@@ -3,7 +3,7 @@
 
 # Launch Flask API on port 5001 in the background
 echo "Starting Flask API on port 5001..."
-python3 scripts/flask_api.py &
+python3 backend/server.py &
 API_PID=$!
 
 # Give API a moment to start

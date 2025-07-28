@@ -4,6 +4,7 @@ Initialize Law Quizzer SQLite database from questions.sql
 This script creates or updates the SQLite database with questions from the SQL file
 """
 
+import csv
 import os
 import sqlite3
 from pathlib import Path
@@ -37,7 +38,8 @@ def create_schema(conn):
         answer TEXT,
         gold_passage TEXT,
         gold_idx TEXT,
-        generated INTEGER DEFAULT 0
+        generated INTEGER DEFAULT 0,
+        subtopic TEXT
     )
     ''')
     
@@ -48,17 +50,41 @@ def create_schema(conn):
         print("Adding 'generated' column to questions table...")
         cursor.execute('ALTER TABLE questions ADD COLUMN generated INTEGER DEFAULT 0')
     
-    # Create AI explanations table
+    # Create AI explanations table with separate columns for each choice
     print("Creating question_explanations table...")
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS question_explanations (
         question_id TEXT PRIMARY KEY,
+        correct_answer TEXT,
+        choice_a_explanation TEXT,
+        choice_b_explanation TEXT,
+        choice_c_explanation TEXT,
+        choice_d_explanation TEXT,
+        subtopic TEXT,
         ai_explanation TEXT,
         created_at TEXT,
         updated_at TEXT,
         FOREIGN KEY (question_id) REFERENCES questions(idx)
     )
     ''')
+    
+    # Check if new columns exist, if not add them
+    cursor.execute("PRAGMA table_info(question_explanations)")
+    explanation_columns = [row[1] for row in cursor.fetchall()]
+    
+    columns_to_add = [
+        ('correct_answer', 'TEXT'),
+        ('choice_a_explanation', 'TEXT'),
+        ('choice_b_explanation', 'TEXT'),
+        ('choice_c_explanation', 'TEXT'),
+        ('choice_d_explanation', 'TEXT'),
+        ('subtopic', 'TEXT')
+    ]
+    
+    for column_name, column_type in columns_to_add:
+        if column_name not in explanation_columns:
+            print(f"Adding '{column_name}' column to question_explanations table...")
+            cursor.execute(f'ALTER TABLE question_explanations ADD COLUMN {column_name} {column_type}')
     
     # Create quiz history table
     print("Creating quiz_history table...")

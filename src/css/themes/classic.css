@@ -1,0 +1,130 @@
+/* Classic Mode - Dorothy Draper Core Theme */
+
+:root[data-theme="classic"] {
+  /* Primary Colors */
+  --theme-primary: #FF1493;          /* Hot Pink */
+  --theme-secondary: #50C878;        /* Emerald Green */
+  --theme-accent: #4169E1;           /* Royal Blue */
+  
+  /* Pastels */
+  --theme-pastel-pink: #FFB6C1;      /* Light Pink */
+  --theme-pastel-mint: #98FB98;      /* Pale Green */
+  --theme-pastel-lavender: #E6E6FA;  /* Lavender */
+  --theme-pastel-lemon: #FFFACD;     /* Lemon Chiffon */
+  --theme-pastel-sky: #87CEEB;       /* Sky Blue */
+  --theme-pastel-peach: #FFDBAC;     /* Peach */
+  
+  /* Neutrals */
+  --theme-white: #FFFFFF;
+  --theme-black: #000000;
+  --theme-text-primary: #000000;
+  --theme-text-secondary: #333333;
+  
+  /* Backgrounds */
+  --theme-bg-primary: #FFFFFF;
+  --theme-bg-secondary: #F8F8FF;
+  --theme-bg-accent: #FFF0F5;
+
+  /* Typography */
+  --theme-font-display: 'Playfair Display', 'Georgia', serif;
+  --theme-font-accent: 'Montserrat', 'Helvetica', sans-serif;
+  --theme-font-script: 'Milkshake Script', cursive;
+  --theme-font-body: 'Inter', 'Helvetica', sans-serif;
+  --theme-font-mono: 'Inconsolata', 'Courier New', monospace;
+  
+  /* Font Sizes */
+  --theme-text-xxxl: 3.5rem;     /* Hero headings */
+  --theme-text-xxl: 2.5rem;      /* Page titles */
+  --theme-text-xl: 2rem;         /* Section headers */
+  --theme-text-lg: 1.5rem;       /* Component titles */
+  --theme-text-md: 1.125rem;     /* Body large */
+  --theme-text-base: 1rem;       /* Body text */
+  --theme-text-sm: 0.875rem;     /* Small text */
+  --theme-text-xs: 0.75rem;      /* Captions */
+
+  /* Subtle Dorothy Draper patterns - Low opacity for readability */
+  --theme-pattern-subtle-dots: 
+    radial-gradient(circle at 20px 20px, rgba(255, 20, 147, 0.1) 2px, transparent 2px);
+  
+  --theme-pattern-subtle-chevron: 
+    repeating-linear-gradient(45deg, 
+      rgba(80, 200, 120, 0.05) 0px, 
+      rgba(80, 200, 120, 0.05) 10px, 
+      transparent 10px, 
+      transparent 20px);
+  
+  --theme-pattern-subtle-houndstooth:
+    repeating-conic-gradient(from 0deg at 12px 12px, 
+      rgba(0, 0, 0, 0.03) 0deg 90deg, 
+      transparent 90deg 180deg);
+  
+  --theme-pattern-subtle-fleur:
+    url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 5c-5 0-10 5-10 10s5 10 10 10 10-5 10-10-5-10-10-10z' fill='%23FF1493' opacity='0.08'/%3E%3C/svg%3E");
+
+  /* Shadows */
+  --theme-shadow-light: 4px 4px 0 rgba(0, 0, 0, 0.3);
+  --theme-shadow-medium: 8px 8px 0 rgba(0, 0, 0, 0.4);
+  --theme-shadow-heavy: 12px 12px 0 rgba(0, 0, 0, 0.5);
+
+  /* Audio paths */
+  --theme-audio-click: 'assets/audio/theme/classic/click.wav';
+  --theme-audio-correct: 'assets/audio/theme/classic/correct.mp3';
+  --theme-audio-wrong: 'assets/audio/theme/classic/wrong.mp3';
+  --theme-audio-timer: 'assets/audio/theme/classic/timer.wav';
+  --theme-audio-transition: 'assets/audio/theme/classic/transition.mp3';
+}
+
+/* Classic mode specific overrides */
+:root[data-theme="classic"] .header {
+  background: var(--theme-bg-primary);
+  background-image: var(--theme-pattern-subtle-chevron);
+  border-bottom: 3px solid var(--theme-primary);
+}
+
+:root[data-theme="classic"] .header-title-compact {
+  font-family: var(--theme-font-display);
+  color: var(--theme-primary);
+  text-shadow: 2px 2px 0 var(--theme-accent);
+}
+
+:root[data-theme="classic"] .question-container {
+  background: var(--theme-bg-primary);
+  border: 4px solid var(--theme-primary);
+  background-image: var(--theme-pattern-subtle-dots);
+  box-shadow: var(--theme-shadow-medium);
+}
+
+:root[data-theme="classic"] .choice-item {
+  background: var(--theme-bg-secondary);
+  border: 3px solid var(--theme-primary);
+}
+
+:root[data-theme="classic"] .choice-item:hover {
+  background: var(--theme-pastel-mint);
+  box-shadow: var(--theme-shadow-light);
+}
+
+:root[data-theme="classic"] .choice-item.selected {
+  background: var(--theme-primary);
+  color: var(--theme-white);
+  box-shadow: var(--theme-shadow-medium);
+}
+
+:root[data-theme="classic"] .btn-primary {
+  background: var(--theme-primary);
+  color: var(--theme-white);
+  border: 3px solid var(--theme-accent);
+  font-family: var(--theme-font-accent);
+}
+
+:root[data-theme="classic"] .btn-primary:hover {
+  background: var(--theme-accent);
+  box-shadow: var(--theme-shadow-medium);
+}
+
+:root[data-theme="classic"] .modal-content {
+  background: var(--theme-bg-primary);
+  border: 4px solid var(--theme-primary);
+  background-image: var(--theme-pattern-subtle-fleur);
+  box-shadow: var(--theme-shadow-heavy);
+}

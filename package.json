@@ -15,6 +15,11 @@
   "devDependencies": {
     "eslint": "^9.31.0",
     "jest": "^30.0.4",
-    "jest-environment-jsdom": "^30.0.4"
+    "jest-environment-jsdom": "^30.0.4",
+    "flask": "^2.0.1",
+    "flask-cors": "^3.0.10",
+    "flask-sqlalchemy": "^2.5.1",
+    "flask[async]": "^2.0.1",
+    "flask-restful": "^0.3.9"
   }
 }

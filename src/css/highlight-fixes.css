@@ -1,0 +1,58 @@
+/* Highlight Fixes */
+
+/* Simple color-only highlights that don't affect layout or word spacing */
+.question-text .highlight-yellow,
+.question-text .precise-highlight.highlight-yellow {
+    color: #B8860B !important;
+    /* Dark goldenrod */
+    font-weight: 600;
+    background-color: transparent;
+    padding: 0;
+    margin: 0;
+    border: none;
+    display: inline;
+    line-height: inherit;
+    letter-spacing: inherit;
+    word-spacing: inherit;
+}
+
+.question-text .highlight-cyan,
+.question-text .precise-highlight.highlight-cyan {
+    color: #008B8B !important;
+    /* Dark cyan */
+    font-weight: 600;
+    background-color: transparent;
+    padding: 0;
+    margin: 0;
+    border: none;
+    display: inline;
+    line-height: inherit;
+    letter-spacing: inherit;
+    word-spacing: inherit;
+}
+
+.question-text .highlight-lime,
+.question-text .precise-highlight.highlight-lime {
+    color: #32CD32 !important;
+    /* Lime green */
+    font-weight: 600;
+    background-color: transparent;
+    padding: 0;
+    margin: 0;
+    border: none;
+    display: inline;
+    line-height: inherit;
+    letter-spacing: inherit;
+    word-spacing: inherit;
+}
+
+/* Ensure no layout disruption for any highlight spans */
+.question-text span.highlight-yellow,
+.question-text span.highlight-cyan,
+.question-text span.highlight-lime,
+.question-text span.precise-highlight {
+    display: inline;
+    white-space: inherit;
+    font-family: inherit;
+    font-size: inherit;
+}

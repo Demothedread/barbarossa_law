@@ -1,12 +1,67 @@
 
 import { fetchAIExplanations } from './lq-api.js';
+import { EnhancedHighlighting } from './enhanced-highlighting.js';
+import { EnhancedScratchPaper } from './enhanced-scratch-paper.js';
 
 function createChoice(text, index, selected, eliminated, onSelect, onEliminate) {
   const li = document.createElement('li');
   const button = document.createElement('button');
   button.textContent = text;
   button.className = selected ? 'selected' : '';
-  button.addEventListener('click', () => onSelect(index));
+  
+  // Add click handler with sound and visual feedback
+  button.addEventListener('click', () => {
+    // Clear any previous golden selections in this choice list
+    const choicesList = li.closest('.choices-list');
+    if (choicesList) {
+      choicesList.querySelectorAll('li, button').forEach(el => {
+        el.classList.remove('golden-selected');
+        el.style.boxShadow = '';
+        el.style.borderColor = '';
+        el.style.backgroundColor = '';
+      });
+    }
+    
+    // Play click sound effect (browser beep as fallback)
+    try {
+      // Try to use Web Audio API for a simple click sound
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+      gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.1);
+    } catch (error) {
+      console.log('Click sound generation failed:', error);
+    }
+    
+    // Enhanced deep golden glow effect for user selection
+    li.style.boxShadow = '0 0 25px rgba(255, 215, 0, 0.9), 0 0 50px rgba(218, 165, 32, 0.6), inset 0 0 15px rgba(255, 215, 0, 0.3)';
+    li.style.borderColor = '#DAA520'; // Deep gold border
+    li.style.backgroundColor = 'rgba(255, 215, 0, 0.1)'; // Subtle golden background
+    li.style.transform = 'scale(1.02)';
+    li.style.transition = 'all 0.3s ease-in-out';
+    
+    // Add persistent golden glow for selected state
+    button.classList.add('golden-selected');
+    li.classList.add('golden-selected');
+    
+    // Remove temporary animation effects but keep selection styling
+    setTimeout(() => {
+      li.style.transform = '';
+      // Keep the golden glow for selected state
+      li.style.boxShadow = '0 0 15px rgba(255, 215, 0, 0.7), inset 0 0 10px rgba(255, 215, 0, 0.2)';
+    }, 300);
+    
+    onSelect(index);
+  });
 
   const elim = document.createElement('button');
   elim.textContent = '✖';
@@ -25,50 +80,42 @@ function createChoice(text, index, selected, eliminated, onSelect, onEliminate) 
 
 function renderQuestion(container, q, state) {
   container.innerHTML = '';
+  
+  // Create a wrapper for better layout
+  const questionWrapper = document.createElement('div');
+  questionWrapper.className = 'question-wrapper';
+  
+  // Add prompt if exists
   if (q.prompt) {
     const ctx = document.createElement('div');
     ctx.className = 'prompt';
-    ctx.innerText = q.prompt;
-    container.appendChild(ctx);
+    ctx.innerHTML = q.prompt;
+    questionWrapper.appendChild(ctx);
   }
-  const text = document.createElement('p');
+  
+  // Add main question text
+  const text = document.createElement('div');
+  text.className = 'question-text';
   text.innerHTML = q.question;
   text.contentEditable = true;
   text.spellcheck = false;
   text.style.outline = '1px dashed #eee';
-  container.appendChild(text);
-  // Highlight support
-  const highlightControls = document.createElement('div');
-  highlightControls.className = 'highlight-controls';
+  questionWrapper.appendChild(text);
   
-  let activeHighlightColor = null;
-  
-  ['yellow', 'cyan', 'lime'].forEach((color) => {
-    const btn = document.createElement('button');
-    btn.style.backgroundColor = color;
-    btn.title = `Highlight text in ${color}`;
-    btn.className = 'highlight-btn';
-    btn.onclick = () => {
-      // Toggle active state
-      if (activeHighlightColor === color) {
-        activeHighlightColor = null;
-        document.querySelectorAll('.highlight-btn').forEach(b => b.classList.remove('active'));
-      } else {
-        activeHighlightColor = color;
-        document.querySelectorAll('.highlight-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        
-        // Apply highlight if text is already selected
-        if (document.getSelection && document.getSelection().toString().length > 0) {
-          document.execCommand('hiliteColor', false, color);
-        }
-      }
-    };
-    highlightControls.appendChild(btn);
+  // Initialize enhanced highlighting system
+  const questionId = q.idx || state.current;
+  const enhancedHighlighting = new EnhancedHighlighting(text, questionId, (highlights) => {
+    // Store highlights in question state for persistence
+    if (!state.questionHighlights) state.questionHighlights = {};
+    state.questionHighlights[questionId] = highlights;
+    localStorage.setItem('lq_question_highlights', JSON.stringify(state.questionHighlights));
   });
-  container.appendChild(highlightControls);
+  
+  // Store reference for cleanup
+  text._enhancedHighlighting = enhancedHighlighting;
 
   const list = document.createElement('ul');
+  list.className = 'choices-list';
   q.choices.forEach((choice, idx) => {
     const item = createChoice(
       choice,
@@ -83,22 +130,72 @@ function renderQuestion(container, q, state) {
     );
     list.appendChild(item);
   });
-  container.appendChild(list);
+  questionWrapper.appendChild(list);
+  
+  // Finally append the wrapper to the container
+  container.appendChild(questionWrapper);
 }
 
 // Dynamic/API-based quiz creator: accepts question array, options, and onComplete callback
 export function createApiQuiz(questions, opts, onComplete) {
+  console.log('[DEBUG] Creating API quiz with:', {
+    questionCount: questions?.length,
+    opts,
+    hasCallback: typeof onComplete === 'function'
+  });
+
+  if (!questions || !questions.length) {
+    console.error('[DEBUG] No questions provided to createApiQuiz');
+    return null;
+  }
+
   const total = questions.length;
   const container = document.createElement('div');
   container.className = 'quiz';
+  
   const state = {
     current: 0,
     answers: new Array(total).fill(null), // index of choice
     eliminated: {}, // { qIndex: { [choiceIdx]: true } }
     startTime: Date.now(),
     aiExplanations: null, // Store fetched explanations
-    backgroundFetchStarted: false
+    backgroundFetchStarted: false,
+    questionHighlights: JSON.parse(localStorage.getItem('lq_question_highlights') || '{}')
   };
+
+  console.log('[DEBUG] Quiz state initialized:', {
+    total,
+    currentQuestion: state.current,
+    hasHighlights: Object.keys(state.questionHighlights).length > 0
+  });
+
+  // --- Enhanced Digital Scratch Paper ---
+  console.log('[DEBUG] Initializing quiz with scratch paper');
+  const scratchContainer = document.createElement('div');
+  let enhancedScratchPaper;
+  
+  try {
+    // Check if custom element is already defined
+    if (!customElements.get('mce-autosize-textarea')) {
+      enhancedScratchPaper = new EnhancedScratchPaper(scratchContainer, {
+        autoSave: true,
+        autoSaveInterval: 2000,
+        richText: true,
+        search: true,
+        templates: true
+      });
+    } else {
+      console.log('[DEBUG] Scratch paper custom element already defined, skipping initialization');
+      scratchContainer.innerHTML = '<div class="scratch-paper-placeholder">Scratch Paper</div>';
+    }
+  } catch (error) {
+    console.error('[DEBUG] Error initializing scratch paper:', error);
+    scratchContainer.innerHTML = '<div class="scratch-paper-fallback">Scratch Paper Unavailable</div>';
+  }
+  
+  // Place scratch paper in container
+  console.log('[DEBUG] Appending scratch container to quiz');
+  container.appendChild(scratchContainer);
 
   // Start fetching AI explanations in the background
   const startBackgroundFetch = async () => {
@@ -174,16 +271,132 @@ export function createApiQuiz(questions, opts, onComplete) {
   nav.appendChild(finishButton);
   container.appendChild(nav);
 
-  // Timer
+  // Timer with enhanced pause functionality
   let totalSecs = Math.ceil(opts.timer * 60 * total);
+  const timerContainer = document.createElement('div');
+  timerContainer.className = 'timer-container';
+  
   const timerDisplay = document.createElement('span');
-  container.appendChild(timerDisplay);
+  timerDisplay.className = 'timer-display';
+  
+  const pauseButton = document.createElement('button');
+  pauseButton.textContent = '⏸️ Pause';
+  pauseButton.className = 'pause-button';
+  pauseButton.title = 'Pause/Resume Timer (Spacebar)';
+  
+  timerContainer.appendChild(timerDisplay);
+  timerContainer.appendChild(pauseButton);
+  
+  // Add helpful tip about spacebar shortcut
+  const shortcutTip = document.createElement('div');
+  shortcutTip.className = 'shortcut-tip';
+  shortcutTip.textContent = 'Tip: Press Spacebar to pause/resume';
+  timerContainer.appendChild(shortcutTip);
+  
+  container.appendChild(timerContainer);
+  
   let timerStop = false;
+  let timerPaused = false;
   let timerVal = totalSecs;
   let isNegativeTime = false;
   
+  // Get theme audio manager for pause/resume sounds
+  let audioManager = null;
+  if (window.themeManager && window.themeManager.audioManager) {
+    audioManager = window.themeManager.audioManager;
+  }
+  
+  // Enhanced pause/resume function
+  function togglePause() {
+    // Prevent rapid toggle during transitions
+    if (pauseButton.disabled) return;
+    
+    // Temporarily disable button to prevent rapid clicking
+    pauseButton.disabled = true;
+    setTimeout(() => {
+      pauseButton.disabled = false;
+    }, 250);
+    
+    timerPaused = !timerPaused;
+    
+    // Play pause/resume sound
+    if (audioManager) {
+      audioManager.playSound('timer', 0.4);
+    }
+    
+    if (timerPaused) {
+      pauseButton.textContent = '▶️ Resume';
+      pauseButton.classList.add('paused');
+      pauseButton.title = 'Resume Timer (Spacebar)';
+      timerDisplay.classList.add('paused');
+      timerContainer.classList.add('paused');
+      
+      // Add paused indicator text
+      if (!timerDisplay.querySelector('.pause-indicator')) {
+        const pauseIndicator = document.createElement('span');
+        pauseIndicator.className = 'pause-indicator';
+        pauseIndicator.textContent = ' (PAUSED)';
+        timerDisplay.appendChild(pauseIndicator);
+      }
+      
+      // Add accessibility announcement
+      const announcement = document.createElement('div');
+      announcement.setAttribute('aria-live', 'polite');
+      announcement.className = 'sr-only';
+      announcement.textContent = 'Timer paused. Press spacebar or click Resume to continue.';
+      container.appendChild(announcement);
+      setTimeout(() => announcement.remove(), 3000);
+      
+    } else {
+      pauseButton.textContent = '⏸️ Pause';
+      pauseButton.classList.remove('paused');
+      pauseButton.title = 'Pause Timer (Spacebar)';
+      timerDisplay.classList.remove('paused');
+      timerContainer.classList.remove('paused');
+      
+      // Remove paused indicator text
+      const pauseIndicator = timerDisplay.querySelector('.pause-indicator');
+      if (pauseIndicator) {
+        pauseIndicator.remove();
+      }
+      
+      // Add accessibility announcement
+      const announcement = document.createElement('div');
+      announcement.setAttribute('aria-live', 'polite');
+      announcement.className = 'sr-only';
+      announcement.textContent = 'Timer resumed.';
+      container.appendChild(announcement);
+      setTimeout(() => announcement.remove(), 3000);
+    }
+  }
+  
+  // Pause button functionality
+  pauseButton.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    togglePause();
+  });
+  
+  // Keyboard shortcut for pause/resume (spacebar)
+  const handleKeydown = (e) => {
+    // Only trigger if not typing in an input field and spacebar is pressed
+    // Also check if timer is not stopped to prevent action after quiz ends
+    if (e.code === 'Space' && !e.target.matches('input, textarea, [contenteditable]') && !timerStop) {
+      e.preventDefault();
+      e.stopPropagation();
+      togglePause();
+    }
+  };
+  
+  document.addEventListener('keydown', handleKeydown);
+  
+  // Store reference for cleanup
+  container.addEventListener('DOMNodeRemoved', () => {
+    document.removeEventListener('keydown', handleKeydown);
+  });
+  
   const timerTick = () => {
-    if (timerStop) return;
+    if (timerStop || timerPaused) return;
     
     if (timerVal > 0) {
       timerDisplay.textContent = `Time: ${Math.floor(timerVal/60)}m ${timerVal%60}s`;
@@ -230,6 +443,23 @@ export function createApiQuiz(questions, opts, onComplete) {
     renderQuestion(questionContainer, questions[index], state);
     prev.disabled = index === 0;
     next.textContent = (index === total - 1 ? 'Finish' : 'Next >');
+    
+    // Maintain pause state across question navigation
+    if (timerPaused) {
+      // Ensure visual indicators remain consistent
+      pauseButton.textContent = '▶️ Resume';
+      pauseButton.classList.add('paused');
+      timerDisplay.classList.add('paused');
+      timerContainer.classList.add('paused');
+      
+      // Ensure pause indicator text is present
+      if (!timerDisplay.querySelector('.pause-indicator')) {
+        const pauseIndicator = document.createElement('span');
+        pauseIndicator.className = 'pause-indicator';
+        pauseIndicator.textContent = ' (PAUSED)';
+        timerDisplay.appendChild(pauseIndicator);
+      }
+    }
   }
   prev.onclick = () => {
     if (state.current > 0) showQuestion(state.current - 1);
@@ -244,6 +474,27 @@ export function createApiQuiz(questions, opts, onComplete) {
 
   function finishQuiz() {
     timerStop = true;
+    
+    // Clean up keyboard event listener
+    document.removeEventListener('keydown', handleKeydown);
+    
+    // Clean up enhanced highlighting instances
+    const questionTexts = container.querySelectorAll('.question-text');
+    questionTexts.forEach(text => {
+      if (text._enhancedHighlighting) {
+        text._enhancedHighlighting.destroy();
+      }
+    });
+    
+    // Clean up enhanced scratch paper
+    if (enhancedScratchPaper) {
+      enhancedScratchPaper.destroy();
+    }
+    
+    // Disable pause button when quiz is finished
+    pauseButton.disabled = true;
+    pauseButton.style.opacity = '0.5';
+    
     const duration = Math.ceil((Date.now() - state.startTime) / 1000);
     // meta: correct, total, duration, answers, eliminated, and pre-fetched AI explanations
     let correct = 0;
@@ -258,7 +509,8 @@ export function createApiQuiz(questions, opts, onComplete) {
       eliminated: state.eliminated,
       negative_time: isNegativeTime,
       timer: opts.timer,
-      aiExplanations: state.aiExplanations // Pass pre-fetched explanations
+      aiExplanations: state.aiExplanations, // Pass pre-fetched explanations
+      questionHighlights: state.questionHighlights // Pass highlights for review
     });
   }
 

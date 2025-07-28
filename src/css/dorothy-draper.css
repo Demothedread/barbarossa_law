@@ -1,0 +1,1015 @@
+/* --- DRAMATIC DOROTHY DRAPER MAXIMALIST ENHANCEMENTS --- */
+:root {
+    /* Acid green, cherry red, turquoise, aqua, and bold black/white */
+    --draper-acid-green: #7fff00;
+    --draper-cherry-red: #e10600;
+    --draper-turquoise: #00e5ee;
+    --draper-aqua: #00cfff;
+    --draper-bw-black: #000;
+    --draper-bw-white: #fff;
+    /* Dramatic stripes and banana-leaf motif */
+    --draper-stripes: repeating-linear-gradient(90deg, var(--draper-acid-green) 0 40px, var(--draper-cherry-red) 40px 80px);
+    --draper-banana-leaf: url('https://www.toptal.com/designers/subtlepatterns/patterns/banana-leaf.png');
+    /* Ornate rococo border */
+    --draper-rococo: url('https://svgshare.com/i/14kA.svg');
+    /* Fifth wall header effect */
+    --draper-fifthwall: repeating-linear-gradient(135deg, var(--draper-turquoise) 0 60px, var(--draper-aqua) 60px 120px, var(--draper-bw-white) 120px 180px);
+}
+
+/* Font Imports */
+@font-face {
+    font-family: 'Milkshake Script';
+    src: url('../assets/fonts/milkshake-script.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Inconsolata';
+    src: url('../assets/fonts/inconsolata.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Digital Scratch Paper Styles */
+.scratch-container {
+    position: fixed;
+    right: 0;
+    top: 100px;
+    max-width: 90vw;
+    background: var(--draper-white);
+    border: 2px solid var(--draper-black);
+    border-radius: 16px 0 0 16px;
+    box-shadow: var(--shadow-heavy);
+    z-index: 1200;
+    transition: transform 0.4s cubic-bezier(.7, 0, .3, 1);
+    transform: translateX(100%);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    min-height: 320px;
+    min-width: 220px;
+}
+
+.scratch-container.open {
+    transform: translateX(0);
+}
+
+.scratch-tab {
+    position: absolute;
+    left: -120px;
+    top: 24px;
+    background: var(--draper-royal);
+    color: var(--draper-white);
+    border: 2px solid var(--draper-black);
+    border-radius: 12px 0 0 12px;
+    font-family: var(--font-accent);
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3);
+    transition: background 0.2s;
+    z-index: 2;
+}
+
+.scratch-tab:hover {
+    background: var(--draper-emerald);
+}
+
+.scratch-pad {
+    margin: 60px 16px 12px 16px;
+    min-height: 180px;
+    max-height: 320px;
+    resize: vertical;
+    border: 1.5px solid var(--draper-black);
+    border-radius: 8px;
+    font-family: var(--font-body);
+    font-size: 1.1rem;
+    padding: 10px;
+    background: var(--draper-lemon);
+    color: var(--draper-black);
+    box-shadow: var(--shadow-light);
+}
+
+.scratch-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin: 0 16px 12px 16px;
+}
+
+.scratch-action {
+    background: var(--draper-mint);
+    color: var(--draper-black);
+    border: 1.5px solid var(--draper-black);
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-family: var(--font-accent);
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.scratch-action:hover {
+    background: var(--draper-coral);
+    color: var(--draper-white);
+}
+
+/* Dorothy Draper Maximalist Design - Bold Patterns Over Gradients */
+:root {
+    /* Dorothy Draper Signature Colors - Bright Pastels */
+    --draper-pink: #FF1493;
+    --draper-coral: #FF7F7F;
+    --draper-mint: #98FB98;
+    --draper-lavender: #E6E6FA;
+    --draper-lemon: #FFFACD;
+    --draper-sky: #87CEEB;
+    --draper-peach: #FFDBAC;
+    --draper-sage: #9CAF88;
+    --draper-white: #FFFFFF;
+    --draper-black: #000000;
+    --draper-emerald: #50C878;
+    --draper-royal: #4169E1;
+
+    /* Modern Depth & Contrast - Bold Shadows */
+    --shadow-light: 4px 4px 0 rgba(0, 0, 0, 0.3);
+    --shadow-medium: 8px 8px 0 rgba(0, 0, 0, 0.4);
+    --shadow-heavy: 12px 12px 0 rgba(0, 0, 0, 0.5);
+
+
+    /* Typography */
+    --font-display: 'Playfair Display', 'Georgia', serif;
+    --font-body: 'Inter', 'Helvetica', sans-serif;
+    --font-accent: 'Montserrat', 'Georgia', serif;
+    --font-logo: 'Milkshake Script', cursive;
+    --font-nav: 'Inconsolata', 'Montserrat', 'Georgia', serif;
+
+    /* Maximalist Patterns - Replace All Gradients */
+    --stripe-pattern: repeating-linear-gradient(45deg,
+            var(--draper-mint) 0px,
+            var(--draper-mint) 8px,
+            var(--draper-sky) 8px,
+            var(--draper-sky) 16px);
+
+    --chevron-pattern: repeating-linear-gradient(135deg,
+            var(--draper-pink) 0px,
+            var(--draper-pink) 10px,
+            var(--draper-coral) 10px 20px,
+            var(--draper-coral) 20px 30px);
+
+    --polka-dot-pattern: radial-gradient(circle at 15px 15px,
+            var(--draper-lavender) 3px,
+            transparent 3px);
+
+    /* Maximalist Pattern Replacements for Gradients */
+    --pattern-primary: repeating-linear-gradient(90deg,
+            var(--draper-royal) 0px, var(--draper-royal) 6px,
+            var(--draper-white) 6px, var(--draper-white) 12px,
+            var(--draper-emerald) 12px, var(--draper-emerald) 18px,
+            var(--draper-white) 18px, var(--draper-white) 24px);
+
+    --pattern-secondary: repeating-linear-gradient(45deg,
+            var(--draper-coral) 0px, var(--draper-coral) 8px,
+            var(--draper-white) 8px, var(--draper-white) 16px,
+            var(--draper-peach) 16px, var(--draper-peach) 24px,
+            var(--draper-white) 24px, var(--draper-white) 32px);
+
+    --pattern-accent: repeating-conic-gradient(from 45deg at 20px 20px,
+            var(--draper-mint) 0deg 90deg,
+            var(--draper-white) 90deg 180deg,
+            var(--draper-sky) 180deg 270deg,
+            var(--draper-white) 270deg 360deg);
+
+    --pattern-success: repeating-linear-gradient(0deg,
+            var(--draper-emerald) 0px, var(--draper-emerald) 4px,
+            var(--draper-mint) 4px, var(--draper-mint) 8px,
+            var(--draper-white) 8px, var(--draper-white) 12px,
+            var(--draper-sage) 12px, var(--draper-sage) 16px);
+
+    --pattern-warning: repeating-linear-gradient(135deg,
+            var(--draper-coral) 0px, var(--draper-coral) 6px,
+            var(--draper-white) 6px, var(--draper-white) 12px,
+            var(--draper-pink) 12px, var(--draper-pink) 18px,
+            var(--draper-white) 18px, var(--draper-white) 24px);
+
+    /* Diamond and Lattice Patterns */
+    --diamond-pattern: repeating-conic-gradient(from 0deg at 30px 30px,
+            var(--draper-lemon) 0deg 45deg,
+            var(--draper-white) 45deg 90deg,
+            var(--draper-peach) 90deg 135deg,
+            var(--draper-white) 135deg 180deg,
+            var(--draper-mint) 180deg 225deg,
+            var(--draper-white) 225deg 270deg,
+            var(--draper-sky) 270deg 315deg,
+            var(--draper-white) 315deg 360deg);
+
+    /* Bold Border Definitions */
+    --contrast-border: 4px solid var(--draper-black);
+    --accent-border: 3px solid var(--draper-pink);
+    --success-border: 4px solid var(--draper-emerald);
+    --error-border: 4px solid var(--draper-coral);
+}
+
+/* Global Reset with Maximalist Touch */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-body);
+    background: var(--draper-white);
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Subtle background pattern using patterns.css - much easier on the eyes */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc1JyBoZWlnaHQ9JzUnPgo8cmVjdCB3aWR0aD0nNScgaGVpZ2h0PSc1JyBmaWxsPScjZmZmJy8+CjxyZWN0IHdpZHRoPScxJyBoZWlnaHQ9JzEnIGZpbGw9JyNjY2MnLz4KPC9zdmc+");
+    /* smalldot pattern */
+    background-repeat: repeat;
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0.3;
+}
+
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc1JyBoZWlnaHQ9JzUnPgogIDxyZWN0IHdpZHRoPSc1JyBoZWlnaHQ9JzUnIGZpbGw9J3doaXRlJyAvPgogIDxyZWN0IHg9JzInIHk9JzInIHdpZHRoPScxJyBoZWlnaHQ9JzEnIGZpbGw9JyM1NTk0ZTcnIC8+Cjwvc3ZnPg==");
+    /* subtle-patch pattern */
+    background-repeat: repeat;
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: -2;
+    opacity: 0.15;
+}
+
+@keyframes pattern-shift {
+    0% {
+        transform: translateX(0) translateY(0);
+    }
+
+    50% {
+        transform: translateX(20px) translateY(20px);
+    }
+
+    100% {
+        transform: translateX(0) translateY(0);
+    }
+}
+
+/* Maximalist Header with Bold Patterns */
+.header {
+    background: var(--draper-white);
+    background-image: var(--pattern-accent);
+    background-size: 40px 40px;
+    backdrop-filter: blur(20px);
+    border-bottom: 4px solid var(--draper-pink);
+    box-shadow: var(--shadow-medium);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    border-bottom-left-radius: 30px;
+    border-bottom-right-radius: 30px;
+}
+
+.header-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-family: var(--font-logo);
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--draper-royal);
+    text-shadow: 3px 3px 6px rgba(65, 105, 225, 0.4);
+    position: relative;
+    padding: 8px 16px;
+    border: 4px solid var(--draper-black);
+    border-radius: 0;
+    /* Sharp maximalist edges */
+    background: var(--draper-white);
+    background-image: var(--pattern-primary);
+    background-size: 24px 100%;
+    box-shadow:
+        4px 4px 0 var(--draper-mint),
+        8px 8px 20px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.logo-icon {
+    font-size: 3rem;
+    filter: drop-shadow(0 4px 8px rgba(255, 105, 180, 0.4));
+    animation: gentle-bounce 3s ease-in-out infinite;
+}
+
+@keyframes gentle-bounce {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Dorothy Draper Navigation */
+.nav {
+    display: flex;
+    gap: 1rem;
+}
+
+.nav-btn {
+    background: var(--draper-white);
+    background-image: var(--pattern-secondary);
+    background-size: 32px 32px;
+    border: 4px solid var(--draper-black);
+    padding: 1rem 2rem;
+    color: var(--draper-black);
+    font-weight: 700;
+    font-family: "inconsolata", "farray", "Courier New";
+    border-radius: 8px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    box-shadow:
+        4px 4px 0 var(--draper-coral),
+        8px 8px 20px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+
+}
+
+.nav-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: var(--draper-white);
+    background-image:
+        repeating-linear-gradient(90deg,
+            transparent 0px, transparent 8px,
+            rgba(255, 255, 255, 0.8) 8px, rgba(255, 255, 255, 0.8) 16px);
+    transition: left 0.6s;
+}
+
+.nav-btn:hover::before {
+    left: 100%;
+}
+
+.nav-btn:hover {
+    transform: translateY(-4px) scale(1.06);
+    box-shadow:
+        6px 6px 0 var(--draper-coral),
+        12px 12px 0 var(--draper-pink),
+        18px 18px 30px rgba(0, 0, 0, 0.3);
+    border-color: var(--draper-pink);
+    border-width: 5px;
+}
+
+.nav-btn.active {
+    background: var(--draper-royal);
+    background-image: var(--pattern-primary);
+    background-size: 24px 120%;
+    color: var(--draper-peach);
+    -webkit-text-stroke: 2px radial-gradient(to center, var(--draper-coral) 0%, var(--draper-mint) 50%, var(--draper-black) 100%);
+    font-weight: 1000;
+    font-family: "inconsolata", "farray", "playfair display";
+    font-size: 3.2rem;
+    margin: 2px auto;
+    text-align: center;
+    transform: translateX(10px) scale(1.10);
+    box-shadow: var(--shadow-medium);
+    border-color: var(--draper-emerald);
+}
+
+/* Low-contrast toggle button styling */
+.contrast-toggle-btn {
+    background: #fff;
+    border: 2.5px solid #222;
+    border-radius: 50%;
+    margin-left: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.contrast-toggle-btn:focus {
+    outline: 3px solid #00e5ee;
+    border-color: #e10600;
+}
+
+.contrast-toggle-btn svg {
+    display: block;
+}
+
+/* Whimsical SVG icon sizing for nav */
+.nav-icon svg,
+.mobile-nav-btn .nav-icon svg {
+    width: 1.7em;
+    height: 1.7em;
+    vertical-align: middle;
+    margin-right: 0.2em;
+}
+
+h1 {
+    font-family: 'zapfino', 'Playfair Display', serif;
+    text-align: justify;
+    font-weight: 700;
+    color: repeating-linear-gradient(to bottom-right, var(--draper-black) 100%, rgb(255, 79, 4) 50%, #888874 0%);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    margin-bottom: 1rem;
+}
+
+/* Typography: Art Deco/Regency for headings, quiz, review */
+h1,
+h2,
+h3,
+.header-title,
+.logo,
+.quiz .question-text,
+.review-question .question-text {
+    font-family: 'inconsolata', 'Playfair Display', 'Montserrat', 'Milkshake Script', cursive, serif;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.quiz .question-text,
+.review-question .question-text {
+    font-size: 1.35rem;
+    line-height: 1.7;
+}
+
+/* Quiz/choice icons (if used) */
+.choices-list li .choice-icon {
+    display: inline-block;
+    width: 1.5em;
+    height: 1.5em;
+    margin-right: 0.5em;
+    vertical-align: middle;
+}
+
+/* Ensure toggle is visible on all backgrounds */
+.header,
+.enhanced-header {
+    position: relative;
+}
+
+.contrast-toggle-btn {
+    z-index: 1002;
+}
+
+body.low-contrast .contrast-toggle-btn {
+    border-color: #bbb;
+    background: #eee;
+}
+
+/* --- DRAPER HOUNDSTOOTH MAXIMALIST BACKGROUND --- */
+.draper-houndstooth-bg,
+.quiz,
+.review-question,
+.main-content {
+    background-color: #ffd1e6;
+    /* pastel pink base */
+    background-image: url("data:image/svg+xml,%3Csvg width='32' height='32' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='32' height='32' fill='%23ffd1e6'/%3E%3Cpath d='M0 0L16 16' stroke='%23000' stroke-width='6'/%3E%3Cpath d='M8 0L24 16' stroke='%23bbb' stroke-width='4'/%3E%3Cpath d='M0 8L16 24' stroke='%23baff39' stroke-width='2'/%3E%3Cpath d='M16 0L32 16' stroke='%23000' stroke-width='1'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 64px 64px;
+    position: relative;
+    z-index: 0;
+}
+
+.quiz,
+.review-question {
+    background-blend-mode: lighten, normal;
+    border-radius: 32px;
+    box-shadow: 0 8px 48px 0 rgba(0, 0, 0, 0.18), 0 0 0 12px #fff6fa;
+    border: 6px solid #000;
+    z-index: 1;
+}
+
+.quiz .question-wrapper,
+.review-question .question-text {
+    background: rgba(255, 255, 255, 0.92);
+    border: 6px dashed #d9c270;
+    border-radius: 24px;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.08);
+    z-index: 5;
+}
+
+body.low-contrast .draper-houndstooth-bg,
+body.low-contrast .quiz,
+body.low-contrast .review-question,
+body.low-contrast .main-content {
+    background-image: none;
+    background-color: #f4f4f4;
+    z-index: -1;
+}
+
+/* --- END DRAPER HOUNDSTOOTH --- */
+
+/* Maximalist Main Content - Wider for better readability */
+.main-content {
+    max-width: 1800px;
+    margin: 2rem auto;
+    padding: 0 2rem;
+    position: relative;
+    z-index: 0;
+}
+
+/* Quiz Container with True Draper Maximalist Flair - Wider and more readable */
+.quiz {
+    background: var(--draper-white);
+    border-radius: 0;
+    /* Sharp maximalist edges */
+    padding: 3rem 4rem;
+    border: 8px solid var(--draper-black);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 70vh;
+    max-width: 1600px;
+    margin: 0 auto;
+    color: var(--draper-black);
+
+    /* Extravagant layered shadow system */
+    box-shadow:
+        12px 12px 0 var(--draper-pink),
+        24px 24px 0 var(--draper-coral),
+        36px 36px 0 var(--draper-mint),
+        48px 48px 40px rgba(0, 0, 0, 0.3);
+}
+
+.quiz::before {
+    content: '';
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    background: transparent;
+    border: 4px dotted var(--draper-royal);
+    border-radius: 0;
+    pointer-events: none;
+    z-index: -1;
+}
+
+@keyframes pattern-drift {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Question wrapper for better layout */
+.question-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    flex: 1;
+    min-height: 0;
+    position: relative;
+    z-index: 10;
+    background: var(--draper-white);
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+/* Enhanced question text styling */
+.question-text {
+    font-size: 1.25rem;
+    line-height: 1.6;
+    color: var(--draper-black);
+    background: var(--draper-white);
+    padding: 2rem;
+    border: 4px solid var(--draper-black);
+    border-radius: 8px;
+    box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.2);
+    font-family: var(--font-body);
+    font-weight: 600;
+    min-height: 120px;
+}
+
+/* Choices list styling for better readability */
+.choices-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    z-index: 10;
+    background: transparent;
+}
+
+/* Ensure choice list items have solid backgrounds and proper contrast */
+.choices-list li {
+    background: var(--draper-white);
+    border: 3px solid var(--draper-black);
+    border-radius: 8px;
+    position: relative;
+    z-index: 20;
+    padding: 0.5rem;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.2);
+}
+
+.choices-list li button {
+    background: transparent;
+    color: var(--draper-black);
+    border: none;
+    padding: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    font-family: var(--font-body);
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    position: relative;
+    z-index: 25;
+}
+
+/* Override any conflicting quiz list item styles from styles.css */
+.quiz ul.choices-list {
+    background: transparent;
+    position: relative;
+    z-index: 15;
+}
+
+.quiz ul.choices-list li {
+    background: var(--draper-white);
+    color: var(--draper-black);
+    margin: 0.5rem 0;
+    padding: 0;
+    border: 3px solid var(--draper-black);
+    border-radius: 8px;
+    position: relative;
+    z-index: 20;
+}
+
+.quiz ul.choices-list li button {
+    background: transparent;
+    color: var(--draper-black);
+    border: none;
+    padding: 1.2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+    width: 100%;
+    text-align: left;
+    position: relative;
+    z-index: 25;
+}
+
+.quiz ul.choices-list li button.selected {
+    background: var(--draper-mint);
+    color: var(--draper-black);
+    font-weight: 700;
+}
+
+.quiz ul.choices-list li button:hover {
+    background: var(--draper-lemon);
+    color: var(--draper-black);
+}
+
+/* Ensure eliminated choices are still visible */
+.quiz ul.choices-list li.eliminated {
+    opacity: 0.7;
+    background: var(--draper-coral);
+}
+
+.quiz ul.choices-list li.eliminated button {
+    color: var(--draper-white);
+    text-decoration: line-through;
+}
+
+/* Timer display with high contrast */
+.timer-display {
+    font-family: var(--font-accent);
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--draper-black);
+    background: var(--draper-white);
+    padding: 0.8rem 1.5rem;
+    border: 3px solid var(--draper-black);
+    border-radius: 6px;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.2);
+}
+
+.timer-display.negative-time {
+    background: var(--draper-coral);
+    color: var(--draper-white);
+    border-color: var(--draper-pink);
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* Navigation buttons with maximum contrast */
+.quiz-nav button {
+    background: var(--draper-white);
+    color: var(--draper-black);
+    border: 3px solid var(--draper-black);
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    font-family: var(--font-accent);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.2);
+    margin: 0 0.5rem;
+}
+
+.quiz-nav button:hover {
+    background: var(--draper-sky);
+    color: var(--draper-black);
+    transform: translateY(-2px);
+    box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.3);
+}
+
+.quiz-nav button:disabled {
+    background: var(--draper-lavender);
+    color: var(--draper-black);
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Start menu styling with high contrast */
+.start-menu {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem;
+    background: var(--draper-white);
+    border: 4px solid var(--draper-black);
+    border-radius: 8px;
+    box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.2);
+}
+
+.start-menu label {
+    color: var(--draper-black);
+    font-weight: 600;
+    font-size: 1.1rem;
+    font-family: var(--font-body);
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.start-menu input,
+.start-menu select {
+    background: var(--draper-white);
+    color: var(--draper-black);
+    border: 3px solid var(--draper-black);
+    padding: 1rem;
+    font-size: 1rem;
+    font-family: var(--font-body);
+    border-radius: 6px;
+    width: 100%;
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.2);
+}
+
+.start-menu button {
+    background: var(--draper-emerald);
+    color: var(--draper-white);
+    border: 3px solid var(--draper-black);
+    padding: 1.2rem 2.5rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    font-family: var(--font-accent);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);
+}
+
+.start-menu button:hover {
+    background: var(--draper-mint);
+    color: var(--draper-black);
+    transform: translateY(-2px);
+    box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* Error and loading states with high contrast */
+.error-state {
+    background: var(--draper-white);
+    color: var(--draper-black);
+    border: 4px solid var(--draper-coral);
+    padding: 2rem;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 600;
+    box-shadow: 6px 6px 0 var(--draper-pink);
+}
+
+.loading {
+    background: var(--draper-white);
+    color: var(--draper-black);
+    border: 4px solid var(--draper-sky);
+    padding: 2rem;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 600;
+    box-shadow: 6px 6px 0 var(--draper-mint);
+}
+
+/* Review section with maximum readability */
+.review-question .question-text {
+    background: var(--draper-white);
+    color: var(--draper-black);
+    font-size: 1.2rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    padding: 2rem;
+    border: 3px solid var(--draper-black);
+    border-radius: 8px;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.1);
+}
+
+.review-choices li {
+    background: var(--draper-white);
+    color: var(--draper-black);
+    padding: 1rem;
+    border: 2px solid var(--draper-black);
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.review-choices li.correct {
+    background: var(--draper-mint);
+    border-color: var(--draper-emerald);
+}
+
+.review-choices li.incorrect {
+    background: var(--draper-coral);
+    color: var(--draper-white);
+    border-color: var(--draper-pink);
+}
+
+.review-choices li.user-selected {
+    border-width: 4px;
+    font-weight: 700;
+}
+
+/* Precise highlight fixes to prevent overexpansion */
+.precise-highlight {
+    display: inline;
+    border-radius: 3px;
+    font-weight: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    font-family: inherit;
+    padding: 2px 4px;
+}
+
+.highlight-yellow {
+    background-color: #ffff88;
+    color: var(--draper-black);
+}
+
+.highlight-cyan {
+    background-color: #88ffff;
+    color: var(--draper-black);
+}
+
+.highlight-lime {
+    background-color: #88ff88;
+    color: var(--draper-black);
+}
+
+/* Enhanced contrast for all text elements */
+.quiz *,
+.question-wrapper *,
+.choices-list *,
+.start-menu * {
+    color: var(--draper-black);
+}
+
+/* Ensure all input and text elements have proper contrast */
+input[type="text"],
+input[type="number"],
+select,
+textarea,
+button {
+    color: var(--draper-black);
+    background: var(--draper-white);
+}
+
+/* Force high contrast for contenteditable elements */
+[contenteditable="true"] {
+    color: var(--draper-black);
+    background: var(--draper-white);
+}
+
+/* High contrast for any potentially problematic text */
+p,
+div,
+span,
+label,
+li,
+a {
+    color: inherit;
+}
+
+/* Specific contrast overrides */
+.quiz-nav,
+.timer-container,
+.highlight-controls {
+    color: var(--draper-black);
+}
+
+.quiz-nav *,
+.timer-container *,
+.highlight-controls * {
+    color: var(--draper-black);
+}
+
+/* Critical override to ensure quiz text is always visible and high contrast */
+.quiz .question-text,
+.quiz .prompt,
+.quiz .choices-list li,
+.quiz .choices-list li button,
+.question-wrapper .question-text,
+.question-wrapper .prompt {
+    color: var(--draper-black);
+    background: var(--draper-white);
+    opacity: 1;
+    position: relative;
+    z-index: 100;
+}
+
+/* Ensure no transparent or semi-transparent overlays interfere */
+.quiz .question-wrapper,
+.quiz .choices-list,
+.quiz .prompt {
+    background: var(--draper-white);
+    position: relative;
+    z-index: 50;
+}
+
+/* Override any inherited text colors that might be too light */
+.quiz * {
+    color: var(--draper-black);
+}
+
+/* Specifically target contenteditable question text */
+.quiz [contenteditable="true"] {
+    background: var(--draper-white);
+    color: var(--draper-black);
+    border: 2px solid var(--draper-black);
+    opacity: 1;
+    z-index: 100;
+    position: relative;
+}
+
+/* --- END DRAMATIC DRAPER ENHANCEMENTS --- */

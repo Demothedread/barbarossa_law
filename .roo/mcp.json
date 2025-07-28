@@ -16,6 +16,22 @@
         "OXYLABS_USERNAME": "pseudo_eMo3q",
         "OXYLABS_PASSWORD": "Jonathan_Reback1!"
       }
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/Users/jreback/projects/"
+      ]
+    },
+    "sqlite": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-sqlite",
+        "--db-path",
+        "/backend/law-quiz.db"
+      ]
     }
   }
 }

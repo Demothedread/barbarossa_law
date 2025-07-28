@@ -1,0 +1,934 @@
+/* Dorothy Draper True Maximalist Design - Bold Patterns & Rococo Frames */
+
+/* Audacious Pattern Definitions - No Gradients, Pure Maximalism */
+.draper-stripe-diagonal {
+    background-image:
+        repeating-linear-gradient(45deg,
+            var(--draper-pink) 0px, var(--draper-pink) 6px,
+            var(--draper-white) 6px, var(--draper-white) 12px,
+            var(--draper-mint) 12px, var(--draper-mint) 18px,
+            var(--draper-white) 18px, var(--draper-white) 24px);
+}
+
+.draper-chevron-bold {
+    background-image:
+        repeating-linear-gradient(135deg,
+            var(--draper-coral) 0px, var(--draper-coral) 8px,
+            var(--draper-lemon) 8px, var(--draper-lemon) 16px,
+            var(--draper-sky) 16px, var(--draper-sky) 24px,
+            var(--draper-lavender) 24px, var(--draper-lavender) 32px);
+}
+
+.draper-polka-extravagant {
+    background-image:
+        radial-gradient(circle at 20px 20px, var(--draper-pink) 4px, transparent 5px),
+        radial-gradient(circle at 40px 40px, var(--draper-mint) 3px, transparent 4px),
+        radial-gradient(circle at 60px 20px, var(--draper-coral) 2px, transparent 3px);
+    background-size: 80px 80px, 80px 80px, 80px 80px;
+}
+
+.draper-diamond-lattice {
+    background-image:
+        repeating-conic-gradient(from 45deg at 50% 50%,
+            var(--draper-emerald) 0deg 90deg,
+            var(--draper-white) 90deg 180deg,
+            var(--draper-peach) 180deg 270deg,
+            var(--draper-white) 270deg 360deg);
+    background-size: 30px 30px;
+}
+
+/* AI Explanation Boxes - Rococo Maximalist Frames with Bold Patterns */
+.ai-explanation-choice {
+    background: var(--draper-white);
+    border: 6px solid var(--draper-black);
+    border-radius: 0;
+    /* Eliminate rounded corners for maximalist edge */
+    margin-bottom: 32px;
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    overflow: hidden;
+    max-height: 100px;
+    min-width: 300px;
+    position: relative;
+
+    /* Audacious layered shadows - pure rococo excess */
+    box-shadow:
+        12px 12px 0 var(--draper-pink),
+        24px 24px 0 var(--draper-coral),
+        36px 36px 0 var(--draper-mint),
+        48px 48px 20px rgba(0, 0, 0, 0.4);
+
+    /* Bold decorative frame with contrasting stripes */
+    border-image: repeating-linear-gradient(90deg,
+            var(--draper-pink) 0px, var(--draper-pink) 3px,
+            var(--draper-black) 3px, var(--draper-black) 6px,
+            var(--draper-emerald) 6px, var(--draper-emerald) 9px,
+            var(--draper-black) 9px, var(--draper-black) 12px) 6;
+}
+
+.ai-explanation-choice::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    right: -6px;
+    bottom: -6px;
+    background: var(--draper-lemon);
+    z-index: -2;
+
+    /* Extravagant diamond lattice pattern */
+    background-image:
+        repeating-conic-gradient(from 0deg at 25px 25px,
+            var(--draper-coral) 0deg 45deg,
+            var(--draper-sky) 45deg 90deg,
+            var(--draper-peach) 90deg 135deg,
+            var(--draper-mint) 135deg 180deg,
+            var(--draper-lavender) 180deg 225deg,
+            var(--draper-pink) 225deg 270deg,
+            var(--draper-lemon) 270deg 315deg,
+            var(--draper-emerald) 315deg 360deg);
+    background-size: 50px 50px;
+}
+
+.ai-explanation-choice::after {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    background: var(--draper-white);
+    z-index: -1;
+    border: 3px dotted var(--draper-royal);
+}
+
+.ai-explanation-choice:hover {
+    transform: translateY(-12px) scale(1.03);
+    box-shadow:
+        16px 16px 0 var(--draper-pink),
+        32px 32px 0 var(--draper-coral),
+        48px 48px 0 var(--draper-mint),
+        64px 64px 30px rgba(0, 0, 0, 0.5);
+    border-width: 8px;
+}
+
+/* Expanded state with pure maximalist excess */
+.ai-explanation-choice.expanded {
+    max-height: 1500px;
+    transform: scale(1.02);
+    border-width: 10px;
+    box-shadow:
+        20px 20px 0 var(--draper-pink),
+        40px 40px 0 var(--draper-coral),
+        60px 60px 0 var(--draper-mint),
+        80px 80px 0 var(--draper-sky),
+        100px 100px 50px rgba(0, 0, 0, 0.4);
+}
+
+/* Enhanced transition for dramatic maximalist animation */
+.ai-explanation-choice.expanding {
+    transition:
+        max-height 0.8s cubic-bezier(0.23, 1, 0.32, 1),
+        box-shadow 0.6s ease,
+        transform 0.6s ease,
+        border-width 0.4s ease;
+}
+
+/* Correct answer box with extravagant celebration pattern */
+.ai-explanation-choice.correct {
+    border-left: 20px solid var(--draper-emerald);
+    background: var(--draper-white);
+
+    /* Bold celebratory stripe pattern */
+    background-image:
+        repeating-linear-gradient(90deg,
+            transparent 0px, transparent 6px,
+            var(--draper-mint) 6px, var(--draper-mint) 8px,
+            transparent 8px, transparent 14px,
+            var(--draper-emerald) 14px, var(--draper-emerald) 16px),
+        repeating-linear-gradient(0deg,
+            transparent 0px, transparent 20px,
+            rgba(80, 200, 120, 0.1) 20px, rgba(80, 200, 120, 0.1) 22px);
+    background-size: 32px 100%, 100% 44px;
+    animation: success-celebration 2s ease-in-out infinite;
+}
+
+@keyframes success-celebration {
+
+    0%,
+    100% {
+        border-left-color: var(--draper-emerald);
+        filter: brightness(1);
+    }
+
+    25% {
+        border-left-color: var(--draper-mint);
+        filter: brightness(1.2);
+    }
+
+    50% {
+        border-left-color: var(--draper-sage);
+        filter: brightness(1.4);
+    }
+
+    75% {
+        border-left-color: var(--draper-mint);
+        filter: brightness(1.2);
+    }
+}
+
+/* Incorrect answer box with bold warning pattern */
+.ai-explanation-choice.incorrect {
+    border-left: 20px solid var(--draper-coral);
+    background: var(--draper-white);
+
+    /* Dramatic warning chevron pattern */
+    background-image:
+        repeating-linear-gradient(45deg,
+            transparent 0px, transparent 6px,
+            var(--draper-coral) 6px, var(--draper-coral) 10px,
+            transparent 10px, transparent 16px,
+            var(--draper-pink) 16px, var(--draper-pink) 20px,
+            transparent 20px, transparent 26px),
+        repeating-linear-gradient(-45deg,
+            rgba(255, 127, 127, 0.1) 0px, rgba(255, 127, 127, 0.1) 2px,
+            transparent 2px, transparent 14px);
+    background-size: 32px 32px, 28px 28px;
+    opacity: 0.95;
+    animation: warning-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes warning-pulse {
+
+    0%,
+    100% {
+        border-left-color: var(--draper-coral);
+    }
+
+    50% {
+        border-left-color: var(--draper-pink);
+    }
+}
+
+/* Maximalist header with audacious rococo ornamentation */
+.ai-choice-header {
+    background: var(--draper-white);
+    border-bottom: 6px solid var(--draper-black);
+    padding: 24px;
+    cursor: pointer;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+
+    /* Extravagant pattern overlay - no gradients, pure maximalist patterns */
+    background-image:
+        repeating-linear-gradient(0deg,
+            var(--draper-lemon) 0px, var(--draper-lemon) 2px,
+            transparent 2px, transparent 24px),
+        repeating-linear-gradient(90deg,
+            var(--draper-peach) 0px, var(--draper-peach) 2px,
+            transparent 2px, transparent 36px),
+        repeating-linear-gradient(45deg,
+            rgba(255, 20, 147, 0.1) 0px, rgba(255, 20, 147, 0.1) 1px,
+            transparent 1px, transparent 18px);
+}
+
+.ai-choice-header::before {
+    content: '';
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    border: 4px dotted var(--draper-pink);
+    border-radius: 0;
+    /* Sharp maximalist edges */
+    opacity: 0.8;
+    pointer-events: none;
+
+    /* Inner decorative frame pattern */
+    background-image:
+        repeating-conic-gradient(from 45deg at 30px 30px,
+            var(--draper-mint) 0deg 90deg,
+            transparent 90deg 180deg,
+            var(--draper-sky) 180deg 270deg,
+            transparent 270deg 360deg);
+    background-size: 60px 60px;
+}
+
+/* Audacious expandable indicator - pure rococo excess */
+.ai-choice-header::after {
+    content: '◆';
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: bold;
+    color: var(--draper-black);
+    transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    background: var(--draper-mint);
+    border: 5px solid var(--draper-black);
+    border-radius: 0;
+    /* Sharp maximalist geometry */
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+        6px 6px 0 var(--draper-coral),
+        12px 12px 0 var(--draper-pink);
+
+    /* Bold diamond pattern background */
+    background-image:
+        repeating-linear-gradient(45deg,
+            var(--draper-mint) 0px, var(--draper-mint) 3px,
+            var(--draper-sky) 3px, var(--draper-sky) 6px);
+}
+
+.ai-explanation-choice.expanded .ai-choice-header::after {
+    content: '◇';
+    transform: rotate(180deg) scale(1.1);
+    background: var(--draper-coral);
+    box-shadow:
+        6px 6px 0 var(--draper-mint),
+        12px 12px 0 var(--draper-emerald);
+
+    /* Reverse pattern for expanded state */
+    background-image:
+        repeating-linear-gradient(-45deg,
+            var(--draper-coral) 0px, var(--draper-coral) 3px,
+            var(--draper-pink) 3px, var(--draper-pink) 6px);
+}
+
+/* Bold answer indicators with extravagant maximalist patterns */
+.correct-text {
+    color: var(--draper-emerald);
+    font-weight: 900;
+    text-shadow: 3px 3px 6px rgba(80, 200, 120, 0.4);
+    position: relative;
+    padding: 12px 24px;
+    border: 5px solid var(--draper-emerald);
+    border-radius: 0;
+    /* Sharp maximalist edges */
+
+    /* Celebratory pattern background */
+    background-image:
+        repeating-linear-gradient(45deg,
+            rgba(80, 200, 120, 0.2) 0px, rgba(80, 200, 120, 0.2) 6px,
+            transparent 6px, transparent 12px,
+            rgba(152, 251, 152, 0.2) 12px, rgba(152, 251, 152, 0.2) 18px,
+            transparent 18px, transparent 24px),
+        repeating-linear-gradient(-45deg,
+            rgba(156, 175, 136, 0.15) 0px, rgba(156, 175, 136, 0.15) 4px,
+            transparent 4px, transparent 16px);
+    background-size: 48px 48px, 32px 32px;
+
+    /* Extravagant drop shadow */
+    box-shadow:
+        4px 4px 0 var(--draper-mint),
+        8px 8px 0 var(--draper-sage),
+        12px 12px 20px rgba(80, 200, 120, 0.3);
+}
+
+.incorrect-text {
+    color: var(--draper-coral);
+    font-weight: 900;
+    text-shadow: 3px 3px 6px rgba(255, 127, 127, 0.4);
+    position: relative;
+    padding: 12px 24px;
+    border: 5px solid var(--draper-coral);
+    border-radius: 0;
+    /* Sharp maximalist edges */
+
+    /* Warning pattern background */
+    background-image:
+        repeating-linear-gradient(135deg,
+            rgba(255, 127, 127, 0.2) 0px, rgba(255, 127, 127, 0.2) 6px,
+            transparent 6px, transparent 12px,
+            rgba(255, 20, 147, 0.2) 12px, rgba(255, 20, 147, 0.2) 18px,
+            transparent 18px, transparent 24px),
+        repeating-linear-gradient(45deg,
+            rgba(255, 20, 147, 0.15) 0px, rgba(255, 20, 147, 0.15) 4px,
+            transparent 4px, transparent 16px);
+    background-size: 48px 48px, 32px 32px;
+
+    /* Bold warning drop shadow */
+    box-shadow:
+        4px 4px 0 var(--draper-pink),
+        8px 8px 0 var(--draper-peach),
+        12px 12px 20px rgba(255, 127, 127, 0.3);
+}
+
+/* Enhanced content area with audacious rococo-style frame */
+.ai-explanation-content {
+    max-height: 0;
+    opacity: 0;
+    transition: all 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+    overflow: hidden;
+    transform: translateY(-30px);
+    background: var(--draper-white);
+    margin: 0 12px 12px 12px;
+    border-radius: 0;
+    /* Sharp maximalist edges */
+}
+
+/* Override for when JavaScript sets display:block and expanded class */
+.ai-explanation-content.expanded {
+    max-height: 1500px !important;
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+}
+
+.ai-explanation-choice.expanded .ai-explanation-content,
+.ai-explanation-content.expanded {
+    max-height: 1500px !important;
+    opacity: 1 !important;
+    transform: translateY(0);
+    border: 6px solid var(--draper-black);
+    border-top: none;
+    padding: 32px;
+
+    /* Extravagant multi-pattern background - pure maximalism */
+    background-image:
+        /* Primary pattern - diamond lattice */
+        repeating-conic-gradient(from 0deg at 40px 40px,
+            var(--draper-lemon) 0deg 45deg,
+            var(--draper-white) 45deg 90deg,
+            var(--draper-peach) 90deg 135deg,
+            var(--draper-white) 135deg 180deg,
+            var(--draper-mint) 180deg 225deg,
+            var(--draper-white) 225deg 270deg,
+            var(--draper-sky) 270deg 315deg,
+            var(--draper-white) 315deg 360deg),
+        /* Secondary pattern - fine stripes */
+        repeating-linear-gradient(90deg,
+            transparent 0px, transparent 38px,
+            rgba(255, 20, 147, 0.1) 38px, rgba(255, 20, 147, 0.1) 40px),
+        /* Tertiary pattern - diagonal accents */
+        repeating-linear-gradient(45deg,
+            transparent 0px, transparent 78px,
+            rgba(135, 206, 235, 0.1) 78px, rgba(135, 206, 235, 0.1) 80px);
+    background-size: 80px 80px, 80px 100%, 160px 160px;
+    background-position: 0 0, 0 0, 20px 20px;
+}
+
+.ai-explanation-choice.expanded .ai-explanation-content::before {
+    content: '';
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    right: 24px;
+    bottom: 24px;
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 0;
+    border: 4px dotted var(--draper-pink);
+    opacity: 1;
+
+    /* Inner ornamental pattern */
+    background-image:
+        repeating-linear-gradient(0deg,
+            transparent 0px, transparent 18px,
+            rgba(255, 20, 147, 0.05) 18px, rgba(255, 20, 147, 0.05) 20px),
+        repeating-linear-gradient(90deg,
+            transparent 0px, transparent 24px,
+            rgba(135, 206, 235, 0.05) 24px, rgba(135, 206, 235, 0.05) 26px);
+    background-size: 40px 40px, 50px 50px;
+}
+
+.ai-explanation-choice.expanded .ai-explanation-content::after {
+    content: '';
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    border: 2px solid var(--draper-emerald);
+    border-radius: 0;
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Enhanced text styling with maximalist flourishes */
+.ai-explanation-text {
+    font-family: var(--font-body);
+    line-height: 1.8;
+    margin: 0;
+    color: var(--draper-black);
+    font-size: 1.15rem;
+    font-weight: 500;
+    position: relative;
+    z-index: 3;
+    background: rgba(255, 255, 255, 0.98);
+    padding: 24px;
+    border-radius: 0;
+    /* Sharp maximalist edges */
+    border: 3px solid var(--draper-black);
+
+    /* Sophisticated text background pattern */
+    background-image:
+        repeating-linear-gradient(0deg,
+            transparent 0px, transparent 19px,
+            rgba(152, 251, 152, 0.08) 19px, rgba(152, 251, 152, 0.08) 20px),
+        repeating-linear-gradient(90deg,
+            transparent 0px, transparent 39px,
+            rgba(135, 206, 235, 0.06) 39px, rgba(135, 206, 235, 0.06) 40px);
+    background-size: 40px 40px, 80px 80px;
+
+    /* Elegant drop shadow for text depth */
+    box-shadow:
+        inset 0 0 0 1px rgba(0, 0, 0, 0.1),
+        4px 4px 0 var(--draper-mint),
+        8px 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Maximalist container with audacious rococo frame */
+.ai-explanation-container {
+    margin-top: 48px;
+    background: var(--draper-white);
+    border-radius: 0;
+    /* Sharp maximalist edges */
+    padding: 32px;
+    border: 8px solid var(--draper-black);
+    position: relative;
+
+    /* Extravagant layered shadow system */
+    box-shadow:
+        12px 12px 0 var(--draper-pink),
+        24px 24px 0 var(--draper-mint),
+        36px 36px 0 var(--draper-sky),
+        48px 48px 0 var(--draper-coral),
+        60px 60px 40px rgba(0, 0, 0, 0.3);
+}
+
+.ai-explanation-container::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    right: -8px;
+    bottom: -8px;
+    z-index: -2;
+    border-radius: 0;
+
+    /* Audacious multi-color frame pattern */
+    background: repeating-conic-gradient(from 0deg,
+            var(--draper-pink) 0deg 30deg,
+            var(--draper-coral) 30deg 60deg,
+            var(--draper-emerald) 60deg 90deg,
+            var(--draper-sky) 90deg 120deg,
+            var(--draper-mint) 120deg 150deg,
+            var(--draper-lemon) 150deg 180deg,
+            var(--draper-peach) 180deg 210deg,
+            var(--draper-lavender) 210deg 240deg,
+            var(--draper-sage) 240deg 270deg,
+            var(--draper-royal) 270deg 300deg,
+            var(--draper-pink) 300deg 330deg,
+            var(--draper-coral) 330deg 360deg);
+    background-size: 120px 120px;
+    background-position: 0 0;
+    animation: frame-rotation 30s linear infinite;
+}
+
+.ai-explanation-container::after {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    background: var(--draper-white);
+    z-index: -1;
+    border: 4px dotted var(--draper-royal);
+    border-radius: 0;
+}
+
+@keyframes frame-rotation {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.ai-explanation-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
+    /* Increased spacing for maximalist aesthetic */
+}
+
+/* Audacious rococo-inspired title with ornamental excess */
+.ai-title {
+    font-family: var(--font-display);
+    font-size: 2.4rem;
+    font-weight: 900;
+    margin: 64px 0 36px 0;
+    color: var(--draper-black);
+    padding: 28px 48px;
+    display: inline-block;
+    position: relative;
+    border: 8px solid var(--draper-pink);
+    border-radius: 0;
+    /* Sharp maximalist geometry */
+    background: var(--draper-white);
+
+    /* Audacious layered shadow system */
+    box-shadow:
+        8px 8px 0 var(--draper-coral),
+        16px 16px 0 var(--draper-emerald),
+        24px 24px 0 var(--draper-sky),
+        32px 32px 0 var(--draper-mint),
+        40px 40px 30px rgba(0, 0, 0, 0.3);
+}
+
+.ai-title::before {
+    content: '🧠';
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    background: var(--draper-mint);
+    border: 5px solid var(--draper-black);
+    border-radius: 0;
+    /* Sharp maximalist geometry */
+    padding: 12px;
+    font-size: 2rem;
+    box-shadow:
+        4px 4px 0 var(--draper-emerald),
+        8px 8px 20px rgba(0, 0, 0, 0.2);
+
+    /* Pattern background for icon */
+    background-image:
+        repeating-linear-gradient(45deg,
+            var(--draper-mint) 0px, var(--draper-mint) 2px,
+            var(--draper-sage) 2px, var(--draper-sage) 4px);
+}
+
+.ai-title::after {
+    content: '💡';
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    background: var(--draper-lemon);
+    border: 5px solid var(--draper-black);
+    border-radius: 0;
+    /* Sharp maximalist geometry */
+    padding: 12px;
+    font-size: 2rem;
+    box-shadow:
+        4px 4px 0 var(--draper-peach),
+        8px 8px 20px rgba(0, 0, 0, 0.2);
+
+    /* Pattern background for icon */
+    background-image:
+        repeating-linear-gradient(-45deg,
+            var(--draper-lemon) 0px, var(--draper-lemon) 2px,
+            var(--draper-peach) 2px, var(--draper-peach) 4px);
+}
+
+/* Maximalist loading state with extravagant patterns */
+.ai-loading {
+    background: var(--draper-white);
+    border: 8px solid var(--draper-black);
+    border-radius: 0;
+    /* Sharp maximalist edges */
+    padding: 48px;
+    text-align: center;
+    margin: 36px 0;
+    position: relative;
+
+    /* Extravagant multi-layered shadow for maximum depth */
+    box-shadow:
+        12px 12px 0 var(--draper-lavender),
+        24px 24px 0 var(--draper-peach),
+        36px 36px 0 var(--draper-mint),
+        48px 48px 0 var(--draper-sky),
+        60px 60px 40px rgba(0, 0, 0, 0.3);
+
+    /* Bold animated pattern background - pure maximalism */
+    background-image:
+        /* Primary animated pattern */
+        repeating-linear-gradient(45deg,
+            var(--draper-lemon) 0px, var(--draper-lemon) 12px,
+            var(--draper-mint) 12px, var(--draper-mint) 24px,
+            var(--draper-sky) 24px, var(--draper-sky) 36px,
+            var(--draper-coral) 36px, var(--draper-coral) 48px),
+        /* Secondary pattern layer */
+        repeating-linear-gradient(-45deg,
+            transparent 0px, transparent 8px,
+            rgba(255, 20, 147, 0.15) 8px, rgba(255, 20, 147, 0.15) 16px,
+            transparent 16px, transparent 24px),
+        /* Tertiary diamond pattern */
+        repeating-conic-gradient(from 0deg at 30px 30px,
+            rgba(135, 206, 235, 0.1) 0deg 90deg,
+            transparent 90deg 180deg,
+            rgba(152, 251, 152, 0.1) 180deg 270deg,
+            transparent 270deg 360deg);
+    background-size: 96px 96px, 48px 48px, 60px 60px;
+    animation: loading-pattern-extravaganza 4s linear infinite;
+}
+
+.ai-loading::before {
+    content: '';
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 0;
+    border: 6px dotted var(--draper-pink);
+
+    /* Inner loading pattern */
+    background-image:
+        repeating-linear-gradient(0deg,
+            transparent 0px, transparent 18px,
+            rgba(255, 20, 147, 0.08) 18px, rgba(255, 20, 147, 0.08) 20px),
+        repeating-linear-gradient(90deg,
+            transparent 0px, transparent 24px,
+            rgba(135, 206, 235, 0.06) 24px, rgba(135, 206, 235, 0.06) 26px);
+    background-size: 40px 40px, 50px 50px;
+}
+
+.ai-loading::after {
+    content: '🔄';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 4rem;
+    animation: maximalist-spin 2s linear infinite;
+    z-index: 3;
+    background: var(--draper-white);
+    border: 4px solid var(--draper-black);
+    padding: 16px;
+    border-radius: 0;
+    /* Sharp maximalist geometry */
+    box-shadow:
+        6px 6px 0 var(--draper-coral),
+        12px 12px 20px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes loading-pattern-extravaganza {
+    0% {
+        background-position: 0 0, 0 0, 0 0;
+    }
+
+    25% {
+        background-position: 24px 24px, -12px 12px, 15px 15px;
+    }
+
+    50% {
+        background-position: 48px 48px, -24px 24px, 30px 30px;
+    }
+
+    75% {
+        background-position: 72px 72px, -36px 36px, 45px 45px;
+    }
+
+    100% {
+        background-position: 96px 96px, -48px 48px, 60px 60px;
+    }
+}
+
+@keyframes maximalist-spin {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg) scale(1);
+    }
+
+    25% {
+        transform: translate(-50%, -50%) rotate(90deg) scale(1.1);
+    }
+
+    50% {
+        transform: translate(-50%, -50%) rotate(180deg) scale(1);
+    }
+
+    75% {
+        transform: translate(-50%, -50%) rotate(270deg) scale(1.1);
+    }
+
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg) scale(1);
+    }
+}
+
+/* Maximalist Decorative Elements for Enhanced UI */
+.draper-decoration {
+    position: fixed;
+    left: 0;
+    width: 100%;
+    height: 20px;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.draper-decoration-top {
+    top: 0;
+    background-image:
+        repeating-linear-gradient(90deg,
+            var(--draper-pink) 0px, var(--draper-pink) 10px,
+            var(--draper-coral) 10px, var(--draper-coral) 20px,
+            var(--draper-emerald) 20px, var(--draper-emerald) 30px,
+            var(--draper-sky) 30px, var(--draper-sky) 40px,
+            var(--draper-mint) 40px, var(--draper-mint) 50px,
+            var(--draper-lemon) 50px, var(--draper-lemon) 60px);
+    animation: maximalist-scroll-right 15s linear infinite;
+}
+
+.draper-decoration-bottom {
+    bottom: 0;
+    background-image:
+        repeating-linear-gradient(-90deg,
+            var(--draper-lavender) 0px, var(--draper-lavender) 10px,
+            var(--draper-peach) 10px, var(--draper-peach) 20px,
+            var(--draper-sage) 20px, var(--draper-sage) 30px,
+            var(--draper-royal) 30px, var(--draper-royal) 40px,
+            var(--draper-coral) 40px, var(--draper-coral) 50px,
+            var(--draper-pink) 50px, var(--draper-pink) 60px);
+    animation: maximalist-scroll-left 12s linear infinite;
+}
+
+@keyframes maximalist-scroll-right {
+    0% {
+        transform: translateX(-60px);
+    }
+
+    100% {
+        transform: translateX(0px);
+    }
+}
+
+@keyframes maximalist-scroll-left {
+    0% {
+        transform: translateX(60px);
+    }
+
+    100% {
+        transform: translateX(0px);
+    }
+}
+
+/* Enhanced Logo Flourishes */
+.logo-flourish {
+    color: var(--draper-coral);
+    font-size: 1.2rem;
+    margin: 0 8px;
+    animation: logo-sparkle 2s ease-in-out infinite alternate;
+}
+
+@keyframes logo-sparkle {
+    0% {
+        color: var(--draper-coral);
+        transform: scale(1) rotate(0deg);
+    }
+
+    100% {
+        color: var(--draper-mint);
+        transform: scale(1.1) rotate(10deg);
+    }
+}
+
+/* Navigation Button Icons */
+.nav-btn-icon {
+    margin-right: 8px;
+    font-size: 1.1rem;
+}
+
+/* Enhanced Loading Frame */
+.loading-maximalist-frame {
+    position: relative;
+    background: var(--draper-white);
+    border: 8px solid var(--draper-black);
+    padding: 60px;
+    text-align: center;
+
+    /* Extravagant frame pattern */
+    background-image: var(--diamond-pattern);
+    background-size: 80px 80px;
+
+    /* Audacious shadow system */
+    box-shadow:
+        12px 12px 0 var(--draper-pink),
+        24px 24px 0 var(--draper-coral),
+        36px 36px 0 var(--draper-mint),
+        48px 48px 40px rgba(0, 0, 0, 0.3);
+}
+
+.loading-patterns {
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    right: -8px;
+    bottom: -8px;
+    background-image:
+        repeating-conic-gradient(from 45deg,
+            var(--draper-sky) 0deg 60deg,
+            transparent 60deg 120deg,
+            var(--draper-peach) 120deg 180deg,
+            transparent 180deg 240deg,
+            var(--draper-mint) 240deg 300deg,
+            transparent 300deg 360deg);
+    background-size: 60px 60px;
+    animation: loading-pattern-rotation 8s linear infinite;
+    z-index: -1;
+}
+
+@keyframes loading-pattern-rotation {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Enhanced Error Frame */
+.error-frame {
+    position: relative;
+    background: var(--draper-white);
+    border: 6px solid var(--draper-black);
+    padding: 40px;
+    text-align: center;
+
+    /* Error pattern background */
+    background-image: var(--pattern-warning);
+    background-size: 32px 32px;
+
+    /* Bold error shadows */
+    box-shadow:
+        10px 10px 0 var(--draper-coral),
+        20px 20px 0 var(--draper-pink),
+        30px 30px 30px rgba(0, 0, 0, 0.3);
+}
+
+.error-decoration {
+    position: absolute;
+    top: -15px;
+    right: -15px;
+    font-size: 2rem;
+    background: var(--draper-coral);
+    border: 4px solid var(--draper-black);
+    padding: 8px;
+    border-radius: 0;
+    animation: error-pulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes error-pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    100% {
+        transform: scale(1.1);
+    }
+}
+
+/* Button Icons */
+.btn-icon {
+    margin-right: 8px;
+    font-size: 1.1rem;
+}
