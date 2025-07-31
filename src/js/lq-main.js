@@ -13,10 +13,9 @@ import { createStatsWidget, showAchievementNotification, updateStatsWidget } fro
 import { userProfileManager } from './lq-user-profile.js';
 import { createWelcomeScreen, shouldShowWelcome } from './lq-welcome.js';
 import { ThemeManager } from './theme-manager.js';
+import { showLoading, hideLoading, showError, hideError } from './lq-loading.js';
 
 const app = document.getElementById('app');
-const loadingEl = document.getElementById('loading');
-const errorEl = document.getElementById('error');
 
 /**
  * Navigation and modal elements
@@ -245,29 +244,6 @@ async function startQuiz(opts) {
   }
 }
 
-function showLoading(message = 'Loading...') {
-  loadingEl.querySelector('p').textContent = message;
-  loadingEl.style.display = 'block';
-  app.style.display = 'none';
-  errorEl.style.display = 'none';
-}
-
-function hideLoading() {
-  loadingEl.style.display = 'none';
-  app.style.display = 'block';
-}
-
-function showError(message) {
-  document.getElementById('errorMessage').textContent = message;
-  errorEl.style.display = 'block';
-  app.style.display = 'none';
-  loadingEl.style.display = 'none';
-}
-
-function hideError() {
-  errorEl.style.display = 'none';
-  app.style.display = 'block';
-}
 
 async function navigateToHome() {
   currentPage = 'home';

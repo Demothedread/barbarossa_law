@@ -3,6 +3,10 @@
     "LawQuizzer": {
       "type": "project",
       "description": "Web-based quiz framework"
+    },
+    "LoadingModule": {
+      "type": "module",
+      "description": "Handles UI loading and error displays"
     }
   },
   "features": {
@@ -14,6 +18,10 @@
     "review": "Post quiz review with explanations",
     "progress": "Stats per topic"
   },
-  "relations": {},
-  "notes": {}
+  "relations": {
+    "LawQuizzer-uses-LoadingModule": "LawQuizzer frontend displays loading and error states via LoadingModule"
+  },
+  "notes": {
+    "configEndpoint": "Added /api/config for basic diagnostics"
+  }
 }
