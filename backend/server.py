@@ -20,8 +20,11 @@ except ImportError:
     print("python-dotenv not available - using system environment variables")
 
 # Import our AI explanation service and vector store service
-from ai_explanations import (AIExplainService, ensure_explanations_table,
-                             migrate_explanations_table)
+from ai_explanations import (
+    AIExplainService,
+    ensure_explanations_table,
+    migrate_explanations_table,
+)
 from auth import (authenticate_user, create_user, generate_jwt_token,
                   get_user_from_token, require_auth, update_user_preferences)
 from flask import Flask, g, jsonify, request
@@ -35,24 +38,37 @@ CORS(app)  # Enable CORS for frontend requests
 # Database path
 DB_PATH = Path(__file__).parent.parent / 'law_quiz.db'
 
-# Initialize AI explanation service if API key is available
+# Initialized services
 ai_service = None
 vector_store_service = None
-if os.environ.get("OPENAI_API_KEY"):
-    # Ensure the explanations table exists
-    ensure_explanations_table(DB_PATH)
-    # Migrate explanations table to include subtopic column
-    migrate_explanations_table(DB_PATH)
-    ai_service = AIExplainService(DB_PATH)
-    
-    # Initialize vector store service
-    try:
-        vector_store_service = VectorStoreServiceV2(DB_PATH)
-        print("Vector store service v2 initialized successfully.")
-    except Exception as e:
-        print(f"WARNING: Could not initialize vector store service: {e}")
-else:
-    print("WARNING: OPENAI_API_KEY not set. AI explanations and vector store will not be available.")
+
+def initialize_services():
+    """Initialize optional services and check configuration."""
+    global ai_service, vector_store_service
+
+    if not DB_PATH.exists():
+        print(
+            f"WARNING: Database not found at {DB_PATH}. Run scripts/initialize_db.py to create it."
+        )
+    else:
+        print(f"Using database at {DB_PATH}")
+
+    if os.environ.get("OPENAI_API_KEY"):
+        ensure_explanations_table(DB_PATH)
+        migrate_explanations_table(DB_PATH)
+        ai_service = AIExplainService(DB_PATH)
+        try:
+            vector_store_service = VectorStoreServiceV2(DB_PATH)
+            print("Vector store service v2 initialized successfully.")
+        except Exception as e:
+            print(f"WARNING: Could not initialize vector store service: {e}")
+    else:
+        print(
+            "WARNING: OPENAI_API_KEY not set. AI explanations and vector store will not be available."
+        )
+
+
+initialize_services()
 
 def get_db_connection():
     """Get database connection with proper setup"""
@@ -170,6 +186,15 @@ def log_quiz_attempt():
 def health_check():
     """Health check endpoint"""
     return jsonify({'status': 'healthy', 'timestamp': datetime.now().isoformat()})
+
+
+@app.route('/api/config', methods=['GET'])
+def config_check():
+    """Return basic configuration status"""
+    return jsonify({
+        'database_exists': DB_PATH.exists(),
+        'openai_configured': bool(os.environ.get('OPENAI_API_KEY')),
+    })
 
 @app.route('/api/explanations', methods=['POST'])
 async def get_ai_explanations():
