@@ -1,0 +1,22 @@
+:root {
+  --mm-bg: var(--color-surface, #ffffff);
+  --mm-node-bg: var(--color-primary, #2c3e50);
+  --mm-node-color: var(--color-on-primary, #ffffff);
+}
+
+.mindmap-container {
+  width: 100vw;
+  height: 100vh;
+  background: var(--mm-bg);
+  overflow: hidden;
+}
+
+.mindmap-node {
+  padding: 0.5rem 1rem;
+  background: var(--mm-node-bg);
+  color: var(--mm-node-color);
+  border-radius: 4px;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+}

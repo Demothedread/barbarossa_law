@@ -7,6 +7,10 @@
     "LoadingModule": {
       "type": "module",
       "description": "Handles UI loading and error displays"
+    },
+    "MindMapModule": {
+      "type": "module",
+      "description": "3D visualization of legal subjects"
     }
   },
   "features": {
@@ -16,10 +20,12 @@
     "elimination": "Cross out answers",
     "highlight": "Highlight text with colors",
     "review": "Post quiz review with explanations",
-    "progress": "Stats per topic"
+    "progress": "Stats per topic",
+    "mindMap": "3D interactive exploration of bodies of law"
   },
   "relations": {
-    "LawQuizzer-uses-LoadingModule": "LawQuizzer frontend displays loading and error states via LoadingModule"
+    "LawQuizzer-uses-LoadingModule": "LawQuizzer frontend displays loading and error states via LoadingModule",
+    "LawQuizzer-uses-MindMapModule": "LawQuizzer frontend offers mind map via MindMapModule"
   },
   "notes": {
     "configEndpoint": "Added /api/config for basic diagnostics"
