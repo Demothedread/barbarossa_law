@@ -14,6 +14,7 @@ A modern, AI-powered web and CLI quiz platform for California Bar Exam and legal
 - **Question Types**: MBE, AI-generated, or mixed
 - **CLI Mode**: Standalone Python script for terminal quizzes
 - **Digital Scratch Paper**: Slide-out notepad, persistent during exam, copy/download as .txt
+- **3D Mind Map**: Explore bodies of law through an interactive 3D visualization
 
 ## Quick Start
 
@@ -63,6 +64,7 @@ python scripts/law_quiz.py
 - **During Quiz**: Answer, highlight, eliminate, use scratch paper (📝 tab)
 - **Review**: See AI explanations, subtopic, and performance breakdown
 - **Analytics**: Track progress by subject, subtopic, and over time
+- **Mind Map**: Open `mindmap.html` to explore bodies of law in 3D
 
 ## Digital Scratch Paper
 - Click the 📝 tab to open/close
