@@ -77,7 +77,7 @@ def get_db_connection():
     return conn
 
 def ensure_quiz_attempt_logs_table(cursor):
-    """Ensure quiz attempt logs table exists and has required columns."""
+    """Ensure quiz attempt logs table exists. Schema migrations are handled by initialize_db.py."""
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS quiz_attempt_logs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -94,39 +94,6 @@ def ensure_quiz_attempt_logs_table(cursor):
         created_at TEXT
     )
     """)
-
-    expected_columns = {
-        "user_id": "TEXT",
-        "question_id": "TEXT",
-        "selected_answer": "TEXT",
-        "correct_answer": "TEXT",
-        "is_correct": "INTEGER",
-        "subject": "TEXT",
-        "subtopic": "TEXT",
-        "mode": "TEXT",
-        "elapsed_seconds": "REAL",
-        "payload_json": "TEXT",
-        "created_at": "TEXT",
-    }
-    existing_columns = {
-        row[1] for row in cursor.execute("PRAGMA table_info(quiz_attempt_logs)")
-    }
-    for column_name, column_type in expected_columns.items():
-        if column_name not in existing_columns:
-            # In concurrent environments, another process may add the column
-            # between our PRAGMA check and this ALTER TABLE. Handle the
-            # "duplicate column name" error gracefully while surfacing others.
-            try:
-                cursor.execute(
-                    f"ALTER TABLE quiz_attempt_logs ADD COLUMN {column_name} {column_type}"
-                )
-            except sqlite3.OperationalError as e:
-                msg = str(e).lower()
-                if "duplicate column name" in msg:
-                    # Column was added by a concurrent migration; safe to ignore.
-                    pass
-                else:
-                    raise
 
 def normalize_quiz_attempt_payload(data):
     """Validate and normalize quiz attempt payload."""
