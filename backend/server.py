@@ -274,6 +274,7 @@ def get_questions():
 @app.route('/api/log', methods=['POST'])
 def log_quiz_attempt():
     """Log a quiz attempt"""
+    conn = None
     try:
         data = request.get_json()
         if data is None:
@@ -307,12 +308,14 @@ def log_quiz_attempt():
 
         conn.commit()
         inserted_id = cursor.lastrowid
-        conn.close()
 
         return jsonify({'success': True, 'id': inserted_id})
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    finally:
+        if conn:
+            conn.close()
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
