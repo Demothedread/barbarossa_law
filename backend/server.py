@@ -283,33 +283,35 @@ def log_quiz_attempt():
             return jsonify({'error': 'Invalid attempt data', 'details': errors}), 400
 
         conn = get_db_connection()
-        cursor = conn.cursor()
-        ensure_quiz_attempt_logs_table(cursor)
+        try:
+            cursor = conn.cursor()
+            ensure_quiz_attempt_logs_table(cursor)
 
-        cursor.execute("""
-        INSERT INTO quiz_attempt_logs (
-            user_id, question_id, selected_answer, correct_answer, is_correct,
-            subject, subtopic, mode, elapsed_seconds, payload_json, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            normalized["user_id"],
-            normalized["question_id"],
-            normalized["selected_answer"],
-            normalized["correct_answer"],
-            normalized["is_correct"],
-            normalized["subject"],
-            normalized["subtopic"],
-            normalized["mode"],
-            normalized["elapsed_seconds"],
-            normalized["payload_json"],
-            normalized["created_at"],
-        ))
+            cursor.execute("""
+            INSERT INTO quiz_attempt_logs (
+                user_id, question_id, selected_answer, correct_answer, is_correct,
+                subject, subtopic, mode, elapsed_seconds, payload_json, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                normalized["user_id"],
+                normalized["question_id"],
+                normalized["selected_answer"],
+                normalized["correct_answer"],
+                normalized["is_correct"],
+                normalized["subject"],
+                normalized["subtopic"],
+                normalized["mode"],
+                normalized["elapsed_seconds"],
+                normalized["payload_json"],
+                normalized["created_at"],
+            ))
 
-        conn.commit()
-        inserted_id = cursor.lastrowid
-        conn.close()
+            conn.commit()
+            inserted_id = cursor.lastrowid
 
-        return jsonify({'success': True, 'id': inserted_id})
+            return jsonify({'success': True, 'id': inserted_id})
+        finally:
+            conn.close()
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
