@@ -265,6 +265,9 @@ async def grade_essay_response():
             except (TypeError, ValueError):
                 return jsonify({'error': 'max_points must be an integer'}), 400
 
+            # Enforce a reasonable range for max_points to prevent abuse via direct API calls
+            if max_points <= 0 or max_points > 500:
+                return jsonify({'error': 'max_points must be between 1 and 500'}), 400
         result = await essay_grader_service.grade_essay(question_text, answer_text, max_points)
         return jsonify({'success': True, 'grade': result})
 
