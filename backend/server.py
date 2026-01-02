@@ -113,9 +113,20 @@ def ensure_quiz_attempt_logs_table(cursor):
     }
     for column_name, column_type in expected_columns.items():
         if column_name not in existing_columns:
-            cursor.execute(
-                f"ALTER TABLE quiz_attempt_logs ADD COLUMN {column_name} {column_type}"
-            )
+            # In concurrent environments, another process may add the column
+            # between our PRAGMA check and this ALTER TABLE. Handle the
+            # "duplicate column name" error gracefully while surfacing others.
+            try:
+                cursor.execute(
+                    f"ALTER TABLE quiz_attempt_logs ADD COLUMN {column_name} {column_type}"
+                )
+            except sqlite3.OperationalError as e:
+                msg = str(e).lower()
+                if "duplicate column name" in msg:
+                    # Column was added by a concurrent migration; safe to ignore.
+                    pass
+                else:
+                    raise
 
 def normalize_quiz_attempt_payload(data):
     """Validate and normalize quiz attempt payload."""
