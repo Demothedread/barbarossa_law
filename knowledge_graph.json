@@ -19,6 +19,10 @@
     "MindMapModule": {
       "type": "module",
       "description": "3D visualization of legal subjects"
+    },
+    "TestSuites": {
+      "type": "module",
+      "description": "Automated Jest and pytest coverage for UI controllers and backend API"
     }
   },
   "features": {
@@ -30,13 +34,16 @@
     "essayGrading": "Essay writer submits answers for precedent-based AI grading",
     "review": "Post quiz review with explanations",
     "progress": "Stats per topic",
-    "mindMap": "3D interactive exploration of bodies of law"
+    "mindMap": "3D interactive exploration of bodies of law",
+    "uiControllerTests": "Jest coverage for lq-main, lq-review, theme, and auth flows",
+    "apiEndpointTests": "Pytest coverage for auth, quiz history, and AI explanation fallbacks"
   },
   "relations": {
     "LawQuizzer-uses-EssayGraderService": "LawQuizzer backend grades essay submissions via EssayGraderService",
     "LawQuizzer-uses-EssayWriterModule": "LawQuizzer homepage includes EssayWriterModule for essay submissions",
     "LawQuizzer-uses-LoadingModule": "LawQuizzer frontend displays loading and error states via LoadingModule",
-    "LawQuizzer-uses-MindMapModule": "LawQuizzer frontend offers mind map via MindMapModule"
+    "LawQuizzer-uses-MindMapModule": "LawQuizzer frontend offers mind map via MindMapModule",
+    "LawQuizzer-validated-by-TestSuites": "LawQuizzer backend and frontend are verified via Jest and pytest suites"
   },
   "notes": {
     "essayGradingEndpoint": "Added /api/essay-grade to score essay responses with line-by-line feedback",
