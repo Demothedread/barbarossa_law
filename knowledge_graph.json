@@ -4,6 +4,10 @@
       "type": "project",
       "description": "Web-based quiz framework"
     },
+    "AuthDatabaseSchema": {
+      "type": "schema",
+      "description": "SQLite tables for user accounts and preferences"
+    },
     "LoadingModule": {
       "type": "module",
       "description": "Handles UI loading and error displays"
@@ -21,13 +25,16 @@
     "highlight": "Highlight text with colors",
     "review": "Post quiz review with explanations",
     "progress": "Stats per topic",
-    "mindMap": "3D interactive exploration of bodies of law"
+    "mindMap": "3D interactive exploration of bodies of law",
+    "userAuth": "Registration/login backed by users and user_preferences tables"
   },
   "relations": {
+    "LawQuizzer-uses-AuthDatabaseSchema": "LawQuizzer backend stores auth and preferences in users and user_preferences tables",
     "LawQuizzer-uses-LoadingModule": "LawQuizzer frontend displays loading and error states via LoadingModule",
     "LawQuizzer-uses-MindMapModule": "LawQuizzer frontend offers mind map via MindMapModule"
   },
   "notes": {
-    "configEndpoint": "Added /api/config for basic diagnostics"
+    "configEndpoint": "Added /api/config for basic diagnostics",
+    "authTables": "Initialization script now creates and migrates users and user_preferences tables"
   }
 }
