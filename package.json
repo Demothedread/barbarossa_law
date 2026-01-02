@@ -6,7 +6,8 @@
   "scripts": {
     "start": "bash start.sh",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "lint": "eslint \"src/**/*.js\""
+    "lint": "eslint \"src/**/*.js\"",
+    "test:all": "npm run lint && npm test && python -m pytest"
   },
   "keywords": [],
   "author": "",
