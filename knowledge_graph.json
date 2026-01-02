@@ -4,6 +4,10 @@
       "type": "project",
       "description": "Web-based quiz framework"
     },
+    "QuizAttemptLogs": {
+      "type": "module",
+      "description": "Stores validated quiz attempt payloads with timestamps"
+    },
     "EssayGraderService": {
       "type": "module",
       "description": "Backend service that grades essay answers with precedent-based scoring"
@@ -31,6 +35,7 @@
     "navigation": "Prev/Next question",
     "elimination": "Cross out answers",
     "highlight": "Highlight text with colors",
+    "quizAttemptLogging": "Backend validates and persists per-question attempts",
     "essayGrading": "Essay writer submits answers for precedent-based AI grading",
     "review": "Post quiz review with explanations",
     "progress": "Stats per topic",
@@ -39,6 +44,7 @@
     "apiEndpointTests": "Pytest coverage for auth, quiz history, and AI explanation fallbacks"
   },
   "relations": {
+    "LawQuizzer-uses-QuizAttemptLogs": "LawQuizzer backend records /api/log attempts in quiz_attempt_logs",
     "LawQuizzer-uses-EssayGraderService": "LawQuizzer backend grades essay submissions via EssayGraderService",
     "LawQuizzer-uses-EssayWriterModule": "LawQuizzer homepage includes EssayWriterModule for essay submissions",
     "LawQuizzer-uses-LoadingModule": "LawQuizzer frontend displays loading and error states via LoadingModule",
@@ -46,7 +52,8 @@
     "LawQuizzer-validated-by-TestSuites": "LawQuizzer backend and frontend are verified via Jest and pytest suites"
   },
   "notes": {
-    "essayGradingEndpoint": "Added /api/essay-grade to score essay responses with line-by-line feedback",
-    "configEndpoint": "Added /api/config for basic diagnostics"
+    "configEndpoint": "Added /api/config for basic diagnostics",
+    "quizAttemptLogTable": "quiz_attempt_logs stores normalized attempt data with timestamps"
+    "essayGradingEndpoint": "Added /api/essay-grade to score essay responses with line-by-line feedback"
   }
 }
