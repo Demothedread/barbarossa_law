@@ -4,6 +4,14 @@
       "type": "project",
       "description": "Web-based quiz framework"
     },
+    "EssayGraderService": {
+      "type": "module",
+      "description": "Backend service that grades essay answers with precedent-based scoring"
+    },
+    "EssayWriterModule": {
+      "type": "module",
+      "description": "Frontend essay writer with formatting controls and AI grading"
+    },
     "LoadingModule": {
       "type": "module",
       "description": "Handles UI loading and error displays"
@@ -19,15 +27,19 @@
     "navigation": "Prev/Next question",
     "elimination": "Cross out answers",
     "highlight": "Highlight text with colors",
+    "essayGrading": "Essay writer submits answers for precedent-based AI grading",
     "review": "Post quiz review with explanations",
     "progress": "Stats per topic",
     "mindMap": "3D interactive exploration of bodies of law"
   },
   "relations": {
+    "LawQuizzer-uses-EssayGraderService": "LawQuizzer backend grades essay submissions via EssayGraderService",
+    "LawQuizzer-uses-EssayWriterModule": "LawQuizzer homepage includes EssayWriterModule for essay submissions",
     "LawQuizzer-uses-LoadingModule": "LawQuizzer frontend displays loading and error states via LoadingModule",
     "LawQuizzer-uses-MindMapModule": "LawQuizzer frontend offers mind map via MindMapModule"
   },
   "notes": {
+    "essayGradingEndpoint": "Added /api/essay-grade to score essay responses with line-by-line feedback",
     "configEndpoint": "Added /api/config for basic diagnostics"
   }
 }
