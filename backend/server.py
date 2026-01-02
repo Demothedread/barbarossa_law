@@ -27,6 +27,7 @@ from ai_explanations import (
 )
 from auth import (authenticate_user, create_user, generate_jwt_token,
                   get_user_from_token, require_auth, update_user_preferences)
+from essay_grader import EssayGraderService
 from flask import Flask, g, jsonify, request
 from flask_cors import CORS
 from vector_store_service_v2 import (VectorStoreServiceV2,
@@ -40,11 +41,12 @@ DB_PATH = Path(__file__).parent.parent / 'law_quiz.db'
 
 # Initialized services
 ai_service = None
+essay_grader_service = None
 vector_store_service = None
 
 def initialize_services():
     """Initialize optional services and check configuration."""
-    global ai_service, vector_store_service
+    global ai_service, essay_grader_service, vector_store_service
 
     if not DB_PATH.exists():
         print(
@@ -57,6 +59,7 @@ def initialize_services():
         ensure_explanations_table(DB_PATH)
         migrate_explanations_table(DB_PATH)
         ai_service = AIExplainService(DB_PATH)
+        essay_grader_service = EssayGraderService()
         try:
             vector_store_service = VectorStoreServiceV2(DB_PATH)
             print("Vector store service v2 initialized successfully.")
@@ -64,7 +67,7 @@ def initialize_services():
             print(f"WARNING: Could not initialize vector store service: {e}")
     else:
         print(
-            "WARNING: OPENAI_API_KEY not set. AI explanations and vector store will not be available."
+            "WARNING: OPENAI_API_KEY not set. AI explanations, essay grading, and vector store will not be available."
         )
 
 
@@ -238,6 +241,36 @@ async def get_ai_explanations():
         
         return jsonify({'explanations': transformed_explanations})
         
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/essay-grade', methods=['POST'])
+async def grade_essay_response():
+    """Grade a user-submitted essay response with precedent-based scoring."""
+    try:
+        if not essay_grader_service:
+            return jsonify({'error': 'Essay grading not available. Set OPENAI_API_KEY env variable'}), 500
+
+        data = request.get_json() or {}
+        question_text = data.get('question', '').strip()
+        answer_text = data.get('answer', '').strip()
+        max_points = data.get('max_points')
+
+        if not question_text or not answer_text:
+            return jsonify({'error': 'Question and answer are required'}), 400
+
+        if max_points is not None:
+            try:
+                max_points = int(max_points)
+            except (TypeError, ValueError):
+                return jsonify({'error': 'max_points must be an integer'}), 400
+
+            # Enforce a reasonable range for max_points to prevent abuse via direct API calls
+            if max_points <= 0 or max_points > 500:
+                return jsonify({'error': 'max_points must be between 1 and 500'}), 400
+        result = await essay_grader_service.grade_essay(question_text, answer_text, max_points)
+        return jsonify({'success': True, 'grade': result})
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -1308,6 +1341,7 @@ if __name__ == '__main__':
     print(f"OpenAI API Key configured: {'Yes' if os.environ.get('OPENAI_API_KEY') else 'No'}")
     print(f"Vector store service available: {'Yes' if vector_store_service else 'No'}")
     print(f"AI explanations available: {'Yes' if ai_service else 'No'}")
+    print(f"Essay grading available: {'Yes' if essay_grader_service else 'No'}")
     print("\nServer will be available at: http://localhost:5001/api")
     print("Health check endpoint: http://localhost:5001/api/health")
     print("\nPress Ctrl+C to stop the server\n")
@@ -1319,4 +1353,3 @@ if __name__ == '__main__':
         debug=True,      # Enable debug mode for development
         use_reloader=False  # Disable reloader to avoid issues with async functions
     )
-
