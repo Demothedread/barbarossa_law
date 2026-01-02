@@ -260,6 +260,8 @@ def log_quiz_attempt():
     """Log a quiz attempt"""
     try:
         data = request.get_json()
+        if data is None:
+            return jsonify({'error': 'Request body is required'}), 400
         normalized, errors = normalize_quiz_attempt_payload(data)
         if errors:
             return jsonify({'error': 'Invalid attempt data', 'details': errors}), 400
