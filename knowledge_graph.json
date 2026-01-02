@@ -4,6 +4,10 @@
       "type": "project",
       "description": "Web-based quiz framework"
     },
+    "QuizAttemptLogs": {
+      "type": "module",
+      "description": "Stores validated quiz attempt payloads with timestamps"
+    },
     "LoadingModule": {
       "type": "module",
       "description": "Handles UI loading and error displays"
@@ -19,15 +23,18 @@
     "navigation": "Prev/Next question",
     "elimination": "Cross out answers",
     "highlight": "Highlight text with colors",
+    "quizAttemptLogging": "Backend validates and persists per-question attempts",
     "review": "Post quiz review with explanations",
     "progress": "Stats per topic",
     "mindMap": "3D interactive exploration of bodies of law"
   },
   "relations": {
+    "LawQuizzer-uses-QuizAttemptLogs": "LawQuizzer backend records /api/log attempts in quiz_attempt_logs",
     "LawQuizzer-uses-LoadingModule": "LawQuizzer frontend displays loading and error states via LoadingModule",
     "LawQuizzer-uses-MindMapModule": "LawQuizzer frontend offers mind map via MindMapModule"
   },
   "notes": {
-    "configEndpoint": "Added /api/config for basic diagnostics"
+    "configEndpoint": "Added /api/config for basic diagnostics",
+    "quizAttemptLogTable": "quiz_attempt_logs stores normalized attempt data with timestamps"
   }
 }

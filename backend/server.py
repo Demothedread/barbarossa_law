@@ -76,6 +76,92 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+def ensure_quiz_attempt_logs_table(cursor):
+    """Ensure quiz attempt logs table exists and has required columns."""
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS quiz_attempt_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT,
+        question_id TEXT,
+        selected_answer TEXT,
+        correct_answer TEXT,
+        is_correct INTEGER,
+        subject TEXT,
+        subtopic TEXT,
+        mode TEXT,
+        elapsed_seconds REAL,
+        payload_json TEXT,
+        created_at TEXT
+    )
+    """)
+
+    expected_columns = {
+        "user_id": "TEXT",
+        "question_id": "TEXT",
+        "selected_answer": "TEXT",
+        "correct_answer": "TEXT",
+        "is_correct": "INTEGER",
+        "subject": "TEXT",
+        "subtopic": "TEXT",
+        "mode": "TEXT",
+        "elapsed_seconds": "REAL",
+        "payload_json": "TEXT",
+        "created_at": "TEXT",
+    }
+    existing_columns = {
+        row[1] for row in cursor.execute("PRAGMA table_info(quiz_attempt_logs)")
+    }
+    for column_name, column_type in expected_columns.items():
+        if column_name not in existing_columns:
+            cursor.execute(
+                f"ALTER TABLE quiz_attempt_logs ADD COLUMN {column_name} {column_type}"
+            )
+
+def normalize_quiz_attempt_payload(data):
+    """Validate and normalize quiz attempt payload."""
+    if not isinstance(data, dict):
+        return None, ["Payload must be a JSON object."]
+
+    question_id = data.get("question_id") or data.get("idx")
+    selected_answer = data.get("selected_answer") or data.get("answer")
+    correct_answer = data.get("correct_answer")
+    is_correct = data.get("is_correct")
+    elapsed_seconds = data.get("elapsed_seconds", data.get("time_spent_seconds"))
+
+    errors = []
+    if not question_id:
+        errors.append("question_id is required.")
+    if not selected_answer:
+        errors.append("selected_answer is required.")
+
+    if is_correct is None and correct_answer is None:
+        errors.append("is_correct or correct_answer is required.")
+
+    if elapsed_seconds is not None and not isinstance(elapsed_seconds, (int, float)):
+        errors.append("elapsed_seconds must be a number when provided.")
+
+    if errors:
+        return None, errors
+
+    computed_is_correct = is_correct
+    if computed_is_correct is None and correct_answer is not None:
+        computed_is_correct = selected_answer == correct_answer
+
+    normalized = {
+        "user_id": data.get("user_id", "anonymous"),
+        "question_id": question_id,
+        "selected_answer": selected_answer,
+        "correct_answer": correct_answer,
+        "is_correct": int(bool(computed_is_correct)),
+        "subject": data.get("subject"),
+        "subtopic": data.get("subtopic"),
+        "mode": data.get("mode"),
+        "elapsed_seconds": elapsed_seconds,
+        "payload_json": json.dumps(data),
+        "created_at": datetime.now().isoformat(),
+    }
+    return normalized, []
+
 @app.route('/api/subjects', methods=['GET'])
 def get_subjects():
     """Get all available subjects"""
@@ -174,11 +260,39 @@ def log_quiz_attempt():
     """Log a quiz attempt"""
     try:
         data = request.get_json()
-        
-        # For now, just return success
-        # In a real app, you'd store this in a database
-        return jsonify({'success': True})
-        
+        normalized, errors = normalize_quiz_attempt_payload(data)
+        if errors:
+            return jsonify({'error': 'Invalid attempt data', 'details': errors}), 400
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        ensure_quiz_attempt_logs_table(cursor)
+
+        cursor.execute("""
+        INSERT INTO quiz_attempt_logs (
+            user_id, question_id, selected_answer, correct_answer, is_correct,
+            subject, subtopic, mode, elapsed_seconds, payload_json, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            normalized["user_id"],
+            normalized["question_id"],
+            normalized["selected_answer"],
+            normalized["correct_answer"],
+            normalized["is_correct"],
+            normalized["subject"],
+            normalized["subtopic"],
+            normalized["mode"],
+            normalized["elapsed_seconds"],
+            normalized["payload_json"],
+            normalized["created_at"],
+        ))
+
+        conn.commit()
+        inserted_id = cursor.lastrowid
+        conn.close()
+
+        return jsonify({'success': True, 'id': inserted_id})
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -1319,4 +1433,3 @@ if __name__ == '__main__':
         debug=True,      # Enable debug mode for development
         use_reloader=False  # Disable reloader to avoid issues with async functions
     )
-
