@@ -122,8 +122,13 @@ def normalize_quiz_attempt_payload(data):
     if not isinstance(data, dict):
         return None, ["Payload must be a JSON object."]
 
-    question_id = data.get("question_id") or data.get("idx")
-    selected_answer = data.get("selected_answer") or data.get("answer")
+    question_id = data.get("question_id")
+    if question_id is None:
+        question_id = data.get("idx")
+
+    selected_answer = data.get("selected_answer")
+    if selected_answer is None:
+        selected_answer = data.get("answer")
     correct_answer = data.get("correct_answer")
     is_correct = data.get("is_correct")
     elapsed_seconds = data.get("elapsed_seconds", data.get("time_spent_seconds"))
