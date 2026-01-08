@@ -17,23 +17,40 @@ DB_PATH = ROOT_DIR / 'law_quiz.db'
 def get_table_columns(cursor, table_name):
     """Return a set of column names for a table."""
     # Validate table_name to prevent SQL injection
-    if not table_name.replace('_', '').isalnum():
+    # SQL identifiers must start with letter or underscore, followed by alphanumeric or underscore
+    import re
+    if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', table_name):
         raise ValueError(f"Invalid table name: {table_name}")
     cursor.execute(f"PRAGMA table_info({table_name})")
     return {row[1] for row in cursor.fetchall()}
 
 def ensure_table_columns(cursor, table_name, columns):
     """Add missing columns to a table."""
+    import re
+    
     # Validate table_name to prevent SQL injection
-    if not table_name.replace('_', '').isalnum():
+    if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', table_name):
         raise ValueError(f"Invalid table name: {table_name}")
+    
+    # Whitelist of valid SQL data types
+    valid_types = {
+        'TEXT', 'INTEGER', 'REAL', 'BLOB', 'NUMERIC',
+        'INT', 'TINYINT', 'SMALLINT', 'MEDIUMINT', 'BIGINT',
+        'UNSIGNED BIG INT', 'INT2', 'INT8',
+        'CHARACTER', 'VARCHAR', 'VARYING CHARACTER', 'NCHAR',
+        'NATIVE CHARACTER', 'NVARCHAR', 'CLOB',
+        'DOUBLE', 'DOUBLE PRECISION', 'FLOAT',
+        'BOOLEAN', 'DATE', 'DATETIME'
+    }
     
     existing_columns = get_table_columns(cursor, table_name)
     for column_name, column_type, default_value in columns:
-        # Validate column_name and column_type to prevent SQL injection
-        if not column_name.replace('_', '').isalnum():
+        # Validate column_name: must be valid SQL identifier
+        if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', column_name):
             raise ValueError(f"Invalid column name: {column_name}")
-        if not all(c.isalnum() or c in ('_', ' ', '(', ')') for c in column_type):
+        
+        # Validate column_type: must be in whitelist (case-insensitive)
+        if column_type.upper() not in valid_types:
             raise ValueError(f"Invalid column type: {column_type}")
         
         if column_name not in existing_columns:
