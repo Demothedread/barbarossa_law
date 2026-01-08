@@ -47,9 +47,6 @@ def create_user_tables(conn):
     ''')
 
     ensure_table_columns(cursor, 'users', [
-        ('username', 'TEXT', None),
-        ('email', 'TEXT', None),
-        ('password_hash', 'TEXT', None),
         ('created_at', 'TEXT', None),
         ('last_login', 'TEXT', None),
         ('preferred_mode', 'TEXT', "'classic'"),
