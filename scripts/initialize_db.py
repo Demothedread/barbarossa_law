@@ -46,6 +46,9 @@ def create_user_tables(conn):
     )
     ''')
 
+    # Defensive migration: ensure all columns exist for database upgrades.
+    # For fresh installations, this is redundant but harmless.
+    # For existing databases, this adds any missing columns from schema updates.
     ensure_table_columns(cursor, 'users', [
         ('username', 'TEXT', None),
         ('email', 'TEXT', None),
@@ -75,6 +78,9 @@ def create_user_tables(conn):
     )
     ''')
 
+    # Defensive migration: ensure all columns exist for database upgrades.
+    # For fresh installations, this is redundant but harmless.
+    # For existing databases, this adds any missing columns from schema updates.
     ensure_table_columns(cursor, 'user_preferences', [
         ('audio_enabled', 'INTEGER', 1),
         ('background_music_enabled', 'INTEGER', 1),
