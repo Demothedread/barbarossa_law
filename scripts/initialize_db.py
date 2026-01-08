@@ -6,6 +6,7 @@ This script creates or updates the SQLite database with questions from the SQL f
 
 import csv
 import os
+import re
 import sqlite3
 from pathlib import Path
 
@@ -14,16 +15,71 @@ ROOT_DIR = Path(__file__).parent.parent
 SQL_PATH = ROOT_DIR / 'questions.sql'
 DB_PATH = ROOT_DIR / 'law_quiz.db'
 
+# Whitelist of allowed table names in this database
+ALLOWED_TABLES = {
+    'questions',
+    'question_explanations',
+    'quiz_history',
+    'users',
+    'user_preferences'
+}
+
+# Whitelist of allowed SQLite column types
+ALLOWED_COLUMN_TYPES = {
+    'INTEGER',
+    'TEXT',
+    'REAL',
+    'BLOB',
+    'BOOLEAN'
+}
+
+def is_valid_identifier(name):
+    """
+    Validate that a string is a valid SQL identifier (table or column name).
+    Only allows alphanumeric characters and underscores, must start with letter or underscore.
+    """
+    if not name:
+        return False
+    return bool(re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', name))
+
+def validate_table_name(table_name):
+    """Validate table name against whitelist."""
+    if table_name not in ALLOWED_TABLES:
+        raise ValueError(f"Table name '{table_name}' is not in the allowed whitelist")
+    if not is_valid_identifier(table_name):
+        raise ValueError(f"Table name '{table_name}' contains invalid characters")
+    return True
+
+def validate_column_name(column_name):
+    """Validate column name to prevent SQL injection."""
+    if not is_valid_identifier(column_name):
+        raise ValueError(f"Column name '{column_name}' contains invalid characters")
+    return True
+
+def validate_column_type(column_type):
+    """Validate column type against allowed SQLite types."""
+    # Extract base type (e.g., "INTEGER" from "INTEGER DEFAULT 0")
+    base_type = column_type.strip().split()[0].upper()
+    if base_type not in ALLOWED_COLUMN_TYPES:
+        raise ValueError(f"Column type '{column_type}' is not an allowed SQLite type")
+    return True
+
 def get_table_columns(cursor, table_name):
     """Return a set of column names for a table."""
+    validate_table_name(table_name)
     cursor.execute(f"PRAGMA table_info({table_name})")
     return {row[1] for row in cursor.fetchall()}
 
 def ensure_table_columns(cursor, table_name, columns):
     """Add missing columns to a table."""
+    validate_table_name(table_name)
     existing_columns = get_table_columns(cursor, table_name)
     for column_name, column_type, default_value in columns:
         if column_name not in existing_columns:
+            # Validate column name and type to prevent SQL injection
+            validate_column_name(column_name)
+            validate_column_type(column_type)
+            
             default_clause = f" DEFAULT {default_value}" if default_value is not None else ""
             print(f"Adding '{column_name}' column to {table_name} table...")
             cursor.execute(
@@ -154,6 +210,10 @@ def create_schema(conn):
     
     for column_name, column_type in columns_to_add:
         if column_name not in explanation_columns:
+            # Validate column name and type to prevent SQL injection
+            validate_column_name(column_name)
+            validate_column_type(column_type)
+            
             print(f"Adding '{column_name}' column to question_explanations table...")
             cursor.execute(f'ALTER TABLE question_explanations ADD COLUMN {column_name} {column_type}')
     
