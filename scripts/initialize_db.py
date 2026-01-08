@@ -30,10 +30,23 @@ def ensure_table_columns(cursor, table_name, columns):
                 f'ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type}{default_clause}'
             )
 
+def table_exists(cursor, table_name):
+    """Check if a table exists in the database."""
+    cursor.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+        (table_name,)
+    )
+    return cursor.fetchone() is not None
+
 def create_user_tables(conn):
     """Create user-related tables and ensure required columns exist."""
-    print("Creating users table...")
     cursor = conn.cursor()
+    
+    # Check if tables exist before creating them
+    users_exists = table_exists(cursor, 'users')
+    user_preferences_exists = table_exists(cursor, 'user_preferences')
+    
+    print("Creating users table...")
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -46,14 +59,16 @@ def create_user_tables(conn):
     )
     ''')
 
-    ensure_table_columns(cursor, 'users', [
-        ('username', 'TEXT', None),
-        ('email', 'TEXT', None),
-        ('password_hash', 'TEXT', None),
-        ('created_at', 'TEXT', None),
-        ('last_login', 'TEXT', None),
-        ('preferred_mode', 'TEXT', "'classic'"),
-    ])
+    # Only check for missing columns if table already existed
+    if users_exists:
+        ensure_table_columns(cursor, 'users', [
+            ('username', 'TEXT', None),
+            ('email', 'TEXT', None),
+            ('password_hash', 'TEXT', None),
+            ('created_at', 'TEXT', None),
+            ('last_login', 'TEXT', None),
+            ('preferred_mode', 'TEXT', "'classic'"),
+        ])
 
     cursor.execute('''
     CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(username)
@@ -75,13 +90,15 @@ def create_user_tables(conn):
     )
     ''')
 
-    ensure_table_columns(cursor, 'user_preferences', [
-        ('audio_enabled', 'INTEGER', 1),
-        ('background_music_enabled', 'INTEGER', 1),
-        ('volume_level', 'REAL', 0.7),
-        ('preferred_subjects', 'TEXT', "''"),
-        ('theme_preference', 'TEXT', "'classic'"),
-    ])
+    # Only check for missing columns if table already existed
+    if user_preferences_exists:
+        ensure_table_columns(cursor, 'user_preferences', [
+            ('audio_enabled', 'INTEGER', 1),
+            ('background_music_enabled', 'INTEGER', 1),
+            ('volume_level', 'REAL', 0.7),
+            ('preferred_subjects', 'TEXT', "''"),
+            ('theme_preference', 'TEXT', "'classic'"),
+        ])
 
     conn.commit()
 
