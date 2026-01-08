@@ -16,13 +16,26 @@ DB_PATH = ROOT_DIR / 'law_quiz.db'
 
 def get_table_columns(cursor, table_name):
     """Return a set of column names for a table."""
+    # Validate table_name to prevent SQL injection
+    if not table_name.replace('_', '').isalnum():
+        raise ValueError(f"Invalid table name: {table_name}")
     cursor.execute(f"PRAGMA table_info({table_name})")
     return {row[1] for row in cursor.fetchall()}
 
 def ensure_table_columns(cursor, table_name, columns):
     """Add missing columns to a table."""
+    # Validate table_name to prevent SQL injection
+    if not table_name.replace('_', '').isalnum():
+        raise ValueError(f"Invalid table name: {table_name}")
+    
     existing_columns = get_table_columns(cursor, table_name)
     for column_name, column_type, default_value in columns:
+        # Validate column_name and column_type to prevent SQL injection
+        if not column_name.replace('_', '').isalnum():
+            raise ValueError(f"Invalid column name: {column_name}")
+        if not all(c.isalnum() or c in ('_', ' ', '(', ')') for c in column_type):
+            raise ValueError(f"Invalid column type: {column_type}")
+        
         if column_name not in existing_columns:
             default_clause = f" DEFAULT {default_value}" if default_value is not None else ""
             print(f"Adding '{column_name}' column to {table_name} table...")
@@ -37,29 +50,13 @@ def create_user_tables(conn):
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE,
-        email TEXT UNIQUE,
-        password_hash TEXT,
+        username TEXT NOT NULL UNIQUE,
+        email TEXT NOT NULL UNIQUE,
+        password_hash TEXT NOT NULL,
         created_at TEXT,
         last_login TEXT,
         preferred_mode TEXT DEFAULT 'classic'
     )
-    ''')
-
-    ensure_table_columns(cursor, 'users', [
-        ('username', 'TEXT', None),
-        ('email', 'TEXT', None),
-        ('password_hash', 'TEXT', None),
-        ('created_at', 'TEXT', None),
-        ('last_login', 'TEXT', None),
-        ('preferred_mode', 'TEXT', "'classic'"),
-    ])
-
-    cursor.execute('''
-    CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(username)
-    ''')
-    cursor.execute('''
-    CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email)
     ''')
 
     print("Creating user_preferences table...")
@@ -74,14 +71,6 @@ def create_user_tables(conn):
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )
     ''')
-
-    ensure_table_columns(cursor, 'user_preferences', [
-        ('audio_enabled', 'INTEGER', 1),
-        ('background_music_enabled', 'INTEGER', 1),
-        ('volume_level', 'REAL', 0.7),
-        ('preferred_subjects', 'TEXT', "''"),
-        ('theme_preference', 'TEXT', "'classic'"),
-    ])
 
     conn.commit()
 
