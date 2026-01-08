@@ -109,6 +109,8 @@ def validate_default_value(default_value):
 def get_table_columns(cursor, table_name):
     """Return a set of column names for a table."""
     validate_table_name(table_name)
+    # Safe to use f-string here: table_name validated against whitelist and identifier format
+    # PRAGMA statements don't support parameterized queries in SQLite
     cursor.execute(f"PRAGMA table_info({table_name})")
     return {row[1] for row in cursor.fetchall()}
 
@@ -125,6 +127,8 @@ def ensure_table_columns(cursor, table_name, columns):
             
             default_clause = f" DEFAULT {default_value}" if default_value is not None else ""
             print(f"Adding '{column_name}' column to {table_name} table...")
+            # Safe to use f-string here: all components validated before construction
+            # ALTER TABLE doesn't support parameterized queries for identifiers/types
             cursor.execute(
                 f'ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type}{default_clause}'
             )
