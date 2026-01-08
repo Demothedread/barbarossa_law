@@ -57,15 +57,21 @@ def validate_column_name(column_name):
     return True
 
 def validate_column_type(column_type):
-    """Validate column type against allowed SQLite types."""
-    # Extract base type (e.g., "INTEGER" from "INTEGER DEFAULT 0")
-    base_type = column_type.strip().split()[0].upper()
-    if base_type not in ALLOWED_COLUMN_TYPES:
+    """
+    Validate column type against allowed SQLite types.
+    Since we only use simple types in this codebase (no modifiers),
+    we restrict to basic type names only.
+    """
+    # For this codebase, we only need simple types without modifiers
+    # Strip and uppercase for comparison
+    type_str = column_type.strip().upper()
+    
+    # Must be exactly one of the allowed types (no modifiers)
+    if type_str not in ALLOWED_COLUMN_TYPES:
         raise ValueError(f"Column type '{column_type}' is not an allowed SQLite type")
     
-    # Validate the entire type string to prevent injection through modifiers
-    # Allow only alphanumeric, spaces, and underscores in column type definition
-    if not re.match(r'^[a-zA-Z0-9_\s]+$', column_type.strip()):
+    # Additional check: ensure it only contains valid identifier characters
+    if not re.match(r'^[a-zA-Z]+$', type_str):
         raise ValueError(f"Column type '{column_type}' contains invalid characters")
     
     return True
@@ -85,8 +91,8 @@ def validate_default_value(default_value):
     if re.match(r'^-?\d+(\.\d+)?$', default_str):
         return True
     
-    # Allow quoted strings (single quotes only, properly escaped)
-    if re.match(r"^'[^']*'$", default_str):
+    # Allow quoted strings with proper SQLite escaping (doubled single quotes)
+    if re.match(r"^'([^']|'')*'$", default_str):
         return True
     
     # Allow NULL
