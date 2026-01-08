@@ -62,7 +62,43 @@ def validate_column_type(column_type):
     base_type = column_type.strip().split()[0].upper()
     if base_type not in ALLOWED_COLUMN_TYPES:
         raise ValueError(f"Column type '{column_type}' is not an allowed SQLite type")
+    
+    # Validate the entire type string to prevent injection through modifiers
+    # Allow only alphanumeric, spaces, and underscores in column type definition
+    if not re.match(r'^[a-zA-Z0-9_\s]+$', column_type.strip()):
+        raise ValueError(f"Column type '{column_type}' contains invalid characters")
+    
     return True
+
+def validate_default_value(default_value):
+    """
+    Validate default value to prevent SQL injection.
+    Default values should be safe literals (numbers, quoted strings, or NULL).
+    """
+    if default_value is None:
+        return True
+    
+    # Convert to string for validation
+    default_str = str(default_value).strip()
+    
+    # Allow numeric values
+    if re.match(r'^-?\d+(\.\d+)?$', default_str):
+        return True
+    
+    # Allow quoted strings (single quotes only, properly escaped)
+    if re.match(r"^'[^']*'$", default_str):
+        return True
+    
+    # Allow NULL
+    if default_str.upper() == 'NULL':
+        return True
+    
+    # Allow common SQL keywords for defaults
+    allowed_keywords = {'CURRENT_TIMESTAMP', 'CURRENT_DATE', 'CURRENT_TIME'}
+    if default_str.upper() in allowed_keywords:
+        return True
+    
+    raise ValueError(f"Default value '{default_value}' is not a safe literal")
 
 def get_table_columns(cursor, table_name):
     """Return a set of column names for a table."""
@@ -76,9 +112,10 @@ def ensure_table_columns(cursor, table_name, columns):
     existing_columns = get_table_columns(cursor, table_name)
     for column_name, column_type, default_value in columns:
         if column_name not in existing_columns:
-            # Validate column name and type to prevent SQL injection
+            # Validate column name, type, and default value to prevent SQL injection
             validate_column_name(column_name)
             validate_column_type(column_type)
+            validate_default_value(default_value)
             
             default_clause = f" DEFAULT {default_value}" if default_value is not None else ""
             print(f"Adding '{column_name}' column to {table_name} table...")
@@ -195,27 +232,17 @@ def create_schema(conn):
     )
     ''')
     
-    # Check if new columns exist, if not add them
-    cursor.execute("PRAGMA table_info(question_explanations)")
-    explanation_columns = [row[1] for row in cursor.fetchall()]
-    
+    # Add new columns to question_explanations if they don't exist
     columns_to_add = [
-        ('correct_answer', 'TEXT'),
-        ('choice_a_explanation', 'TEXT'),
-        ('choice_b_explanation', 'TEXT'),
-        ('choice_c_explanation', 'TEXT'),
-        ('choice_d_explanation', 'TEXT'),
-        ('subtopic', 'TEXT')
+        ('correct_answer', 'TEXT', None),
+        ('choice_a_explanation', 'TEXT', None),
+        ('choice_b_explanation', 'TEXT', None),
+        ('choice_c_explanation', 'TEXT', None),
+        ('choice_d_explanation', 'TEXT', None),
+        ('subtopic', 'TEXT', None)
     ]
     
-    for column_name, column_type in columns_to_add:
-        if column_name not in explanation_columns:
-            # Validate column name and type to prevent SQL injection
-            validate_column_name(column_name)
-            validate_column_type(column_type)
-            
-            print(f"Adding '{column_name}' column to question_explanations table...")
-            cursor.execute(f'ALTER TABLE question_explanations ADD COLUMN {column_name} {column_type}')
+    ensure_table_columns(cursor, 'question_explanations', columns_to_add)
     
     # Create quiz history table
     print("Creating quiz_history table...")
