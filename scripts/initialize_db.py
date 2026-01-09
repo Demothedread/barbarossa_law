@@ -15,15 +15,50 @@ SQL_PATH = ROOT_DIR / 'questions.sql'
 DB_PATH = ROOT_DIR / 'law_quiz.db'
 
 def get_table_columns(cursor, table_name):
-    """Return a set of column names for a table."""
+    """Return a set of column names for a table.
+    
+    Args:
+        cursor: Database cursor
+        table_name: Name of the table (must be alphanumeric with underscores only)
+    
+    Raises:
+        ValueError: If table_name contains invalid characters
+    """
+    # Validate table name to prevent SQL injection
+    if not table_name.replace('_', '').isalnum():
+        raise ValueError(f"Invalid table name: {table_name}")
+    
     cursor.execute(f"PRAGMA table_info({table_name})")
     return {row[1] for row in cursor.fetchall()}
 
 def ensure_table_columns(cursor, table_name, columns):
-    """Add missing columns to a table."""
+    """Add missing columns to a table.
+    
+    Args:
+        cursor: Database cursor
+        table_name: Name of the table (must be alphanumeric with underscores only)
+        columns: List of tuples (column_name, column_type, default_value)
+    
+    Raises:
+        ValueError: If table_name or column_name contains invalid characters
+    """
+    # Validate table name to prevent SQL injection
+    if not table_name.replace('_', '').isalnum():
+        raise ValueError(f"Invalid table name: {table_name}")
+    
     existing_columns = get_table_columns(cursor, table_name)
     for column_name, column_type, default_value in columns:
         if column_name not in existing_columns:
+            # Validate column name to prevent SQL injection
+            if not column_name.replace('_', '').isalnum():
+                raise ValueError(f"Invalid column name: {column_name}")
+            
+            # Validate column type is from allowed list
+            allowed_types = ['TEXT', 'INTEGER', 'REAL', 'BLOB', 'BOOLEAN']
+            base_type = column_type.split('(')[0].strip().upper()
+            if base_type not in allowed_types:
+                raise ValueError(f"Invalid column type: {column_type}")
+            
             default_clause = f" DEFAULT {default_value}" if default_value is not None else ""
             print(f"Adding '{column_name}' column to {table_name} table...")
             cursor.execute(
@@ -31,38 +66,48 @@ def ensure_table_columns(cursor, table_name, columns):
             )
 
 def create_user_tables(conn):
-    """Create user-related tables and ensure required columns exist."""
+    """Create user-related tables with proper constraints.
+    
+    This function creates the users and user_preferences tables if they don't exist.
+    For existing tables, it uses ensure_table_columns to add any missing columns
+    that may have been added in newer versions of the schema.
+    """
     print("Creating users table...")
     cursor = conn.cursor()
+    
+    # Check if table already exists to determine if migration is needed
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")
+    table_exists = cursor.fetchone() is not None
+    
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE,
-        email TEXT UNIQUE,
-        password_hash TEXT,
+        username TEXT NOT NULL UNIQUE,
+        email TEXT NOT NULL UNIQUE,
+        password_hash TEXT NOT NULL,
         created_at TEXT,
         last_login TEXT,
         preferred_mode TEXT DEFAULT 'classic'
     )
     ''')
 
-    ensure_table_columns(cursor, 'users', [
-        ('username', 'TEXT', None),
-        ('email', 'TEXT', None),
-        ('password_hash', 'TEXT', None),
-        ('created_at', 'TEXT', None),
-        ('last_login', 'TEXT', None),
-        ('preferred_mode', 'TEXT', "'classic'"),
-    ])
-
-    cursor.execute('''
-    CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(username)
-    ''')
-    cursor.execute('''
-    CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email)
-    ''')
+    # Only check for missing columns if table already existed (migration scenario)
+    if table_exists:
+        ensure_table_columns(cursor, 'users', [
+            ('username', 'TEXT', None),
+            ('email', 'TEXT', None),
+            ('password_hash', 'TEXT', None),
+            ('created_at', 'TEXT', None),
+            ('last_login', 'TEXT', None),
+            ('preferred_mode', 'TEXT', "'classic'"),
+        ])
 
     print("Creating user_preferences table...")
+    
+    # Check if table already exists
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='user_preferences'")
+    prefs_table_exists = cursor.fetchone() is not None
+    
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS user_preferences (
         user_id INTEGER PRIMARY KEY,
@@ -75,13 +120,15 @@ def create_user_tables(conn):
     )
     ''')
 
-    ensure_table_columns(cursor, 'user_preferences', [
-        ('audio_enabled', 'INTEGER', 1),
-        ('background_music_enabled', 'INTEGER', 1),
-        ('volume_level', 'REAL', 0.7),
-        ('preferred_subjects', 'TEXT', "''"),
-        ('theme_preference', 'TEXT', "'classic'"),
-    ])
+    # Only check for missing columns if table already existed (migration scenario)
+    if prefs_table_exists:
+        ensure_table_columns(cursor, 'user_preferences', [
+            ('audio_enabled', 'INTEGER', 1),
+            ('background_music_enabled', 'INTEGER', 1),
+            ('volume_level', 'REAL', 0.7),
+            ('preferred_subjects', 'TEXT', "''"),
+            ('theme_preference', 'TEXT', "'classic'"),
+        ])
 
     conn.commit()
 
