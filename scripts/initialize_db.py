@@ -19,13 +19,15 @@ def get_table_columns(cursor, table_name):
     
     Args:
         cursor: Database cursor
-        table_name: Name of the table (must be alphanumeric with underscores only)
+        table_name: Name of the table (must be a valid SQLite identifier)
     
     Raises:
         ValueError: If table_name contains invalid characters
     """
     # Validate table name to prevent SQL injection
-    if not table_name.replace('_', '').isalnum():
+    # SQLite identifiers can contain alphanumeric, underscore, and start with letter or underscore
+    import re
+    if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', table_name):
         raise ValueError(f"Invalid table name: {table_name}")
     
     cursor.execute(f"PRAGMA table_info({table_name})")
@@ -36,25 +38,26 @@ def ensure_table_columns(cursor, table_name, columns):
     
     Args:
         cursor: Database cursor
-        table_name: Name of the table (must be alphanumeric with underscores only)
+        table_name: Name of the table (must be a valid SQLite identifier)
         columns: List of tuples (column_name, column_type, default_value)
     
     Raises:
         ValueError: If table_name or column_name contains invalid characters
     """
     # Validate table name to prevent SQL injection
-    if not table_name.replace('_', '').isalnum():
+    import re
+    if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', table_name):
         raise ValueError(f"Invalid table name: {table_name}")
     
     existing_columns = get_table_columns(cursor, table_name)
     for column_name, column_type, default_value in columns:
         if column_name not in existing_columns:
             # Validate column name to prevent SQL injection
-            if not column_name.replace('_', '').isalnum():
+            if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', column_name):
                 raise ValueError(f"Invalid column name: {column_name}")
             
             # Validate column type is from allowed list
-            allowed_types = ['TEXT', 'INTEGER', 'REAL', 'BLOB', 'BOOLEAN']
+            allowed_types = ['TEXT', 'INTEGER', 'REAL', 'BLOB']
             base_type = column_type.split('(')[0].strip().upper()
             if base_type not in allowed_types:
                 raise ValueError(f"Invalid column type: {column_type}")
