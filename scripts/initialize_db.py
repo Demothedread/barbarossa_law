@@ -6,6 +6,7 @@ This script creates or updates the SQLite database with questions from the SQL f
 
 import csv
 import os
+import re
 import sqlite3
 from pathlib import Path
 
@@ -26,7 +27,6 @@ def get_table_columns(cursor, table_name):
     """
     # Validate table name to prevent SQL injection
     # SQLite identifiers can contain alphanumeric, underscore, and start with letter or underscore
-    import re
     if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', table_name):
         raise ValueError(f"Invalid table name: {table_name}")
     
@@ -45,7 +45,6 @@ def ensure_table_columns(cursor, table_name, columns):
         ValueError: If table_name or column_name contains invalid characters
     """
     # Validate table name to prevent SQL injection
-    import re
     if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', table_name):
         raise ValueError(f"Invalid table name: {table_name}")
     
@@ -64,6 +63,8 @@ def ensure_table_columns(cursor, table_name, columns):
             
             default_clause = f" DEFAULT {default_value}" if default_value is not None else ""
             print(f"Adding '{column_name}' column to {table_name} table...")
+            # Note: f-string is safe here because all inputs are validated above
+            # SQLite ALTER TABLE does not support parameterized queries for DDL statements
             cursor.execute(
                 f'ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type}{default_clause}'
             )
