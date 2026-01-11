@@ -172,6 +172,24 @@ def table_exists(cursor, table_name):
     return cursor.fetchone() is not None
 
 def create_user_tables(conn):
+    """Create user-related tables with proper constraints.
+    
+    This function creates the users and user_preferences tables if they don't exist.
+    For existing tables, it uses ensure_table_columns to add any missing columns
+    that may have been added in newer versions of the schema.
+    """
+    print("Creating users table...")
+    cursor = conn.cursor()
+    
+    # Check if table already exists to determine if migration is needed
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")
+    table_exists = cursor.fetchone() is not None
+    
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL UNIQUE,
+        email TEXT NOT NULL UNIQUE,
     """Create user-related tables and ensure required columns exist."""
     cursor = conn.cursor()
     
@@ -204,6 +222,11 @@ def create_user_tables(conn):
         ])
 
     print("Creating user_preferences table...")
+    
+    # Check if table already exists
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='user_preferences'")
+    prefs_table_exists = cursor.fetchone() is not None
+    
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS user_preferences (
         user_id INTEGER PRIMARY KEY,
