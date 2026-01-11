@@ -4,6 +4,9 @@
       "type": "project",
       "description": "Web-based quiz framework"
     },
+    "AuthDatabaseSchema": {
+      "type": "schema",
+      "description": "SQLite tables for user accounts and preferences"
     "QuizAttemptLogs": {
       "type": "module",
       "description": "Stores validated quiz attempt payloads with timestamps"
@@ -40,6 +43,10 @@
     "review": "Post quiz review with explanations",
     "progress": "Stats per topic",
     "mindMap": "3D interactive exploration of bodies of law",
+    "userAuth": "Registration/login backed by users and user_preferences tables"
+  },
+  "relations": {
+    "LawQuizzer-uses-AuthDatabaseSchema": "LawQuizzer backend stores auth and preferences in users and user_preferences tables",
     "uiControllerTests": "Jest coverage for lq-main, lq-review, theme, and auth flows",
     "apiEndpointTests": "Pytest coverage for auth, quiz history, and AI explanation fallbacks"
   },
@@ -53,6 +60,7 @@
   },
   "notes": {
     "configEndpoint": "Added /api/config for basic diagnostics",
+    "authTables": "Initialization script now creates and migrates users and user_preferences tables"
     "quizAttemptLogTable": "quiz_attempt_logs stores normalized attempt data with timestamps"
     "essayGradingEndpoint": "Added /api/essay-grade to score essay responses with line-by-line feedback"
   }

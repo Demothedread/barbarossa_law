@@ -14,6 +14,77 @@ ROOT_DIR = Path(__file__).parent.parent
 SQL_PATH = ROOT_DIR / 'questions.sql'
 DB_PATH = ROOT_DIR / 'law_quiz.db'
 
+def get_table_columns(cursor, table_name):
+    """Return a set of column names for a table."""
+    cursor.execute(f"PRAGMA table_info({table_name})")
+    return {row[1] for row in cursor.fetchall()}
+
+def ensure_table_columns(cursor, table_name, columns):
+    """Add missing columns to a table."""
+    existing_columns = get_table_columns(cursor, table_name)
+    for column_name, column_type, default_value in columns:
+        if column_name not in existing_columns:
+            default_clause = f" DEFAULT {default_value}" if default_value is not None else ""
+            print(f"Adding '{column_name}' column to {table_name} table...")
+            cursor.execute(
+                f'ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type}{default_clause}'
+            )
+
+def create_user_tables(conn):
+    """Create user-related tables and ensure required columns exist."""
+    print("Creating users table...")
+    cursor = conn.cursor()
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE,
+        email TEXT UNIQUE,
+        password_hash TEXT,
+        created_at TEXT,
+        last_login TEXT,
+        preferred_mode TEXT DEFAULT 'classic'
+    )
+    ''')
+
+    ensure_table_columns(cursor, 'users', [
+        ('username', 'TEXT', None),
+        ('email', 'TEXT', None),
+        ('password_hash', 'TEXT', None),
+        ('created_at', 'TEXT', None),
+        ('last_login', 'TEXT', None),
+        ('preferred_mode', 'TEXT', "'classic'"),
+    ])
+
+    cursor.execute('''
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(username)
+    ''')
+    cursor.execute('''
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email)
+    ''')
+
+    print("Creating user_preferences table...")
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS user_preferences (
+        user_id INTEGER PRIMARY KEY,
+        audio_enabled INTEGER DEFAULT 1,
+        background_music_enabled INTEGER DEFAULT 1,
+        volume_level REAL DEFAULT 0.7,
+        preferred_subjects TEXT DEFAULT '',
+        theme_preference TEXT DEFAULT 'classic',
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+    ''')
+
+    ensure_table_columns(cursor, 'user_preferences', [
+        ('audio_enabled', 'INTEGER', 1),
+        ('background_music_enabled', 'INTEGER', 1),
+        ('volume_level', 'REAL', 0.7),
+        ('preferred_subjects', 'TEXT', "''"),
+        ('theme_preference', 'TEXT', "'classic'"),
+    ])
+
+    conn.commit()
+
 def create_schema(conn):
     """Create the database schema if it doesn't exist"""
     print("Creating questions table...")
@@ -207,6 +278,7 @@ def main():
     
     # Create schema if needed
     create_schema(conn)
+    create_user_tables(conn)
     
     # Import questions from SQL file
     success = import_questions(conn)
