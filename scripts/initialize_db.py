@@ -14,11 +14,14 @@ ROOT_DIR = Path(__file__).parent.parent
 SQL_PATH = ROOT_DIR / 'questions.sql'
 DB_PATH = ROOT_DIR / 'law_quiz.db'
 
+# Whitelist of allowed table names for security
+ALLOWED_TABLES = {'users', 'user_preferences', 'questions', 'question_explanations', 'quiz_history'}
+
 def get_table_columns(cursor, table_name):
     """Return a set of column names for a table."""
-    # Validate table_name to prevent SQL injection
-    if not table_name.replace('_', '').isalnum():
-        raise ValueError(f"Invalid table name: {table_name}")
+    # Validate table_name against whitelist to prevent SQL injection
+    if table_name not in ALLOWED_TABLES:
+        raise ValueError(f"Invalid table name: {table_name}. Must be one of: {ALLOWED_TABLES}")
     cursor.execute(f"PRAGMA table_info({table_name})")
     return {row[1] for row in cursor.fetchall()}
 
@@ -26,11 +29,15 @@ def ensure_table_columns(cursor, table_name, columns):
     """Add missing columns to a table (for migrations only)."""
     existing_columns = get_table_columns(cursor, table_name)
     for column_name, column_type, default_value in columns:
-        # Validate column_name and column_type to prevent SQL injection
+        # Validate column_name: allow alphanumeric and underscores only
         if not column_name.replace('_', '').isalnum():
             raise ValueError(f"Invalid column name: {column_name}")
-        if not all(c.isalnum() or c in ' ()_,' for c in column_type):
-            raise ValueError(f"Invalid column type: {column_type}")
+        # Validate column_type: allow only SQL type keywords and common patterns
+        # Strip whitespace and parentheses content for validation
+        base_type = column_type.split('(')[0].strip().upper()
+        allowed_types = {'TEXT', 'INTEGER', 'REAL', 'BLOB', 'NUMERIC'}
+        if base_type not in allowed_types:
+            raise ValueError(f"Invalid column type: {column_type}. Must be one of: {allowed_types}")
         
         if column_name not in existing_columns:
             default_clause = f" DEFAULT {default_value}" if default_value is not None else ""
