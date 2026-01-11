@@ -73,7 +73,6 @@ def flask_cors(app):
         return jsonify({'status': 'ok'})    
     
 if __name__ == '__main__':
-    app.run(debug=True, port=5001)
     flask_cors(app)
     print(f"Starting Flask API server on port 5001...")
     print(f"Database path: {DB_PATH}")
@@ -81,5 +80,6 @@ if __name__ == '__main__':
     print("Visit http://localhost:5001/api/questions to test the API")
     print("Visit http://localhost:5001/api/subjects to get available subjects")
     print("Press Ctrl+C to stop the server")
+    app.run(debug=True, port=5001)
 
     
