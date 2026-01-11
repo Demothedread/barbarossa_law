@@ -108,6 +108,11 @@ def validate_default_value(default_value):
 
 def get_table_columns(cursor, table_name):
     """Return a set of column names for a table."""
+    # Validate table_name to prevent SQL injection
+    # SQL identifiers must start with letter or underscore, followed by alphanumeric or underscore
+    import re
+    if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', table_name):
+        raise ValueError(f"Invalid table name: {table_name}")
     validate_table_name(table_name)
     # Safe to use f-string here: table_name validated against whitelist and identifier format
     # PRAGMA statements don't support parameterized queries in SQLite
@@ -116,9 +121,34 @@ def get_table_columns(cursor, table_name):
 
 def ensure_table_columns(cursor, table_name, columns):
     """Add missing columns to a table."""
+    import re
+    
+    # Validate table_name to prevent SQL injection
+    if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', table_name):
+        raise ValueError(f"Invalid table name: {table_name}")
+    
+    # Whitelist of valid SQL data types
+    valid_types = {
+        'TEXT', 'INTEGER', 'REAL', 'BLOB', 'NUMERIC',
+        'INT', 'TINYINT', 'SMALLINT', 'MEDIUMINT', 'BIGINT',
+        'UNSIGNED BIG INT', 'INT2', 'INT8',
+        'CHARACTER', 'VARCHAR', 'VARYING CHARACTER', 'NCHAR',
+        'NATIVE CHARACTER', 'NVARCHAR', 'CLOB',
+        'DOUBLE', 'DOUBLE PRECISION', 'FLOAT',
+        'BOOLEAN', 'DATE', 'DATETIME'
+    }
+    
     validate_table_name(table_name)
     existing_columns = get_table_columns(cursor, table_name)
     for column_name, column_type, default_value in columns:
+        # Validate column_name: must be valid SQL identifier
+        if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', column_name):
+            raise ValueError(f"Invalid column name: {column_name}")
+        
+        # Validate column_type: must be in whitelist (case-insensitive)
+        if column_type.upper() not in valid_types:
+            raise ValueError(f"Invalid column type: {column_type}")
+        
         if column_name not in existing_columns:
             # Validate column name, type, and default value to prevent SQL injection
             validate_column_name(column_name)
@@ -178,7 +208,7 @@ def create_user_tables(conn):
     CREATE TABLE IF NOT EXISTS user_preferences (
         user_id INTEGER PRIMARY KEY,
         audio_enabled INTEGER DEFAULT 1,
-        background_music_enabled INTEGER DEFAULT 1,
+        background_music_enabled INTEGER                                                                                                                                                             DEFAULT 1,
         volume_level REAL DEFAULT 0.7,
         preferred_subjects TEXT DEFAULT '',
         theme_preference TEXT DEFAULT 'classic',
