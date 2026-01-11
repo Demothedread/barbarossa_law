@@ -277,8 +277,8 @@ def log_quiz_attempt():
                 normalized["created_at"],
             ))
 
-        conn.commit()
-        inserted_id = cursor.lastrowid
+            conn.commit()
+            inserted_id = cursor.lastrowid
 
             return jsonify({'success': True, 'id': inserted_id})
         finally:
