@@ -6,6 +6,7 @@ This script creates or updates the SQLite database with questions from the SQL f
 
 import csv
 import os
+import re
 import sqlite3
 from pathlib import Path
 
@@ -14,26 +15,141 @@ ROOT_DIR = Path(__file__).parent.parent
 SQL_PATH = ROOT_DIR / 'questions.sql'
 DB_PATH = ROOT_DIR / 'law_quiz.db'
 
+# Whitelist of allowed table names in this database
+ALLOWED_TABLES = {
+    'questions',
+    'question_explanations',
+    'quiz_history',
+    'users',
+    'user_preferences'
+}
+
+# Whitelist of allowed SQLite column types
+ALLOWED_COLUMN_TYPES = {
+    'INTEGER',
+    'TEXT',
+    'REAL',
+    'BLOB',
+    'BOOLEAN'
+}
+
+def is_valid_identifier(name):
+    """
+    Validate that a string is a valid SQL identifier (table or column name).
+    Only allows alphanumeric characters and underscores, must start with letter or underscore.
+    """
+    if not name:
+        return False
+    return bool(re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', name))
+
+def validate_table_name(table_name):
+    """Validate table name against whitelist."""
+    if table_name not in ALLOWED_TABLES:
+        raise ValueError(f"Table name '{table_name}' is not in the allowed whitelist")
+    if not is_valid_identifier(table_name):
+        raise ValueError(f"Table name '{table_name}' contains invalid characters")
+    return True
+
+def validate_column_name(column_name):
+    """Validate column name to prevent SQL injection."""
+    if not is_valid_identifier(column_name):
+        raise ValueError(f"Column name '{column_name}' contains invalid characters")
+    return True
+
+def validate_column_type(column_type):
+    """
+    Validate column type against allowed SQLite types.
+    Since we only use simple types in this codebase (no modifiers),
+    we restrict to basic type names only.
+    """
+    # For this codebase, we only need simple types without modifiers
+    # Strip and uppercase for comparison
+    type_str = column_type.strip().upper()
+    
+    # Must be exactly one of the allowed types (no modifiers)
+    if type_str not in ALLOWED_COLUMN_TYPES:
+        raise ValueError(f"Column type '{column_type}' is not an allowed SQLite type")
+    
+    # Additional check: ensure it only contains valid identifier characters
+    if not re.match(r'^[a-zA-Z]+$', type_str):
+        raise ValueError(f"Column type '{column_type}' contains invalid characters")
+    
+    return True
+
+def validate_default_value(default_value):
+    """
+    Validate default value to prevent SQL injection.
+    Default values should be safe literals (numbers, quoted strings, or NULL).
+    """
+    if default_value is None:
+        return True
+    
+    # Convert to string for validation
+    default_str = str(default_value).strip()
+    
+    # Allow numeric values
+    if re.match(r'^-?\d+(\.\d+)?$', default_str):
+        return True
+    
+    # Allow quoted strings with proper SQLite escaping (doubled single quotes)
+    if re.match(r"^'([^']|'')*'$", default_str):
+        return True
+    
+    # Allow NULL
+    if default_str.upper() == 'NULL':
+        return True
+    
+    # Allow common SQL keywords for defaults
+    allowed_keywords = {'CURRENT_TIMESTAMP', 'CURRENT_DATE', 'CURRENT_TIME'}
+    if default_str.upper() in allowed_keywords:
+        return True
+    
+    raise ValueError(f"Default value '{default_value}' is not a safe literal")
+
 def get_table_columns(cursor, table_name):
     """Return a set of column names for a table."""
+    validate_table_name(table_name)
+    # Safe to use f-string here: table_name validated against whitelist and identifier format
+    # PRAGMA statements don't support parameterized queries in SQLite
     cursor.execute(f"PRAGMA table_info({table_name})")
     return {row[1] for row in cursor.fetchall()}
 
 def ensure_table_columns(cursor, table_name, columns):
     """Add missing columns to a table."""
+    validate_table_name(table_name)
     existing_columns = get_table_columns(cursor, table_name)
     for column_name, column_type, default_value in columns:
         if column_name not in existing_columns:
+            # Validate column name, type, and default value to prevent SQL injection
+            validate_column_name(column_name)
+            validate_column_type(column_type)
+            validate_default_value(default_value)
+            
             default_clause = f" DEFAULT {default_value}" if default_value is not None else ""
             print(f"Adding '{column_name}' column to {table_name} table...")
+            # Safe to use f-string here: all components validated before construction
+            # ALTER TABLE doesn't support parameterized queries for identifiers/types
             cursor.execute(
                 f'ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type}{default_clause}'
             )
 
+def table_exists(cursor, table_name):
+    """Check if a table exists in the database."""
+    cursor.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+        (table_name,)
+    )
+    return cursor.fetchone() is not None
+
 def create_user_tables(conn):
     """Create user-related tables and ensure required columns exist."""
-    print("Creating users table...")
     cursor = conn.cursor()
+    
+    # Check if tables exist before creating them
+    users_exists = table_exists(cursor, 'users')
+    user_preferences_exists = table_exists(cursor, 'user_preferences')
+    
+    print("Creating users table...")
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -46,17 +162,16 @@ def create_user_tables(conn):
     )
     ''')
 
-    # Defensive migration: ensure all columns exist for database upgrades.
-    # For fresh installations, this is redundant but harmless.
-    # For existing databases, this adds any missing columns from schema updates.
-    ensure_table_columns(cursor, 'users', [
-        ('username', 'TEXT', None),
-        ('email', 'TEXT', None),
-        ('password_hash', 'TEXT', None),
-        ('created_at', 'TEXT', None),
-        ('last_login', 'TEXT', None),
-        ('preferred_mode', 'TEXT', "'classic'"),
-    ])
+    # Only check for missing columns if table already existed
+    if users_exists:
+        ensure_table_columns(cursor, 'users', [
+            ('username', 'TEXT', None),
+            ('email', 'TEXT', None),
+            ('password_hash', 'TEXT', None),
+            ('created_at', 'TEXT', None),
+            ('last_login', 'TEXT', None),
+            ('preferred_mode', 'TEXT', "'classic'"),
+        ])
 
     cursor.execute('''
     CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(username)
@@ -78,16 +193,15 @@ def create_user_tables(conn):
     )
     ''')
 
-    # Defensive migration: ensure all columns exist for database upgrades.
-    # For fresh installations, this is redundant but harmless.
-    # For existing databases, this adds any missing columns from schema updates.
-    ensure_table_columns(cursor, 'user_preferences', [
-        ('audio_enabled', 'INTEGER', 1),
-        ('background_music_enabled', 'INTEGER', 1),
-        ('volume_level', 'REAL', 0.7),
-        ('preferred_subjects', 'TEXT', "''"),
-        ('theme_preference', 'TEXT', "'classic'"),
-    ])
+    # Only check for missing columns if table already existed
+    if user_preferences_exists:
+        ensure_table_columns(cursor, 'user_preferences', [
+            ('audio_enabled', 'INTEGER', 1),
+            ('background_music_enabled', 'INTEGER', 1),
+            ('volume_level', 'REAL', 0.7),
+            ('preferred_subjects', 'TEXT', "''"),
+            ('theme_preference', 'TEXT', "'classic'"),
+        ])
 
     conn.commit()
 
@@ -145,23 +259,17 @@ def create_schema(conn):
     )
     ''')
     
-    # Check if new columns exist, if not add them
-    cursor.execute("PRAGMA table_info(question_explanations)")
-    explanation_columns = [row[1] for row in cursor.fetchall()]
-    
+    # Add new columns to question_explanations if they don't exist
     columns_to_add = [
-        ('correct_answer', 'TEXT'),
-        ('choice_a_explanation', 'TEXT'),
-        ('choice_b_explanation', 'TEXT'),
-        ('choice_c_explanation', 'TEXT'),
-        ('choice_d_explanation', 'TEXT'),
-        ('subtopic', 'TEXT')
+        ('correct_answer', 'TEXT', None),
+        ('choice_a_explanation', 'TEXT', None),
+        ('choice_b_explanation', 'TEXT', None),
+        ('choice_c_explanation', 'TEXT', None),
+        ('choice_d_explanation', 'TEXT', None),
+        ('subtopic', 'TEXT', None)
     ]
     
-    for column_name, column_type in columns_to_add:
-        if column_name not in explanation_columns:
-            print(f"Adding '{column_name}' column to question_explanations table...")
-            cursor.execute(f'ALTER TABLE question_explanations ADD COLUMN {column_name} {column_type}')
+    ensure_table_columns(cursor, 'question_explanations', columns_to_add)
     
     # Create quiz history table
     print("Creating quiz_history table...")
