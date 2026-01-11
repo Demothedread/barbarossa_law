@@ -142,8 +142,13 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
-# Python
+# SQLite database files
+*.db
+*.db-shm
+*.db-wal
+
+# Python cache
 __pycache__/
 *.py[cod]
+*$py.class
 *.class
-*.so
