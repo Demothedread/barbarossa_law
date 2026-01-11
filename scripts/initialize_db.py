@@ -103,6 +103,25 @@ def create_schema(conn):
     )
     ''')
     
+    # Create quiz attempt logs table
+    print("Creating quiz_attempt_logs table...")
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS quiz_attempt_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT,
+        question_id TEXT,
+        selected_answer TEXT,
+        correct_answer TEXT,
+        is_correct INTEGER,
+        subject TEXT,
+        subtopic TEXT,
+        mode TEXT,
+        elapsed_seconds REAL,
+        payload_json TEXT,
+        created_at TEXT
+    )
+    ''')
+    
     conn.commit()
 
 def import_questions(conn):
