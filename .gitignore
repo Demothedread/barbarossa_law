@@ -142,7 +142,7 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
-# Python
+# Python cache files
 __pycache__/
 *.py[cod]
 *$py.class
