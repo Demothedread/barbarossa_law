@@ -92,6 +92,38 @@ export async function fetchAIExplanations(questionIds) {
 }
 
 /**
+ * Grade an essay response using the AI grading endpoint.
+ * @param {Object} payload - Essay grading payload.
+ * @param {string} payload.question - Essay prompt text.
+ * @param {string} payload.answer - User's essay response text.
+ * @param {number} [payload.max_points] - Optional maximum points to grade against.
+ * @returns {Promise<Object>} Grade response with rubric and line feedback.
+ */
+export async function gradeEssayResponse({ question, answer, max_points: maxPoints }) {
+  try {
+    const resp = await fetch(`${API_BASE}/essay-grade`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({
+        question,
+        answer,
+        max_points: maxPoints
+      })
+    });
+
+    if (!resp.ok) {
+      const errorText = await resp.text();
+      throw new Error(`Failed to grade essay: ${errorText}`);
+    }
+
+    return await resp.json();
+  } catch (error) {
+    console.error('Error grading essay:', error);
+    throw error;
+  }
+}
+
+/**
  * Log quiz history with detailed stats
  * @param {Object} quizData - Quiz data to log
  * @returns {Promise<Object>} Response with success status

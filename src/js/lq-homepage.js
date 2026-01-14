@@ -4,6 +4,7 @@
  */
 
 import { fetchSubtopicStats, getQuizHistory } from './lq-api.js';
+import { createEssayWriterSection } from './lq-essay-writer.js';
 import {
   AccessibilityManager,
   DataCacheManager,
@@ -195,6 +196,9 @@ export class Homepage {
     if (statsWidget) {
       statsSection.querySelector('#homepageStatsWidget').appendChild(statsWidget);
     }
+
+    const essayWriterSection = createEssayWriterSection();
+    this.container.appendChild(essayWriterSection);
 
     // Add more modules/sections as needed...
   }
