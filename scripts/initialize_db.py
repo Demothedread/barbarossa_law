@@ -6,6 +6,7 @@ This script creates or updates the SQLite database with questions from the SQL f
 
 import csv
 import os
+import re
 import sqlite3
 from pathlib import Path
 
@@ -14,20 +15,176 @@ ROOT_DIR = Path(__file__).parent.parent
 SQL_PATH = ROOT_DIR / 'questions.sql'
 DB_PATH = ROOT_DIR / 'law_quiz.db'
 
-# Whitelist of allowed table names for security
-ALLOWED_TABLES = {'users', 'user_preferences', 'questions', 'question_explanations', 'quiz_history'}
+# Whitelist of allowed table names to prevent SQL injection
+ALLOWED_TABLES = {
+    'questions',
+    'question_explanations',
+    'quiz_history',
+    'users',
+    'user_preferences'
+}
+
+# Whitelist of allowed SQLite column types
+# Note: SQLite type affinity is flexible - INTEGER is preferred for whole numbers,
+# REAL for floating point, and NUMERIC for precise decimal values
+ALLOWED_COLUMN_TYPES = {
+    'INTEGER',
+    'TEXT',
+    'REAL',
+    'BLOB',
+    'BOOLEAN',
+    'NUMERIC'
+}
+
+def validate_sql_identifier(identifier, identifier_type="identifier"):
+    """
+    Validate that a string is a safe SQL identifier (table or column name).
+    Only allows alphanumeric characters and underscores, must start with letter or underscore.
+    
+    Args:
+        identifier: The string to validate
+        identifier_type: Description of what kind of identifier (for error messages)
+    
+    Returns:
+        True if valid
+        
+    Raises:
+        ValueError if identifier contains invalid characters
+    """
+    if not identifier:
+        raise ValueError(f"Empty {identifier_type} name")
+    if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', identifier):
+        raise ValueError(f"Invalid {identifier_type} name: {identifier}")
+    return True
+
+def validate_table_name(table_name):
+    """
+    Validate table name against whitelist and SQL identifier rules.
+    
+    Args:
+        table_name: Name of the table to validate
+        
+    Returns:
+        True if valid
+        
+    Raises:
+        ValueError if table name is not allowed or invalid
+    """
+    validate_sql_identifier(table_name, "table")
+    if table_name not in ALLOWED_TABLES:
+        raise ValueError(f"Table name '{table_name}' is not in the allowed whitelist: {ALLOWED_TABLES}")
+    return True
+
+def validate_column_type(column_type):
+    """
+    Validate column type against allowed SQLite types.
+    
+    Args:
+        column_type: SQLite column type to validate
+        
+    Returns:
+        True if valid
+        
+    Raises:
+        ValueError if type is not allowed
+    """
+    type_upper = column_type.strip().upper()
+    if type_upper not in ALLOWED_COLUMN_TYPES:
+        raise ValueError(f"Column type '{column_type}' is not in allowed types: {ALLOWED_COLUMN_TYPES}")
+    return True
+
+def validate_default_value(default_value):
+    """
+    Validate default value to ensure it's a safe literal.
+    
+    Args:
+        default_value: The default value to validate (can be None, number, or quoted string)
+        
+    Returns:
+        True if valid
+        
+    Raises:
+        ValueError if default value is not a safe literal
+    """
+    if default_value is None:
+        return True
+    
+    default_str = str(default_value).strip()
+    
+    # Allow numeric values
+    if re.match(r'^-?\d+(\.\d+)?$', default_str):
+        return True
+    
+    # Allow properly quoted strings (single quotes with escaped quotes)
+    if re.match(r"^'([^']|'')*'$", default_str):
+        return True
+    
+    # Allow NULL keyword
+    if default_str.upper() == 'NULL':
+        return True
+    
+    # Allow common SQL timestamp functions
+    if default_str.upper() in {'CURRENT_TIMESTAMP', 'CURRENT_DATE', 'CURRENT_TIME'}:
+        return True
+    
+    raise ValueError(f"Default value '{default_value}' is not a safe literal")
+
+def table_exists(cursor, table_name):
+    """
+    Check if a table exists in the database.
+    
+    Args:
+        cursor: Database cursor
+        table_name: Name of table to check
+        
+    Returns:
+        True if table exists, False otherwise
+    """
+    validate_table_name(table_name)
+    cursor.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+        (table_name,)
+    )
+    return cursor.fetchone() is not None
 
 def get_table_columns(cursor, table_name):
-    """Return a set of column names for a table."""
-    # Validate table_name against whitelist to prevent SQL injection
-    if table_name not in ALLOWED_TABLES:
-        raise ValueError(f"Invalid table name: {table_name}. Must be one of: {ALLOWED_TABLES}")
+    """
+    Return a set of column names for a table.
+    
+    Args:
+        cursor: Database cursor
+        table_name: Name of the table
+        
+    Returns:
+        Set of column names in the table
+        
+    Raises:
+        ValueError if table_name is invalid
+    """
+    # Validate table_name to prevent SQL injection
+    validate_table_name(table_name)
+    # PRAGMA statements don't support parameterized queries in SQLite
+    # Safe to use f-string here since table_name has been validated
     cursor.execute(f"PRAGMA table_info({table_name})")
     return {row[1] for row in cursor.fetchall()}
 
 def ensure_table_columns(cursor, table_name, columns):
-    """Add missing columns to a table (for migrations only)."""
+    """
+    Add missing columns to an existing table.
+    
+    Args:
+        cursor: Database cursor
+        table_name: Name of the table to modify
+        columns: List of tuples (column_name, column_type, default_value)
+        
+    Raises:
+        ValueError if any parameter contains invalid SQL
+    """
+    # Validate table_name to prevent SQL injection
+    validate_table_name(table_name)
+    
     existing_columns = get_table_columns(cursor, table_name)
+    
     for column_name, column_type, default_value in columns:
         # Validate column_name: allow alphanumeric and underscores only
         if not column_name.replace('_', '').isalnum():
@@ -40,21 +197,34 @@ def ensure_table_columns(cursor, table_name, columns):
             raise ValueError(f"Invalid column type: {column_type}. Must be one of: {allowed_types}")
         
         if column_name not in existing_columns:
+            # Validate all parameters before constructing SQL
+            validate_sql_identifier(column_name, "column")
+            validate_column_type(column_type)
+            validate_default_value(default_value)
+            
             default_clause = f" DEFAULT {default_value}" if default_value is not None else ""
             print(f"Adding '{column_name}' column to {table_name} table...")
+            # ALTER TABLE doesn't support parameterized queries for DDL in SQLite
+            # Safe to use f-string here since all parameters have been validated
             cursor.execute(
                 f'ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type}{default_clause}'
             )
 
 def create_user_tables(conn):
-    """Create user-related tables and ensure required columns exist."""
-    print("Creating users table...")
+    """
+    Create user-related tables with proper constraints.
+    
+    This function creates the users and user_preferences tables if they don't exist.
+    For existing tables (during upgrades), it uses ensure_table_columns to add any 
+    missing columns that may have been added in newer versions of the schema.
+    """
     cursor = conn.cursor()
     
-    # Check if users table already exists for migration logic
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")
-    users_table_exists = cursor.fetchone() is not None
+    # Check if tables already exist (for migration logic)
+    users_table_exists = table_exists(cursor, 'users')
+    user_preferences_table_exists = table_exists(cursor, 'user_preferences')
     
+    print("Creating users table...")
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -67,7 +237,7 @@ def create_user_tables(conn):
     )
     ''')
 
-    # Only run migration logic if table existed before (not for fresh creation)
+    # Only migrate columns if table already existed (not on fresh creation)
     if users_table_exists:
         ensure_table_columns(cursor, 'users', [
             ('username', 'TEXT', None),
@@ -77,6 +247,9 @@ def create_user_tables(conn):
             ('last_login', 'TEXT', None),
             ('preferred_mode', 'TEXT', "'classic'"),
         ])
+
+    # Note: UNIQUE constraints automatically create indexes in SQLite,
+    # so explicit index creation is redundant and has been removed
 
     print("Creating user_preferences table...")
     
@@ -96,8 +269,8 @@ def create_user_tables(conn):
     )
     ''')
 
-    # Only run migration logic if table existed before (not for fresh creation)
-    if prefs_table_exists:
+    # Only migrate columns if table already existed (not on fresh creation)
+    if user_preferences_table_exists:
         ensure_table_columns(cursor, 'user_preferences', [
             ('audio_enabled', 'INTEGER', 1),
             ('background_music_enabled', 'INTEGER', 1),
@@ -137,12 +310,13 @@ def create_schema(conn):
     )
     ''')
     
-    # Check if 'generated' column exists, if not add it
-    cursor.execute("PRAGMA table_info(questions)")
-    columns = [row[1] for row in cursor.fetchall()]
-    if 'generated' not in columns:
-        print("Adding 'generated' column to questions table...")
-        cursor.execute('ALTER TABLE questions ADD COLUMN generated INTEGER DEFAULT 0')
+    # Add columns if they don't exist (for migration from older schemas)
+    # Both 'generated' and 'subtopic' are defined in CREATE TABLE above
+    # Note: Uses ensure_table_columns with proper validation
+    ensure_table_columns(cursor, 'questions', [
+        ('generated', 'INTEGER', 0),
+        ('subtopic', 'TEXT', None)
+    ])
     
     # Create AI explanations table with separate columns for each choice
     print("Creating question_explanations table...")
@@ -162,23 +336,18 @@ def create_schema(conn):
     )
     ''')
     
-    # Check if new columns exist, if not add them
-    cursor.execute("PRAGMA table_info(question_explanations)")
-    explanation_columns = [row[1] for row in cursor.fetchall()]
-    
+    # Add new columns to question_explanations if they don't exist
+    # Note: Uses ensure_table_columns with proper validation for SQL injection prevention
     columns_to_add = [
-        ('correct_answer', 'TEXT'),
-        ('choice_a_explanation', 'TEXT'),
-        ('choice_b_explanation', 'TEXT'),
-        ('choice_c_explanation', 'TEXT'),
-        ('choice_d_explanation', 'TEXT'),
-        ('subtopic', 'TEXT')
+        ('correct_answer', 'TEXT', None),
+        ('choice_a_explanation', 'TEXT', None),
+        ('choice_b_explanation', 'TEXT', None),
+        ('choice_c_explanation', 'TEXT', None),
+        ('choice_d_explanation', 'TEXT', None),
+        ('subtopic', 'TEXT', None)
     ]
     
-    for column_name, column_type in columns_to_add:
-        if column_name not in explanation_columns:
-            print(f"Adding '{column_name}' column to question_explanations table...")
-            cursor.execute(f'ALTER TABLE question_explanations ADD COLUMN {column_name} {column_type}')
+    ensure_table_columns(cursor, 'question_explanations', columns_to_add)
     
     # Create quiz history table
     print("Creating quiz_history table...")
