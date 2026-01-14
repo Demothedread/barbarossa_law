@@ -186,6 +186,16 @@ def ensure_table_columns(cursor, table_name, columns):
     existing_columns = get_table_columns(cursor, table_name)
     
     for column_name, column_type, default_value in columns:
+        # Validate column_name: allow alphanumeric and underscores only
+        if not column_name.replace('_', '').isalnum():
+            raise ValueError(f"Invalid column name: {column_name}")
+        # Validate column_type: allow only SQL type keywords and common patterns
+        # Strip whitespace and parentheses content for validation
+        base_type = column_type.split('(')[0].strip().upper()
+        allowed_types = {'TEXT', 'INTEGER', 'REAL', 'BLOB', 'NUMERIC'}
+        if base_type not in allowed_types:
+            raise ValueError(f"Invalid column type: {column_type}. Must be one of: {allowed_types}")
+        
         if column_name not in existing_columns:
             # Validate all parameters before constructing SQL
             validate_sql_identifier(column_name, "column")
@@ -242,6 +252,11 @@ def create_user_tables(conn):
     # so explicit index creation is redundant and has been removed
 
     print("Creating user_preferences table...")
+    
+    # Check if user_preferences table already exists for migration logic
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='user_preferences'")
+    prefs_table_exists = cursor.fetchone() is not None
+    
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS user_preferences (
         user_id INTEGER PRIMARY KEY,

@@ -150,6 +150,6 @@ __pycache__/
 .Python
 
 # SQLite databases
-*.db
 *.db-shm
 *.db-wal
+*.db-journal
