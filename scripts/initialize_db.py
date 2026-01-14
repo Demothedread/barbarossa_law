@@ -318,23 +318,18 @@ def create_schema(conn):
     )
     ''')
     
-    # Check if new columns exist, if not add them
-    cursor.execute("PRAGMA table_info(question_explanations)")
-    explanation_columns = [row[1] for row in cursor.fetchall()]
-    
+    # Add new columns to question_explanations if they don't exist
+    # Note: Uses ensure_table_columns with proper validation for SQL injection prevention
     columns_to_add = [
-        ('correct_answer', 'TEXT'),
-        ('choice_a_explanation', 'TEXT'),
-        ('choice_b_explanation', 'TEXT'),
-        ('choice_c_explanation', 'TEXT'),
-        ('choice_d_explanation', 'TEXT'),
-        ('subtopic', 'TEXT')
+        ('correct_answer', 'TEXT', None),
+        ('choice_a_explanation', 'TEXT', None),
+        ('choice_b_explanation', 'TEXT', None),
+        ('choice_c_explanation', 'TEXT', None),
+        ('choice_d_explanation', 'TEXT', None),
+        ('subtopic', 'TEXT', None)
     ]
     
-    for column_name, column_type in columns_to_add:
-        if column_name not in explanation_columns:
-            print(f"Adding '{column_name}' column to question_explanations table...")
-            cursor.execute(f'ALTER TABLE question_explanations ADD COLUMN {column_name} {column_type}')
+    ensure_table_columns(cursor, 'question_explanations', columns_to_add)
     
     # Create quiz history table
     print("Creating quiz_history table...")
