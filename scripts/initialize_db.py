@@ -25,6 +25,8 @@ ALLOWED_TABLES = {
 }
 
 # Whitelist of allowed SQLite column types
+# Note: SQLite type affinity is flexible - INTEGER is preferred for whole numbers,
+# REAL for floating point, and NUMERIC for precise decimal values
 ALLOWED_COLUMN_TYPES = {
     'INTEGER',
     'TEXT',
@@ -293,7 +295,8 @@ def create_schema(conn):
     )
     ''')
     
-    # Add 'generated' column if it doesn't exist (for migration from older schemas)
+    # Add columns if they don't exist (for migration from older schemas)
+    # Both 'generated' and 'subtopic' are defined in CREATE TABLE above
     # Note: Uses ensure_table_columns with proper validation
     ensure_table_columns(cursor, 'questions', [
         ('generated', 'INTEGER', 0),
