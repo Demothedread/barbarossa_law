@@ -293,12 +293,12 @@ def create_schema(conn):
     )
     ''')
     
-    # Check if 'generated' column exists, if not add it
-    cursor.execute("PRAGMA table_info(questions)")
-    columns = [row[1] for row in cursor.fetchall()]
-    if 'generated' not in columns:
-        print("Adding 'generated' column to questions table...")
-        cursor.execute('ALTER TABLE questions ADD COLUMN generated INTEGER DEFAULT 0')
+    # Add 'generated' column if it doesn't exist (for migration from older schemas)
+    # Note: Uses ensure_table_columns with proper validation
+    ensure_table_columns(cursor, 'questions', [
+        ('generated', 'INTEGER', 0),
+        ('subtopic', 'TEXT', None)
+    ])
     
     # Create AI explanations table with separate columns for each choice
     print("Creating question_explanations table...")
