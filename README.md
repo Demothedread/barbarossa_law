@@ -1,10 +1,13 @@
 
-# Law Quizzer
+# ☠️ BARBAROSSA
 
-A modern, AI-powered web and CLI quiz platform for California Bar Exam and legal study. Features advanced analytics, digital scratch paper, and seamless user experience.
+> Navigate the Cosmos of Legal Knowledge
 
-## Features
+A swashbuckling space pirate themed quiz platform for California Bar Exam and legal study. Chart your course through thousands of questions with AI-powered explanations, advanced analytics, and an immersive, post-modern interface.
 
+## ⚡ Features
+
+- **🏴‍☠️ Immersive Space Pirate Theme**: Post-modern blocky design with burgundy, royal purple, gold, and cosmic accents
 - **Interactive Web Quiz**: Responsive UI with timer, progress, and digital scratch paper
 - **AI Explanations**: OpenAI-powered, subtopic-classified answer explanations
 - **Subject & Subtopic Selection**: Filter by subject and subtopic (CA Bar breakdown)
