@@ -457,6 +457,23 @@
   transition: border-color 0.3s ease;
 }
 
+.form-input {
+  padding: 0.75rem;
+  border: 2px solid var(--generator-border);
+  border-radius: 8px;
+  background: var(--draper-white);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--generator-text-primary);
+  transition: border-color 0.3s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--generator-primary);
+  box-shadow: 0 0 0 2px rgba(46, 85, 167, 0.2);
+}
+
 .form-select:focus {
   outline: none;
   border-color: var(--generator-primary);

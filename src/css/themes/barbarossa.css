@@ -1,0 +1,101 @@
+/* Barbarossa Mode - Atomic-age pirate theme */
+
+:root[data-theme="barbarossa"] {
+  --theme-primary: #ff3b30;
+  --theme-secondary: #f9d65c;
+  --theme-accent: #23d8ff;
+  --theme-text-primary: #1b0f0f;
+  --theme-text-secondary: #3a1a1a;
+  --theme-bg-primary: #fff5e6;
+  --theme-bg-secondary: #ffe2c2;
+  --theme-bg-accent: #1b0f0f;
+  --theme-white: #ffffff;
+  --theme-black: #000000;
+
+  --theme-font-display: 'Playfair Display', 'Georgia', serif;
+  --theme-font-accent: 'Montserrat', 'Helvetica', sans-serif;
+  --theme-font-body: 'Inter', 'Helvetica', sans-serif;
+
+  --theme-shadow-light: 4px 4px 0 rgba(33, 12, 8, 0.25);
+  --theme-shadow-medium: 8px 8px 0 rgba(33, 12, 8, 0.35);
+  --theme-shadow-heavy: 12px 12px 0 rgba(33, 12, 8, 0.45);
+
+  --barbarossa-ink: #1b0f0f;
+  --barbarossa-ink-soft: #3a1a1a;
+  --barbarossa-accent: #ff3b30;
+  --barbarossa-gold: #f9d65c;
+
+  --theme-pattern-atomic-stars:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.35) 0 2px, transparent 2px),
+    radial-gradient(circle at 60% 30%, rgba(35, 216, 255, 0.4) 0 2px, transparent 2px),
+    radial-gradient(circle at 80% 70%, rgba(249, 214, 92, 0.4) 0 2px, transparent 2px);
+
+  --theme-audio-click: 'assets/audio/theme/classic/click.wav';
+  --theme-audio-correct: 'assets/audio/theme/classic/correct.mp3';
+  --theme-audio-wrong: 'assets/audio/theme/classic/wrong.mp3';
+  --theme-audio-timer: 'assets/audio/theme/classic/timer.wav';
+  --theme-audio-transition: 'assets/audio/theme/classic/transition.mp3';
+}
+
+:root[data-theme="barbarossa"] body {
+  background: var(--theme-bg-primary, #fff5e6);
+  color: var(--theme-text-primary, #1b0f0f);
+}
+
+:root[data-theme="barbarossa"] .header {
+  background: linear-gradient(120deg, rgba(255, 59, 48, 0.95), rgba(27, 15, 15, 0.98));
+  border-bottom: 4px solid var(--theme-secondary, #f9d65c);
+  box-shadow: var(--theme-shadow-medium, 8px 8px 0 rgba(33, 12, 8, 0.35));
+}
+
+:root[data-theme="barbarossa"] .header-title {
+  color: var(--theme-secondary, #f9d65c);
+  text-shadow: 3px 3px 0 rgba(27, 15, 15, 0.7);
+  letter-spacing: 0.08em;
+}
+
+:root[data-theme="barbarossa"] .header-subtitle {
+  color: rgba(255, 255, 255, 0.8);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+:root[data-theme="barbarossa"] .nav-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(249, 214, 92, 0.6);
+  color: var(--theme-secondary, #f9d65c);
+}
+
+:root[data-theme="barbarossa"] .nav-btn.active {
+  background: rgba(249, 214, 92, 0.25);
+  border-color: var(--theme-secondary, #f9d65c);
+}
+
+:root[data-theme="barbarossa"] .module-frame,
+:root[data-theme="barbarossa"] .module-frame-alt,
+:root[data-theme="barbarossa"] .module-frame-blue {
+  background: var(--theme-bg-secondary, #ffe2c2);
+  border: 3px solid var(--theme-accent, #23d8ff);
+  box-shadow: var(--theme-shadow-medium, 8px 8px 0 rgba(33, 12, 8, 0.35));
+}
+
+:root[data-theme="barbarossa"] .btn-primary,
+:root[data-theme="barbarossa"] .btn-secondary {
+  font-family: var(--theme-font-accent, 'Montserrat', sans-serif);
+  border: 2px solid var(--theme-black, #000);
+  box-shadow: var(--theme-shadow-light, 4px 4px 0 rgba(33, 12, 8, 0.25));
+}
+
+:root[data-theme="barbarossa"] .btn-primary {
+  background: linear-gradient(120deg, var(--theme-primary, #ff3b30), var(--theme-secondary, #f9d65c));
+  color: var(--theme-black, #000);
+}
+
+:root[data-theme="barbarossa"] .btn-secondary {
+  background: var(--theme-bg-accent, #1b0f0f);
+  color: var(--theme-secondary, #f9d65c);
+}
+
+:root[data-theme="barbarossa"] .homepage-container {
+  background-image: var(--theme-pattern-atomic-stars, none);
+}

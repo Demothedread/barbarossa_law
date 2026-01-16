@@ -63,6 +63,14 @@ function createEssayForm() {
     <textarea id="essayAnswer" class="essay-textarea essay-answer" rows="12" placeholder="Write your answer here..." required></textarea>
 
     <div class="essay-meta">
+      <label class="essay-label-inline" for="essayReviewModel">
+        Review Model
+        <select id="essayReviewModel">
+          <option value="openai">OpenAI (default)</option>
+          <option value="llama3">Llama 3 Community</option>
+          <option value="custom">Bring Your Own Model</option>
+        </select>
+      </label>
       <label class="essay-label-inline" for="essayMaxPoints">
         Max Points
         <input id="essayMaxPoints" type="number" min="1" max="200" value="${ESSAY_MAX_POINTS_DEFAULT}" />
@@ -92,6 +100,7 @@ function bindEssayFormHandlers(form, results) {
   const questionField = form.querySelector('#essayQuestion');
   const answerField = form.querySelector('#essayAnswer');
   const maxPointsField = form.querySelector('#essayMaxPoints');
+  const reviewModelField = form.querySelector('#essayReviewModel');
   const wordCount = form.querySelector('[data-target="essayAnswer"]');
   const resultBody = results.querySelector('.essay-results-body');
 
@@ -131,7 +140,8 @@ function bindEssayFormHandlers(form, results) {
       const gradeResponse = await gradeEssayResponse({
         question: questionField.value.trim(),
         answer: answerField.value.trim(),
-        max_points: maxPointsField.value ? Number(maxPointsField.value) : undefined
+        max_points: maxPointsField.value ? Number(maxPointsField.value) : undefined,
+        review_model: reviewModelField.value
       });
 
       renderEssayResults(resultBody, gradeResponse);
@@ -142,6 +152,12 @@ function bindEssayFormHandlers(form, results) {
         </div>
       `;
     }
+  });
+
+  document.addEventListener('essayPromptSelected', (event) => {
+    if (!event.detail?.prompt) return;
+    questionField.value = event.detail.prompt;
+    questionField.focus();
   });
 }
 

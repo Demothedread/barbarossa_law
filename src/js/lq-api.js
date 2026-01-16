@@ -97,9 +97,10 @@ export async function fetchAIExplanations(questionIds) {
  * @param {string} payload.question - Essay prompt text.
  * @param {string} payload.answer - User's essay response text.
  * @param {number} [payload.max_points] - Optional maximum points to grade against.
+ * @param {string} [payload.review_model] - Optional model routing hint.
  * @returns {Promise<Object>} Grade response with rubric and line feedback.
  */
-export async function gradeEssayResponse({ question, answer, max_points: maxPoints }) {
+export async function gradeEssayResponse({ question, answer, max_points: maxPoints, review_model: reviewModel }) {
   try {
     const resp = await fetch(`${API_BASE}/essay-grade`, {
       method: 'POST',
@@ -107,7 +108,8 @@ export async function gradeEssayResponse({ question, answer, max_points: maxPoin
       body: JSON.stringify({
         question,
         answer,
-        max_points: maxPoints
+        max_points: maxPoints,
+        review_model: reviewModel
       })
     });
 
@@ -165,14 +167,18 @@ export async function getQuizHistory(userId = 'anonymous', subject = '') {
 /**
  * Extract questions from OpenAI vector store
  * @param {number} numQuestions - Number of questions to generate (1-50)
+ * @param {Object} [options] - Optional metadata for the generator.
  * @returns {Promise<Object>} Generation results
  */
-export async function extractQuestionsFromVectorStore(numQuestions) {
+export async function extractQuestionsFromVectorStore(numQuestions, options = {}) {
   try {
     const resp = await fetch(`${API_BASE}/extract-questions`, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ num_questions: numQuestions })
+      body: JSON.stringify({
+        num_questions: numQuestions,
+        ...options
+      })
     });
     
     if (!resp.ok) {

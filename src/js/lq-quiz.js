@@ -66,6 +66,9 @@ function createChoice(text, index, selected, eliminated, onSelect, onEliminate) 
   const elim = document.createElement('button');
   elim.textContent = '✖';
   elim.className = 'elim';
+  elim.type = 'button';
+  elim.setAttribute('aria-label', 'Cross out this choice');
+  elim.title = 'Cross out this choice';
   elim.addEventListener('click', (e) => {
     e.stopPropagation();
     li.classList.toggle('eliminated');
@@ -152,6 +155,16 @@ export function createApiQuiz(questions, opts, onComplete) {
   const total = questions.length;
   const container = document.createElement('div');
   container.className = 'quiz';
+
+  if (opts.quizMode === 'barbarossa-overtime') {
+    const overtimeBanner = document.createElement('div');
+    overtimeBanner.className = 'overtime-banner';
+    overtimeBanner.innerHTML = `
+      <strong>☠️ Barbarossa Overtime:</strong>
+      Cross out options, keep changing answers after time expires, and watch the clock dip into negative time.
+    `;
+    container.appendChild(overtimeBanner);
+  }
   
   const state = {
     current: 0,
@@ -275,6 +288,9 @@ export function createApiQuiz(questions, opts, onComplete) {
   let totalSecs = Math.ceil(opts.timer * 60 * total);
   const timerContainer = document.createElement('div');
   timerContainer.className = 'timer-container';
+  if (opts.quizMode === 'barbarossa-overtime') {
+    timerContainer.classList.add('overtime-enabled');
+  }
   
   const timerDisplay = document.createElement('span');
   timerDisplay.className = 'timer-display';

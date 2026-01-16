@@ -101,6 +101,11 @@ export function createStartMenu(onStart, onGenerateQuestions) {
   friendlyOpt.value = 'friendly';
   friendlyOpt.textContent = '⚾ Friendly Mode (Baseball Theme)';
   selectMode.appendChild(friendlyOpt);
+
+  const barbarossaOpt = document.createElement('option');
+  barbarossaOpt.value = 'barbarossa-overtime';
+  barbarossaOpt.textContent = '☠️ Barbarossa Overtime (Cross-Out + Negative Time)';
+  selectMode.appendChild(barbarossaOpt);
   
   labelMode.appendChild(selectMode);
   form.appendChild(labelMode);
@@ -158,11 +163,29 @@ export function createStartMenu(onStart, onGenerateQuestions) {
   `;
   form.appendChild(friendlyDesc);
 
+  const barbarossaDesc = document.createElement('div');
+  barbarossaDesc.className = 'barbarossa-description';
+  barbarossaDesc.style.display = 'none';
+  barbarossaDesc.innerHTML = `
+    <div class="mode-description">
+      <h4>☠️ Barbarossa Overtime Features:</h4>
+      <ul>
+        <li>📝 Cross out choices before committing</li>
+        <li>⏳ Timer keeps running into negative time</li>
+        <li>🔁 Edit answers anytime, even after time expires</li>
+        <li>🚀 Atomic-age pirate theming and sounds</li>
+      </ul>
+      <p><em>Finish strong, even after the clock hits zero.</em></p>
+    </div>
+  `;
+  form.appendChild(barbarossaDesc);
+
   // Update description visibility based on mode selection
   selectMode.addEventListener('change', () => {
     // Hide all descriptions first
     quizShowDesc.style.display = 'none';
     friendlyDesc.style.display = 'none';
+    barbarossaDesc.style.display = 'none';
     
     if (selectMode.value === 'quiz-show') {
       quizShowDesc.style.display = 'block';
@@ -175,6 +198,11 @@ export function createStartMenu(onStart, onGenerateQuestions) {
       // Auto-switch to friendly theme if not already
       if (window.themeManager && window.themeManager.currentTheme !== 'friendly') {
         window.themeManager.applyTheme('friendly');
+      }
+    } else if (selectMode.value === 'barbarossa-overtime') {
+      barbarossaDesc.style.display = 'block';
+      if (window.themeManager && window.themeManager.currentTheme !== 'barbarossa') {
+        window.themeManager.applyTheme('barbarossa');
       }
     }
   });

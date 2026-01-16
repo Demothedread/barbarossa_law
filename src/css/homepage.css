@@ -1227,6 +1227,13 @@
   flex-wrap: wrap;
 }
 
+.essay-meta select {
+  padding: 0.45rem 0.7rem;
+  border-radius: 10px;
+  border: 1px solid rgba(27, 15, 15, 0.2);
+  font-weight: 600;
+}
+
 .essay-word-count {
   font-weight: 600;
   color: var(--essay-word-count, #555);
@@ -1331,5 +1338,258 @@
   .quiz-mode-card:hover,
   .quiz-item:hover {
     transform: none;
+  }
+}
+
+/* Barbarossa Homepage Layout */
+.barbarossa-homepage {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  padding-bottom: 3rem;
+}
+
+.barbarossa-hero {
+  background: linear-gradient(135deg, rgba(255, 59, 48, 0.12), rgba(35, 216, 255, 0.12));
+  color: var(--barbarossa-ink, #1b0f0f);
+}
+
+.barbarossa-hero-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 2rem;
+  align-items: center;
+}
+
+.barbarossa-hero .hero-title {
+  font-size: clamp(2.2rem, 3vw, 3.2rem);
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.barbarossa-hero .hero-eyebrow {
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--barbarossa-accent, #ff3b30);
+}
+
+.barbarossa-hero .hero-subtitle {
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+.barbarossa-hero .hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.hero-scroll-link {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 999px;
+}
+
+.barbarossa-mascot {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.mascot-portrait {
+  position: relative;
+  padding: 2rem;
+  border-radius: 24px;
+  background: radial-gradient(circle at top, rgba(249, 214, 92, 0.8), rgba(255, 59, 48, 0.8));
+  color: var(--barbarossa-ink, #1b0f0f);
+  text-align: center;
+  box-shadow: 0 12px 24px rgba(27, 15, 15, 0.25);
+}
+
+.mascot-halo {
+  position: absolute;
+  inset: 12px;
+  border-radius: 20px;
+  border: 2px dashed rgba(255, 255, 255, 0.6);
+}
+
+.mascot-badge {
+  font-size: 4rem;
+  font-weight: 900;
+  background: rgba(27, 15, 15, 0.8);
+  color: var(--barbarossa-gold, #f9d65c);
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+
+.mascot-details {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 600;
+}
+
+.mascot-caption {
+  font-style: italic;
+  color: var(--barbarossa-ink-soft, #3a1a1a);
+}
+
+.stats-captains-log .stats-header {
+  text-align: center;
+}
+
+.exam-bank-section .exam-bank-modes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.exam-mode-card {
+  background: var(--exam-card-bg, #fffdf8);
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+  border: 2px solid rgba(27, 15, 15, 0.2);
+  display: grid;
+  gap: 0.75rem;
+}
+
+.exam-mode-card .btn-start-quiz {
+  background: var(--barbarossa-gold, #f9d65c);
+  border: none;
+  border-radius: 999px;
+  padding: 0.6rem 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.exam-mode-card.highlight {
+  border-color: var(--barbarossa-accent, #ff3b30);
+  box-shadow: 0 0 18px rgba(255, 59, 48, 0.25);
+}
+
+.exam-bank-menu {
+  margin-top: 2rem;
+}
+
+.free-range-section .free-range-form {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  margin-top: 1.5rem;
+}
+
+.free-range-section label {
+  display: grid;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.free-range-section input,
+.free-range-section select {
+  padding: 0.6rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid rgba(27, 15, 15, 0.2);
+}
+
+.essay-deck-section {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.essay-bank-section .essay-prompt-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.essay-prompt-card {
+  background: var(--essay-card-bg, #fffdf8);
+  border-radius: 16px;
+  padding: 1rem;
+  border: 2px solid rgba(27, 15, 15, 0.15);
+  display: grid;
+  gap: 0.75rem;
+}
+
+.study-dock-section .study-dock-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.study-topic-card {
+  background: var(--study-card-bg, #fff7ef);
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+  border: 2px solid rgba(27, 15, 15, 0.15);
+}
+
+.burn-it-down-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.inferno-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(circle at 50% 80%, rgba(255, 59, 48, 0.35), transparent 60%),
+    radial-gradient(circle at 20% 90%, rgba(249, 214, 92, 0.45), transparent 55%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.6));
+  transition: opacity 0.5s ease;
+  z-index: 999;
+}
+
+.inferno-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(255, 59, 48, 0.4) 0 12px,
+    rgba(249, 214, 92, 0.4) 12px 24px
+  );
+  animation: inferno-flicker 1.2s infinite alternate;
+  mix-blend-mode: screen;
+}
+
+.inferno-core {
+  position: absolute;
+  left: 50%;
+  top: 20%;
+  transform: translateX(-50%);
+  padding: 1rem 2rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+body.inferno-mode .inferno-overlay {
+  opacity: 1;
+}
+
+@keyframes inferno-flicker {
+  0% {
+    opacity: 0.6;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0.9;
+    transform: translateY(-10px);
   }
 }

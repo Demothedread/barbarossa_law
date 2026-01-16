@@ -84,6 +84,27 @@ body {
   border-color: var(--error-color);
 }
 
+.timer-display.negative-time {
+  background: rgba(255, 59, 48, 0.15);
+  color: var(--error-color);
+  border-color: var(--error-color);
+}
+
+.timer-container.overtime-enabled {
+  border-color: var(--warning-color);
+  box-shadow: 0 0 16px rgba(255, 59, 48, 0.25);
+}
+
+.overtime-banner {
+  background: linear-gradient(120deg, rgba(255, 59, 48, 0.15), rgba(249, 214, 92, 0.2));
+  border: 2px solid var(--warning-color);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+}
+
 .pause-indicator {
   font-size: 0.85rem;
   font-weight: normal;

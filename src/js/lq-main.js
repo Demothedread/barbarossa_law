@@ -182,6 +182,11 @@ async function startQuiz(opts) {
         }
       });
     } else {
+      if (opts.quizMode === 'barbarossa-overtime') {
+        if (window.themeManager && window.themeManager.currentTheme !== 'barbarossa') {
+          window.themeManager.applyTheme('barbarossa');
+        }
+      }
       quizElement = createQuiz(questions, opts, async (qs, answers, meta) => {
         try {
           document.body.classList.remove('quiz-mode');

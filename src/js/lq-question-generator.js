@@ -5,6 +5,7 @@
 
 import { extractQuestionsFromVectorStore, getVectorStoreStatus } from './lq-api.js';
 import { authManager } from './lq-auth.js';
+import { FREE_RANGE_PREFILL_KEY } from './lq-free-range.js';
 
 /**
  * Create a comprehensive question generation interface
@@ -156,6 +157,24 @@ export function createQuestionGenerator(onComplete) {
                 <option value="advanced">Advanced</option>
               </select>
             </div>
+            <div class="form-group">
+              <label for="focusTopic" class="form-label">
+                <span class="label-text">Focus Topic</span>
+                <span class="label-hint">Pinpoint a specific doctrine or theme</span>
+              </label>
+              <input id="focusTopic" type="text" class="form-input" placeholder="e.g., hearsay exceptions, UCC remedies" />
+            </div>
+            <div class="form-group">
+              <label for="questionSet" class="form-label">
+                <span class="label-text">Question Set</span>
+                <span class="label-hint">Choose the drill format</span>
+              </label>
+              <select id="questionSet" class="form-select">
+                <option value="mixed">Mixed MBE + Essays</option>
+                <option value="mbe">MBE Only</option>
+                <option value="essay">Essay Focus</option>
+              </select>
+            </div>
           </div>
 
           <div class="form-group full-width">
@@ -274,6 +293,7 @@ export function createQuestionGenerator(onComplete) {
     await updateDatabaseStatus();
     setupFormInteractions();
     setupHistoryInteractions();
+    applyFreeRangePrefill();
   }
 
   // === STATUS CHECKING ===
@@ -399,6 +419,35 @@ export function createQuestionGenerator(onComplete) {
     form.addEventListener('submit', handleGeneration);
   }
 
+  function applyFreeRangePrefill() {
+    const prefill = localStorage.getItem(FREE_RANGE_PREFILL_KEY);
+    if (!prefill) return;
+
+    try {
+      const data = JSON.parse(prefill);
+      const count = Math.min(Math.max(data.count || 10, 1), 50);
+
+      document.getElementById('numQuestions').value = count;
+      document.getElementById('questionsSlider').value = count;
+      const focusTopic = data.topic || '';
+      document.getElementById('focusTopic').value = focusTopic;
+      document.getElementById('questionSet').value = data.questionSet || 'mixed';
+      const instructionsField = document.getElementById('customInstructions');
+      if (data.notes) {
+        instructionsField.value = data.notes;
+        document.getElementById('charCount').textContent = `${data.notes.length}/500`;
+      } else if (focusTopic) {
+        const autoNote = `Focus on: ${focusTopic}`;
+        instructionsField.value = autoNote;
+        document.getElementById('charCount').textContent = `${autoNote.length}/500`;
+      }
+    } catch (error) {
+      console.warn('Unable to apply free-range prefill:', error);
+    } finally {
+      localStorage.removeItem(FREE_RANGE_PREFILL_KEY);
+    }
+  }
+
   // === HISTORY INTERACTIONS ===
   function setupHistoryInteractions() {
     document.getElementById('clearHistoryBtn').addEventListener('click', () => {
@@ -449,6 +498,8 @@ export function createQuestionGenerator(onComplete) {
       numQuestions: parseInt(document.getElementById('numQuestions').value),
       subjectFocus: document.getElementById('subjectFocus').value,
       difficultyLevel: document.getElementById('difficultyLevel').value,
+      focusTopic: document.getElementById('focusTopic').value.trim(),
+      questionSet: document.getElementById('questionSet').value,
       customInstructions: document.getElementById('customInstructions').value.trim(),
       timestamp: new Date().toISOString(),
       userId: getCurrentUserId()
@@ -480,7 +531,13 @@ export function createQuestionGenerator(onComplete) {
     setStepActive('step3');
     
     // Make actual API call
-    const result = await extractQuestionsFromVectorStore(formData.numQuestions);
+    const result = await extractQuestionsFromVectorStore(formData.numQuestions, {
+      subject_focus: formData.subjectFocus,
+      difficulty_level: formData.difficultyLevel,
+      focus_topic: formData.focusTopic,
+      question_set: formData.questionSet,
+      instructions: formData.customInstructions
+    });
     
     updateProgress(90, 'Saving to database...');
     setStepActive('step4');
@@ -717,6 +774,8 @@ export function createQuestionGenerator(onComplete) {
           <span class="detail">${entry.settings.numQuestions} questions</span>
           ${entry.settings.subjectFocus ? `<span class="detail">${entry.settings.subjectFocus}</span>` : ''}
           ${entry.settings.difficultyLevel !== 'mixed' ? `<span class="detail">${entry.settings.difficultyLevel}</span>` : ''}
+          ${entry.settings.focusTopic ? `<span class="detail">${entry.settings.focusTopic}</span>` : ''}
+          ${entry.settings.questionSet ? `<span class="detail">${entry.settings.questionSet}</span>` : ''}
           ${entry.success ? `<span class="detail success">${entry.results.questions_saved} saved</span>` : ''}
         </div>
       </div>
@@ -753,6 +812,8 @@ Generation Preview:
 • Questions: ${formData.numQuestions}
 • Subject: ${formData.subjectFocus || 'All subjects'}
 • Difficulty: ${formData.difficultyLevel}
+• Focus Topic: ${formData.focusTopic || 'None'}
+• Question Set: ${formData.questionSet || 'Mixed'}
 • Instructions: ${formData.customInstructions || 'None'}
     `.trim();
     

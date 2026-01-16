@@ -5,9 +5,14 @@
 
 class ThemeManager {
   constructor() {
-    this.currentTheme = localStorage.getItem('lawquizzer-theme') || 'classic';
+    this.currentTheme = localStorage.getItem('lawquizzer-theme') || 'barbarossa';
     this.audioManager = null;
     this.themes = {
+      barbarossa: {
+        name: 'Barbarossa',
+        description: 'Atomic-age space pirate styling',
+        icon: '☠️'
+      },
       classic: {
         name: 'Classic',
         description: 'Dorothy Draper maximalist style with bright pastels',
@@ -203,6 +208,10 @@ class ThemeManager {
             event.preventDefault();
             this.applyTheme('friendly');
             break;
+          case '4':
+            event.preventDefault();
+            this.applyTheme('barbarossa');
+            break;
         }
       }
     });
@@ -265,7 +274,8 @@ class ThemeAudioManager {
 
   // Try loading both .wav and .mp3, use first that loads
   loadThemeSounds(theme) {
-    const basePath = `src/assets/audio/theme/${theme}/`;
+    const audioTheme = theme === 'barbarossa' ? 'classic' : theme;
+    const basePath = `src/assets/audio/theme/${audioTheme}/`;
     const soundTypes = ['intro', 'click', 'correct', 'wrong', 'timer', 'transition'];
     const extensions = ['wav', 'mp3'];
     this.sounds = {};
