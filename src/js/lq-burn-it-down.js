@@ -23,13 +23,22 @@ export function createBurnItDownSection() {
 
   ensureInfernoOverlay();
 
+  // Create a live region for screen reader announcements
+  const announcer = document.createElement('div');
+  announcer.className = 'sr-only';
+  announcer.setAttribute('aria-live', 'polite');
+  announcer.setAttribute('aria-atomic', 'true');
+  section.appendChild(announcer);
+
   section.addEventListener('click', (event) => {
     const action = event.target?.dataset?.action;
     if (action === 'ignite') {
       document.body.classList.add('inferno-mode');
+      announcer.textContent = 'Inferno effect activated. The screen is now on fire.';
     }
     if (action === 'reset') {
       document.body.classList.remove('inferno-mode');
+      announcer.textContent = 'Inferno effect cleared. The screen has been reset.';
     }
   });
 
@@ -41,6 +50,7 @@ function ensureInfernoOverlay() {
 
   const overlay = document.createElement('div');
   overlay.className = 'inferno-overlay';
+  overlay.setAttribute('aria-hidden', 'true');
   overlay.innerHTML = `
     <div class="inferno-core">
       <p>🔥 Everything is on fire. Barbarossa is laughing.</p>

@@ -154,11 +154,16 @@ function bindEssayFormHandlers(form, results) {
     }
   });
 
+  // Use AbortController for proper cleanup of the event listener
+  const controller = new AbortController();
   document.addEventListener('essayPromptSelected', (event) => {
     if (!event.detail?.prompt) return;
     questionField.value = event.detail.prompt;
     questionField.focus();
-  });
+  }, { signal: controller.signal });
+
+  // Store cleanup function on the form element for potential future use
+  form._essayCleanup = () => controller.abort();
 }
 
 function applyEssayFormatting(textarea, format) {
