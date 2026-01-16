@@ -6,6 +6,9 @@ import { gradeEssayResponse } from './lq-api.js';
 
 const ESSAY_MAX_POINTS_DEFAULT = 100;
 
+// WeakMap to store cleanup functions for form elements
+const cleanupRegistry = new WeakMap();
+
 /**
  * Create the essay writer section with editor controls and grading output.
  * @returns {HTMLElement} Essay writer section element.
@@ -162,8 +165,8 @@ function bindEssayFormHandlers(form, results) {
     questionField.focus();
   }, { signal: controller.signal });
 
-  // Store cleanup function on the form element for potential future use
-  form._essayCleanup = () => controller.abort();
+  // Store cleanup function using WeakMap for proper memory management
+  cleanupRegistry.set(form, () => controller.abort());
 }
 
 function applyEssayFormatting(textarea, format) {
