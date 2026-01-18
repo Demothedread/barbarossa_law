@@ -97,7 +97,7 @@ export async function fetchAIExplanations(questionIds) {
  * @param {string} payload.question - Essay prompt text.
  * @param {string} payload.answer - User's essay response text.
  * @param {number} [payload.max_points] - Optional maximum points to grade against.
- * @param {string} [payload.review_model] - Optional model routing hint.
+ * @param {string} [payload.review_model] - Optional model routing hint. Accepts values like 'openai' (default), 'llama3', or custom model identifiers. When omitted, defaults to the primary OpenAI model configured in the backend.
  * @returns {Promise<Object>} Grade response with rubric and line feedback.
  */
 export async function gradeEssayResponse({ question, answer, max_points: maxPoints, review_model: reviewModel }) {
@@ -168,6 +168,11 @@ export async function getQuizHistory(userId = 'anonymous', subject = '') {
  * Extract questions from OpenAI vector store
  * @param {number} numQuestions - Number of questions to generate (1-50)
  * @param {Object} [options] - Optional metadata for the generator.
+ * @param {string} [options.subject_focus] - Primary subject area to focus on (e.g. "Contracts", "Evidence").
+ * @param {string} [options.difficulty_level] - Desired difficulty level for generated questions (e.g. "easy", "medium", "hard").
+ * @param {string} [options.focus_topic] - More granular topic or concept to emphasize within the subject.
+ * @param {string} [options.question_set] - Named question set or collection to draw from in the vector store.
+ * @param {string} [options.instructions] - Additional natural-language instructions to guide question generation.
  * @returns {Promise<Object>} Generation results
  */
 export async function extractQuestionsFromVectorStore(numQuestions, options = {}) {

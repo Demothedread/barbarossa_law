@@ -274,6 +274,7 @@ class ThemeAudioManager {
 
   // Try loading both .wav and .mp3, use first that loads
   loadThemeSounds(theme) {
+    // Barbarossa theme reuses Classic audio assets; dedicated Barbarossa audio may be added in the future
     const audioTheme = theme === 'barbarossa' ? 'classic' : theme;
     const basePath = `src/assets/audio/theme/${audioTheme}/`;
     const soundTypes = ['intro', 'click', 'correct', 'wrong', 'timer', 'transition'];

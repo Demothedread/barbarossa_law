@@ -30,28 +30,46 @@ export function createEssayBankSection() {
   section.className = 'essay-bank-section module-frame-alt';
   section.id = 'essay-bank';
 
-  const prompts = ESSAY_PROMPTS.map((prompt) => `
-    <article class="essay-prompt-card">
-      <h3>${prompt.title}</h3>
-      <p>${prompt.prompt}</p>
-      <button class="btn-secondary essay-prompt-btn" data-prompt-id="${prompt.id}">
-        Load Prompt into Editor
-      </button>
-    </article>
-  `).join('');
+  // Create header
+  const header = document.createElement('div');
+  header.className = 'essay-bank-header';
+  
+  const headerTitle = document.createElement('h2');
+  headerTitle.textContent = '📝 Essay Question Bank';
+  
+  const headerDesc = document.createElement('p');
+  headerDesc.textContent = 'Stock up on essay prompts, then write responses in the editor below. Reviews can be routed through OpenAI or a free community model like Llama 3 when configured.';
+  
+  header.appendChild(headerTitle);
+  header.appendChild(headerDesc);
 
-  section.innerHTML = `
-    <div class="essay-bank-header">
-      <h2>📝 Essay Question Bank</h2>
-      <p>
-        Stock up on essay prompts, then write responses in the editor below. Reviews can be
-        routed through OpenAI or a free community model like Llama 3 when configured.
-      </p>
-    </div>
-    <div class="essay-prompt-grid">
-      ${prompts}
-    </div>
-  `;
+  // Create prompt grid
+  const grid = document.createElement('div');
+  grid.className = 'essay-prompt-grid';
+
+  ESSAY_PROMPTS.forEach((prompt) => {
+    const article = document.createElement('article');
+    article.className = 'essay-prompt-card';
+
+    const title = document.createElement('h3');
+    title.textContent = prompt.title;
+
+    const text = document.createElement('p');
+    text.textContent = prompt.prompt;
+
+    const button = document.createElement('button');
+    button.className = 'btn-secondary essay-prompt-btn';
+    button.dataset.promptId = prompt.id;
+    button.textContent = 'Load Prompt into Editor';
+
+    article.appendChild(title);
+    article.appendChild(text);
+    article.appendChild(button);
+    grid.appendChild(article);
+  });
+
+  section.appendChild(header);
+  section.appendChild(grid);
 
   section.addEventListener('click', (event) => {
     const button = event.target.closest('.essay-prompt-btn');
