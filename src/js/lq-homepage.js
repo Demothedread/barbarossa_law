@@ -4,7 +4,13 @@
  */
 
 import { fetchSubtopicStats, getQuizHistory } from './lq-api.js';
+import { createBarbarossaHero } from './lq-barbarossa-hero.js';
+import { createBurnItDownSection } from './lq-burn-it-down.js';
+import { createEssayBankSection } from './lq-essay-bank.js';
 import { createEssayWriterSection } from './lq-essay-writer.js';
+import { createExamBankSection } from './lq-exam-bank.js';
+import { createFreeRangeSection } from './lq-free-range.js';
+import { createStudyDockSection } from './lq-study-dock.js';
 import {
   AccessibilityManager,
   DataCacheManager,
@@ -143,64 +149,48 @@ export class Homepage {
    */
   createHomepageStructure() {
     this.container = document.createElement('div');
-    this.container.className = 'homepage-container';
+    this.container.className = 'homepage-container barbarossa-homepage';
 
-    // HERO SECTION (Maximalist, vibrant, CTA)
-    const hero = document.createElement('section');
-    hero.className = 'hero-section module-frame';
-    hero.style.textAlign = 'center';
-    hero.style.marginTop = '2rem';
-    hero.innerHTML = `
-      <h1 class="hero-title" style="font-size:2.5rem; font-weight:900; color:#ff1493; margin-bottom:1rem;">
-        Welcome to Hick's Law Quizzer
-      </h1>
-      <p class="hero-subtitle" style="font-size:1.3rem; color:#222; margin-bottom:2rem;">
-        Test your legal knowledge with maximalist style and instant feedback.
-      </p>
-      <button class="hero-cta" style="font-size:1.2rem; background:linear-gradient(90deg,#ffe066,#50c878); color:#222; border:none; border-radius:2rem; padding:1rem 2.5rem; font-weight:700; box-shadow:0 4px 24px #ff149355; cursor:pointer; transition:background 0.2s;">
-        Start Quiz
-      </button>
-    `;
+    const hero = createBarbarossaHero();
     this.container.appendChild(hero);
 
-    // HOW IT WORKS SECTION
-    const howItWorks = document.createElement('section');
-    howItWorks.className = 'module-frame-blue';
-    howItWorks.style.textAlign = 'center';
-    howItWorks.innerHTML = `
-      <h2 style="font-size:2rem; color:#4169e1; margin-bottom:1rem;">
-        <span style="font-size:1.5rem; vertical-align:middle;">📚</span> How It Works
-      </h2>
-      <ol style="font-size:1.1rem; color:#333; max-width:600px; margin:0 auto; text-align:left;">
-        <li>Choose a quiz topic and difficulty.</li>
-        <li>Answer timed questions with instant feedback.</li>
-        <li>Review your stats and improve your score!</li>
-      </ol>
-    `;
-    this.container.appendChild(howItWorks);
-
-    // STATISTICS SECTION (framed, visually distinct)
     const statsSection = document.createElement('section');
-    statsSection.className = 'module-frame-alt';
-    statsSection.style.textAlign = 'center';
+    statsSection.className = 'module-frame-alt stats-captains-log';
+    statsSection.id = 'captains-log';
     statsSection.innerHTML = `
-      <h2 style="font-size:2rem; color:#50c878; margin-bottom:1rem;">
-        <span style="font-size:1.5rem; vertical-align:middle;">📈</span> Recent Stats
-      </h2>
+      <div class="stats-header">
+        <h2>📜 Captain's Log</h2>
+        <p>Track your accuracy, streaks, and improvements across the fleet.</p>
+      </div>
       <div id="homepageStatsWidget"></div>
     `;
     this.container.appendChild(statsSection);
 
-    // Insert stats widget into the stats section
     const statsWidget = this.createEnhancedStatsWidget ? this.createEnhancedStatsWidget() : null;
     if (statsWidget) {
       statsSection.querySelector('#homepageStatsWidget').appendChild(statsWidget);
     }
 
-    const essayWriterSection = createEssayWriterSection();
-    this.container.appendChild(essayWriterSection);
+    const examBankSection = createExamBankSection(this.onStartQuiz, this.onGenerateQuestions);
+    this.container.appendChild(examBankSection);
 
-    // Add more modules/sections as needed...
+    const freeRangeSection = createFreeRangeSection(this.onGenerateQuestions);
+    this.container.appendChild(freeRangeSection);
+
+    const essayBankSection = createEssayBankSection();
+    const essayWriterSection = createEssayWriterSection();
+    const essayDeck = document.createElement('section');
+    essayDeck.className = 'essay-deck-section';
+    essayDeck.id = 'essay-deck';
+    essayDeck.appendChild(essayBankSection);
+    essayDeck.appendChild(essayWriterSection);
+    this.container.appendChild(essayDeck);
+
+    const studyDockSection = createStudyDockSection();
+    this.container.appendChild(studyDockSection);
+
+    const burnItDownSection = createBurnItDownSection();
+    this.container.appendChild(burnItDownSection);
   }
 
   /**

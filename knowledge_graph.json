@@ -27,6 +27,22 @@
     "TestSuites": {
       "type": "module",
       "description": "Automated Jest and pytest coverage for UI controllers and backend API"
+    },
+    "BarbarossaTheme": {
+      "type": "module",
+      "description": "Atomic-age pirate theme styling and mascot presentation"
+    },
+    "FreeRangeNavigator": {
+      "type": "module",
+      "description": "Launches custom question generation with topic and count presets"
+    },
+    "EssayPromptBank": {
+      "type": "module",
+      "description": "Front-end essay prompt selector feeding the essay writer"
+    },
+    "InfernoOverlay": {
+      "type": "module",
+      "description": "Playful burn-it-down overlay for stress relief"
     }
   },
   "features": {
@@ -41,7 +57,11 @@
     "progress": "Stats per topic",
     "mindMap": "3D interactive exploration of bodies of law",
     "uiControllerTests": "Jest coverage for lq-main, lq-review, theme, and auth flows",
-    "apiEndpointTests": "Pytest coverage for auth, quiz history, and AI explanation fallbacks"
+    "apiEndpointTests": "Pytest coverage for auth, quiz history, and AI explanation fallbacks",
+    "barbarossaTheme": "Atomic-age pirate styling and mascot hero",
+    "freeRangeMode": "Free-range drill that pre-fills generator with topic and count",
+    "essayPromptBank": "Essay prompt bank wired to the essay editor",
+    "infernoMode": "Flame overlay toggle to burn the UI for stress relief"
   },
   "relations": {
     "LawQuizzer-uses-QuizAttemptLogs": "LawQuizzer backend records /api/log attempts in quiz_attempt_logs",
@@ -49,11 +69,16 @@
     "LawQuizzer-uses-EssayWriterModule": "LawQuizzer homepage includes EssayWriterModule for essay submissions",
     "LawQuizzer-uses-LoadingModule": "LawQuizzer frontend displays loading and error states via LoadingModule",
     "LawQuizzer-uses-MindMapModule": "LawQuizzer frontend offers mind map via MindMapModule",
-    "LawQuizzer-validated-by-TestSuites": "LawQuizzer backend and frontend are verified via Jest and pytest suites"
+    "LawQuizzer-validated-by-TestSuites": "LawQuizzer backend and frontend are verified via Jest and pytest suites",
+    "LawQuizzer-uses-BarbarossaTheme": "LawQuizzer defaults to the Barbarossa atomic-age pirate theme",
+    "LawQuizzer-uses-FreeRangeNavigator": "LawQuizzer free-range mode routes into the question generator",
+    "LawQuizzer-uses-EssayPromptBank": "LawQuizzer homepage includes a reusable essay prompt bank",
+    "LawQuizzer-uses-InfernoOverlay": "LawQuizzer provides a burn-it-down overlay for stress relief"
   },
   "notes": {
     "configEndpoint": "Added /api/config for basic diagnostics",
-    "quizAttemptLogTable": "quiz_attempt_logs stores normalized attempt data with timestamps"
-    "essayGradingEndpoint": "Added /api/essay-grade to score essay responses with line-by-line feedback"
+    "quizAttemptLogTable": "quiz_attempt_logs stores normalized attempt data with timestamps",
+    "essayGradingEndpoint": "Added /api/essay-grade to score essay responses with line-by-line feedback",
+    "barbarossaMascot": "Barbarossa is the red-bearded space pirate mascot guiding study flow"
   }
 }
