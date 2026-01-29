@@ -1,0 +1,8 @@
+; Using host:port localhost:60994 ...
+; Hooking up nREPL sessions on port 60994...
+; Connected session: joyride, port: 60994
+; Evaluating code from settings: 'calva.autoEvaluateCode.onConnect.clj'
+nil
+joyride꞉user꞉> 
+; Jack-in done.
+joyride꞉user꞉> 

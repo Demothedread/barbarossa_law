@@ -2,7 +2,8 @@
  * Essay writer module for creating and grading bar-style essay responses.
  */
 
-import { gradeEssayResponse } from './lq-api.js';
+import { gradeEssayResponse } from "./lq-api.js";
+import { getIconString } from "./lunaire-icons.js";
 
 const ESSAY_MAX_POINTS_DEFAULT = 100;
 
@@ -14,8 +15,8 @@ const cleanupRegistry = new WeakMap();
  * @returns {HTMLElement} Essay writer section element.
  */
 export function createEssayWriterSection() {
-  const section = document.createElement('section');
-  section.className = 'essay-writer-section module-frame-alt';
+  const section = document.createElement("section");
+  section.className = "essay-writer-section module-frame-alt";
 
   const header = createEssayHeader();
   const form = createEssayForm();
@@ -31,10 +32,13 @@ export function createEssayWriterSection() {
 }
 
 function createEssayHeader() {
-  const header = document.createElement('div');
-  header.className = 'essay-writer-header';
+  const header = document.createElement("div");
+  header.className = "essay-writer-header";
   header.innerHTML = `
-    <h2 class="essay-writer-title">📝 Essay Answer Lab</h2>
+    <h2 class="essay-writer-title">${getIconString(
+      "document",
+      28,
+    )} Essay Answer Lab</h2>
     <p class="essay-writer-subtitle">
       Draft an answer and submit it for precedent-based AI grading.
     </p>
@@ -43,8 +47,8 @@ function createEssayHeader() {
 }
 
 function createEssayForm() {
-  const form = document.createElement('form');
-  form.className = 'essay-writer-form';
+  const form = document.createElement("form");
+  form.className = "essay-writer-form";
   form.innerHTML = `
     <label class="essay-label" for="essayQuestion">Essay Prompt</label>
     <textarea id="essayQuestion" class="essay-textarea essay-question" rows="6" placeholder="Paste the essay prompt here..." required></textarea>
@@ -87,8 +91,8 @@ function createEssayForm() {
 }
 
 function createEssayResults() {
-  const results = document.createElement('div');
-  results.className = 'essay-results';
+  const results = document.createElement("div");
+  results.className = "essay-results";
   results.innerHTML = `
     <div class="essay-results-header">
       <h3>AI Grading Results</h3>
@@ -100,15 +104,15 @@ function createEssayResults() {
 }
 
 function bindEssayFormHandlers(form, results) {
-  const questionField = form.querySelector('#essayQuestion');
-  const answerField = form.querySelector('#essayAnswer');
-  const maxPointsField = form.querySelector('#essayMaxPoints');
-  const reviewModelField = form.querySelector('#essayReviewModel');
+  const questionField = form.querySelector("#essayQuestion");
+  const answerField = form.querySelector("#essayAnswer");
+  const maxPointsField = form.querySelector("#essayMaxPoints");
+  const reviewModelField = form.querySelector("#essayReviewModel");
   const wordCount = form.querySelector('[data-target="essayAnswer"]');
-  const resultBody = results.querySelector('.essay-results-body');
+  const resultBody = results.querySelector(".essay-results-body");
 
-  form.addEventListener('click', (event) => {
-    const button = event.target.closest('.essay-control-btn');
+  form.addEventListener("click", (event) => {
+    const button = event.target.closest(".essay-control-btn");
     if (!button) return;
     event.preventDefault();
 
@@ -120,38 +124,41 @@ function bindEssayFormHandlers(form, results) {
       updateWordCount(answerField, wordCount);
     }
 
-    if (action === 'clear') {
-      answerField.value = '';
+    if (action === "clear") {
+      answerField.value = "";
       updateWordCount(answerField, wordCount);
     }
 
-    if (action === 'sample') {
+    if (action === "sample") {
       answerField.value = buildSampleOutline(answerField.value);
       updateWordCount(answerField, wordCount);
     }
   });
 
-  answerField.addEventListener('input', () => {
+  answerField.addEventListener("input", () => {
     updateWordCount(answerField, wordCount);
   });
 
-  form.addEventListener('submit', async (event) => {
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    resultBody.innerHTML = '<div class="essay-loading">Grading in progress...</div>';
+    resultBody.innerHTML =
+      '<div class="essay-loading">Grading in progress...</div>';
 
     try {
       const gradeResponse = await gradeEssayResponse({
         question: questionField.value.trim(),
         answer: answerField.value.trim(),
-        max_points: maxPointsField.value ? Number(maxPointsField.value) : undefined,
-        review_model: reviewModelField.value
+        max_points: maxPointsField.value
+          ? Number(maxPointsField.value)
+          : undefined,
+        review_model: reviewModelField.value,
       });
 
       renderEssayResults(resultBody, gradeResponse);
     } catch (error) {
       resultBody.innerHTML = `
         <div class="essay-error">
-          Unable to grade the response. ${error.message || 'Please try again.'}
+          Unable to grade the response. ${error.message || "Please try again."}
         </div>
       `;
     }
@@ -159,11 +166,15 @@ function bindEssayFormHandlers(form, results) {
 
   // Use AbortController for proper cleanup of the event listener
   const controller = new AbortController();
-  document.addEventListener('essayPromptSelected', (event) => {
-    if (!event.detail?.prompt) return;
-    questionField.value = event.detail.prompt;
-    questionField.focus();
-  }, { signal: controller.signal });
+  document.addEventListener(
+    "essayPromptSelected",
+    (event) => {
+      if (!event.detail?.prompt) return;
+      questionField.value = event.detail.prompt;
+      questionField.focus();
+    },
+    { signal: controller.signal },
+  );
 
   // Store cleanup function using WeakMap for proper memory management
   cleanupRegistry.set(form, () => controller.abort());
@@ -175,67 +186,78 @@ function applyEssayFormatting(textarea, format) {
   const selectedText = textarea.value.slice(selectionStart, selectionEnd);
 
   let formattedText = selectedText;
-  if (format === 'bold') formattedText = `**${selectedText || 'bold text'}**`;
-  if (format === 'italic') formattedText = `*${selectedText || 'italic text'}*`;
-  if (format === 'underline') formattedText = `__${selectedText || 'underline text'}__`;
-  if (format === 'bullet') formattedText = `- ${selectedText || 'bullet point'}`;
+  if (format === "bold") formattedText = `**${selectedText || "bold text"}**`;
+  if (format === "italic") formattedText = `*${selectedText || "italic text"}*`;
+  if (format === "underline")
+    formattedText = `__${selectedText || "underline text"}__`;
+  if (format === "bullet")
+    formattedText = `- ${selectedText || "bullet point"}`;
 
-  textarea.setRangeText(formattedText, selectionStart, selectionEnd, 'end');
+  textarea.setRangeText(formattedText, selectionStart, selectionEnd, "end");
   textarea.focus();
 }
 
 function buildSampleOutline(currentText) {
   const outline = [
-    'Issue: Identify the primary legal issue.',
-    'Rule: State the governing rule with authority.',
-    'Analysis: Apply the facts to the rule.',
-    'Conclusion: Provide a concise conclusion.'
+    "Issue: Identify the primary legal issue.",
+    "Rule: State the governing rule with authority.",
+    "Analysis: Apply the facts to the rule.",
+    "Conclusion: Provide a concise conclusion.",
   ];
-  const prefix = currentText ? `${currentText}\n\n` : '';
-  return `${prefix}${outline.join('\n')}`;
+  const prefix = currentText ? `${currentText}\n\n` : "";
+  return `${prefix}${outline.join("\n")}`;
 }
 
 function renderEssayResults(container, response) {
   const grade = response.grade;
   if (!grade) {
-    container.innerHTML = '<div class="essay-error">No grading details returned.</div>';
+    container.innerHTML =
+      '<div class="essay-error">No grading details returned.</div>';
     return;
   }
 
   const rubricItems = (grade.rubric_points || [])
-    .map((item) => `
+    .map(
+      (item) => `
       <li>
         <strong>${item.criterion}</strong>
         <span>${item.points_awarded}/${item.points_possible} pts</span>
         <p>${item.justification}</p>
       </li>
-    `)
-    .join('');
+    `,
+    )
+    .join("");
 
   const lineItems = (grade.line_feedback || [])
-    .map((line) => `
+    .map(
+      (line) => `
       <li>
         <span class="essay-line-number">Line ${line.line}</span>
         <p class="essay-line-text">${line.text}</p>
         <p class="essay-line-feedback">${line.feedback}</p>
         <span class="essay-line-score">Δ ${line.score_delta}</span>
       </li>
-    `)
-    .join('');
+    `,
+    )
+    .join("");
 
   container.innerHTML = `
     <div class="essay-score-card">
-      <div class="essay-score-value">${grade.total_score} / ${grade.max_score}</div>
-      <div class="essay-score-rationale">${grade.score_rationale || 'Score rationale provided.'}</div>
+      <div class="essay-score-value">${grade.total_score} / ${
+    grade.max_score
+  }</div>
+      <div class="essay-score-rationale">${
+        grade.score_rationale || "Score rationale provided."
+      }</div>
     </div>
-    <div class="essay-overall-feedback">${grade.overall_feedback || ''}</div>
+    <div class="essay-overall-feedback">${grade.overall_feedback || ""}</div>
     <div class="essay-rubric">
       <h4>Rubric Breakdown</h4>
-      <ul>${rubricItems || '<li>No rubric details provided.</li>'}</ul>
+      <ul>${rubricItems || "<li>No rubric details provided.</li>"}</ul>
     </div>
     <div class="essay-line-review">
       <h4>Line-by-Line Feedback</h4>
-      <ul>${lineItems || '<li>No line feedback provided.</li>'}</ul>
+      <ul>${lineItems || "<li>No line feedback provided.</li>"}</ul>
     </div>
   `;
 }

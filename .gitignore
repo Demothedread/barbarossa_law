@@ -153,3 +153,7 @@ __pycache__/
 *$py.class
 *.so
 *.class
+
+.env
+venv/
+

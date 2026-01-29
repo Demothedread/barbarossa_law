@@ -3,63 +3,71 @@
  * Displays key performance metrics on the main page
  */
 
-import { getComprehensiveQuizHistory, fetchAdvancedAnalytics } from './lq-api.js';
+import {
+  fetchAdvancedAnalytics,
+  getComprehensiveQuizHistory,
+} from "./lq-api.js";
+import { getIconString } from "./lunaire-icons.js";
 
 /**
  * Create a compact statistics widget for the homepage
  * @returns {Promise<HTMLElement>} Widget element
  */
 export async function createStatsWidget() {
-  const widget = document.createElement('div');
-  widget.className = 'stats-widget';
-  
+  const widget = document.createElement("div");
+  widget.className = "stats-widget";
+
   // Show loading state initially
   widget.innerHTML = `
     <div class="widget-header">
-      <h3>📊 Your Progress</h3>
+      <h3>${getIconString("chart", 20)} Captain's Log</h3>
       <div class="widget-loading">
         <div class="mini-spinner"></div>
       </div>
     </div>
   `;
-  
+
   try {
-    const userId = localStorage.getItem('userId') || 'anonymous';
-    
+    const userId = localStorage.getItem("userId") || "anonymous";
+
     // Fetch basic stats
-    const comprehensiveData = await getComprehensiveQuizHistory(userId, '', '', 10);
+    const comprehensiveData = await getComprehensiveQuizHistory(
+      userId,
+      "",
+      "",
+      10,
+    );
     const { history, stats, analytics } = comprehensiveData;
-    
+
     if (!history || history.length === 0) {
       renderNoDataWidget(widget);
       return widget;
     }
-    
+
     // Fetch recent analytics
     const analyticsData = await fetchAdvancedAnalytics(userId, 7); // Last 7 days
-    
+
     renderStatsWidget(widget, stats, analytics, analyticsData);
-    
   } catch (error) {
-    console.error('Failed to load stats widget:', error);
+    console.error("Failed to load stats widget:", error);
     renderErrorWidget(widget);
   }
-  
+
   return widget;
 }
 
 function renderNoDataWidget(widget) {
   widget.innerHTML = `
     <div class="widget-header">
-      <h3>📊 Your Progress</h3>
+      <h3>${getIconString("chart", 20)} Captain's Log</h3>
     </div>
     <div class="widget-content no-data">
-      <div class="no-data-icon">🎯</div>
-      <p>Start your first quiz to see your progress!</p>
+      <div class="no-data-icon">${getIconString("flagPin", 48)}</div>
+      <p>Launch your first raid to begin tracking infamy!</p>
       <div class="widget-features">
-        <span>🏆 Track streaks</span>
-        <span>📈 Monitor improvement</span>
-        <span>🎯 Reach 65% goal</span>
+        <span>${getIconString("lightning", 16)} Log streaks</span>
+        <span>${getIconString("chart", 16)} Track plunder</span>
+        <span>${getIconString("star", 16)} Earn rank</span>
       </div>
     </div>
   `;
@@ -68,11 +76,11 @@ function renderNoDataWidget(widget) {
 function renderErrorWidget(widget) {
   widget.innerHTML = `
     <div class="widget-header">
-      <h3>📊 Your Progress</h3>
+      <h3>${getIconString("chart", 20)} Captain's Log</h3>
     </div>
     <div class="widget-content error">
-      <p>⚠️ Unable to load statistics</p>
-      <button onclick="location.reload()" class="widget-retry-btn">Retry</button>
+      <p>${getIconString("warning", 16)} Comms Jammed</p>
+      <button onclick="location.reload()" class="widget-retry-btn">Re-establish Link</button>
     </div>
   `;
 }
@@ -80,36 +88,47 @@ function renderErrorWidget(widget) {
 function renderStatsWidget(widget, stats, analytics, analyticsData) {
   const currentStreak = analytics.current_streak || 0;
   const goalProgress = analytics.goal_progress || 0;
-  const recentTrend = analyticsData.learning_velocity?.trend || 'stable';
+  const recentTrend = analyticsData.learning_velocity?.trend || "stable";
   const studyTimeHours = (stats.total_time || 0) / 3600;
-  
+
   // Determine streak status
-  const streakStatus = currentStreak >= 5 ? 'hot' : currentStreak >= 3 ? 'good' : 'building';
-  const streakIcon = currentStreak >= 5 ? '🔥' : currentStreak >= 3 ? '⚡' : '📈';
-  
+  const streakStatus =
+    currentStreak >= 5 ? "hot" : currentStreak >= 3 ? "good" : "building";
+  const streakIcon =
+    currentStreak >= 5
+      ? getIconString("lightning", 24)
+      : currentStreak >= 3
+      ? getIconString("lightning", 24)
+      : getIconString("chart", 24);
+
   // Determine trend status
   const trendIcon = getTrendIcon(recentTrend);
   const trendText = getTrendText(recentTrend);
-  
+
   widget.innerHTML = `
     <div class="widget-header">
-      <h3>📊 Your Progress</h3>
+      <h3>${getIconString("chart", 20)} Captain's Log</h3>
       <button class="widget-expand-btn" onclick="window.showStatistics()">
-        View Details →
+        Full Log ${getIconString("arrowRight", 12)}
       </button>
     </div>
     
     <div class="widget-content">
       <div class="widget-stats-grid">
         <div class="widget-stat primary">
-          <div class="stat-icon">🎯</div>
+          <div class="stat-icon">${getIconString("flagPin", 24)}</div>
           <div class="stat-content">
             <div class="stat-value">${stats.avg_score.toFixed(1)}%</div>
             <div class="stat-label">Overall Accuracy</div>
             <div class="progress-mini">
-              <div class="progress-mini-fill" style="width: ${Math.min(goalProgress, 100)}%"></div>
+              <div class="progress-mini-fill" style="width: ${Math.min(
+                goalProgress,
+                100,
+              )}%"></div>
             </div>
-            <div class="goal-text">${goalProgress.toFixed(0)}% to Bar Exam Goal</div>
+            <div class="goal-text">${goalProgress.toFixed(
+              0,
+            )}% to Bar Exam Goal</div>
           </div>
         </div>
         
@@ -123,7 +142,7 @@ function renderStatsWidget(widget, stats, analytics, analyticsData) {
         </div>
         
         <div class="widget-stat">
-          <div class="stat-icon">📚</div>
+          <div class="stat-icon">${getIconString("book", 24)}</div>
           <div class="stat-content">
             <div class="stat-value">${stats.total_questions}</div>
             <div class="stat-label">Questions Done</div>
@@ -145,10 +164,10 @@ function renderStatsWidget(widget, stats, analytics, analyticsData) {
       
       <div class="widget-actions">
         <button class="widget-action-btn primary" onclick="window.navigateToHome && window.navigateToHome()">
-          🎯 Take Quiz
+          ${getIconString("rocket", 16)} Launch Raid
         </button>
         <button class="widget-action-btn secondary" onclick="window.showStatistics && window.showStatistics()">
-          📊 Full Stats
+          ${getIconString("book", 16)} Full Log
         </button>
       </div>
     </div>
@@ -157,61 +176,68 @@ function renderStatsWidget(widget, stats, analytics, analyticsData) {
 
 function renderQuickInsights(analytics, analyticsData) {
   const insights = [];
-  
+
   // Add streak insight
   if (analytics.current_streak >= 3) {
     insights.push({
-      type: 'success',
-      icon: '🔥',
-      text: `Great streak! Keep it going!`
+      type: "success",
+      icon: getIconString("lightning", 16),
+      text: `Engines hot! Keep it maintaining orbit!`,
     });
   } else if (analytics.current_streak === 0) {
     insights.push({
-      type: 'motivation',
-      icon: '💪',
-      text: 'Start a new streak today!'
+      type: "motivation",
+      icon: getIconString("trophy", 16),
+      text: "Every legend starts with one raid.",
     });
   }
-  
+
   // Add weak areas insight
   if (analytics.weak_areas && analytics.weak_areas.length > 0) {
     const weakArea = analytics.weak_areas[0];
     insights.push({
-      type: 'improvement',
-      icon: '🎯',
-      text: `Focus on ${weakArea.name} (${weakArea.accuracy.toFixed(1)}%)`
+      type: "improvement",
+      icon: getIconString("flagPin", 16),
+      text: `Reinforce shields in ${weakArea.name} (${weakArea.accuracy.toFixed(
+        1,
+      )}%)`,
     });
   }
-  
+
   // Add learning velocity insight
-  if (analyticsData.learning_velocity?.trend === 'rapid_improvement') {
+  if (analyticsData.learning_velocity?.trend === "rapid_improvement") {
     insights.push({
-      type: 'success',
-      icon: '📈',
-      text: 'Rapid improvement detected!'
+      type: "success",
+      icon: getIconString("chart", 16),
+      text: "Warp speed improvement!",
     });
-  } else if (analyticsData.learning_velocity?.trend === 'declining') {
+  } else if (analyticsData.learning_velocity?.trend === "declining") {
     insights.push({
-      type: 'warning',
-      icon: '⚠️',
-      text: 'Consider more practice'
+      type: "warning",
+      icon: getIconString("warning", 16),
+      text: "Drifting off course. Correct.",
     });
   }
-  
+
   if (insights.length === 0) {
-    return '';
+    return "";
   }
-  
+
   return `
     <div class="widget-insights">
-      <h4>💡 Quick Insights</h4>
+      <h4>${getIconString("info", 16)} Tactical Insights</h4>
       <div class="insights-list">
-        ${insights.slice(0, 2).map(insight => `
+        ${insights
+          .slice(0, 2)
+          .map(
+            (insight) => `
           <div class="insight ${insight.type}">
             <span class="insight-icon">${insight.icon}</span>
             <span class="insight-text">${insight.text}</span>
           </div>
-        `).join('')}
+        `,
+          )
+          .join("")}
       </div>
     </div>
   `;
@@ -219,32 +245,32 @@ function renderQuickInsights(analytics, analyticsData) {
 
 function getTrendIcon(trend) {
   const icons = {
-    'rapid_improvement': '🚀',
-    'steady_improvement': '📈',
-    'stable': '➡️',
-    'declining': '📉',
-    'insufficient_data': '❓'
+    rapid_improvement: getIconString("rocket", 24),
+    steady_improvement: getIconString("chart", 24),
+    stable: getIconString("arrowRight", 24),
+    declining: getIconString("arrowLeft", 24),
+    insufficient_data: getIconString("info", 24),
   };
-  return icons[trend] || '📊';
+  return icons[trend] || getIconString("chart", 24);
 }
 
 function getTrendText(trend) {
   const texts = {
-    'rapid_improvement': 'Improving fast!',
-    'steady_improvement': 'Steady progress',
-    'stable': 'Consistent',
-    'declining': 'Needs focus',
-    'insufficient_data': 'Building data'
+    rapid_improvement: "Warp Speed!",
+    steady_improvement: "Cruising Speed",
+    stable: "Orbit Stable",
+    declining: "Losing Altitude",
+    insufficient_data: "Scanning...",
   };
-  return texts[trend] || 'Tracking...';
+  return texts[trend] || "Scanning...";
 }
 
 function getStreakText(streak) {
-  if (streak >= 10) return 'Incredible! 🌟';
-  if (streak >= 5) return 'On fire! 🔥';
-  if (streak >= 3) return 'Great job! ⚡';
-  if (streak >= 1) return 'Good start! 👍';
-  return 'Ready to start! 💪';
+  if (streak >= 10) return "Legendary! " + getIconString("star", 16);
+  if (streak >= 5) return "Full Burn! " + getIconString("rocket", 16);
+  if (streak >= 3) return "Engines Hot! " + getIconString("lightning", 16);
+  if (streak >= 1) return "Launched! " + getIconString("check", 16);
+  return "In Dock " + getIconString("clubhouse", 16);
 }
 
 /**
@@ -252,14 +278,14 @@ function getStreakText(streak) {
  * Called after quiz completion or when returning to home
  */
 export async function updateStatsWidget() {
-  const existingWidget = document.querySelector('.stats-widget');
+  const existingWidget = document.querySelector(".stats-widget");
   if (!existingWidget) return;
-  
+
   try {
     const newWidget = await createStatsWidget();
     existingWidget.replaceWith(newWidget);
   } catch (error) {
-    console.error('Failed to update stats widget:', error);
+    console.error("Failed to update stats widget:", error);
   }
 }
 
@@ -269,29 +295,31 @@ export async function updateStatsWidget() {
  * @param {string} message - Achievement message
  */
 export function showAchievementNotification(type, message) {
-  const notification = document.createElement('div');
+  const notification = document.createElement("div");
   notification.className = `achievement-notification ${type}`;
-  
+
   const icons = {
-    streak: '🔥',
-    goal: '🎯',
-    improvement: '📈',
-    milestone: '🏆'
+    streak: getIconString("lightning", 24),
+    goal: getIconString("flagPin", 24),
+    improvement: getIconString("chart", 24),
+    milestone: getIconString("trophy", 24),
   };
-  
+
   notification.innerHTML = `
-    <div class="achievement-icon">${icons[type] || '🌟'}</div>
+    <div class="achievement-icon">${
+      icons[type] || getIconString("star", 24)
+    }</div>
     <div class="achievement-text">${message}</div>
   `;
-  
+
   document.body.appendChild(notification);
-  
+
   // Animate in
-  setTimeout(() => notification.classList.add('show'), 10);
-  
+  setTimeout(() => notification.classList.add("show"), 10);
+
   // Auto remove after 4 seconds
   setTimeout(() => {
-    notification.classList.remove('show');
+    notification.classList.remove("show");
     setTimeout(() => {
       if (notification.parentNode) {
         document.body.removeChild(notification);

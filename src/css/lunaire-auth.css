@@ -1,0 +1,537 @@
+/**
+ * LUNAIRE COUNTRY CLUB - Membership Application Styles
+ * Authentication themed as Club Membership Registration
+ */
+
+/* ==========================================================================
+   MEMBERSHIP APPLICATION MODAL
+   ========================================================================== */
+
+.membership-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  background: rgba(30, 30, 30, 0.85);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--transition-base);
+}
+
+.membership-modal.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.membership-application {
+  background: var(--lunaire-cream-warm);
+  background-image: var(--texture-paper);
+  border: var(--border-thick) solid var(--lunaire-gold);
+  border-radius: var(--radius-lg);
+  max-width: 420px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: auto;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(218, 145, 0, 0.3);
+  transform: scale(0.95) translateY(20px);
+  transition: transform var(--transition-base);
+}
+
+.membership-modal.active .membership-application {
+  transform: scale(1) translateY(0);
+}
+
+/* Application Header */
+.membership-application__header {
+  background: linear-gradient(
+    180deg,
+    var(--lunaire-gold) 0%,
+    var(--lunaire-gold-deep) 100%
+  );
+  padding: var(--space-6);
+  text-align: center;
+  position: relative;
+}
+
+.membership-application__crest {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto var(--space-3);
+  background: var(--lunaire-cream);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid var(--lunaire-brown);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.membership-application__title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  color: var(--lunaire-brown-dark);
+  margin: 0 0 var(--space-1);
+}
+
+.membership-application__subtitle {
+  font-size: var(--text-sm);
+  color: var(--lunaire-brown);
+  opacity: 0.8;
+}
+
+.membership-application__close {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  width: 32px;
+  height: 32px;
+  background: var(--lunaire-cream);
+  border: 2px solid var(--lunaire-brown);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-base);
+}
+
+.membership-application__close:hover {
+  background: var(--lunaire-brown);
+  color: var(--lunaire-cream);
+}
+
+/* Application Body */
+.membership-application__body {
+  padding: var(--space-6);
+}
+
+/* Tab Navigation */
+.membership-tabs {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+  border-bottom: 2px solid var(--lunaire-gray);
+  padding-bottom: var(--space-2);
+}
+
+.membership-tab {
+  flex: 1;
+  padding: var(--space-3);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--lunaire-gray-warm);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.membership-tab:hover {
+  color: var(--lunaire-brown);
+}
+
+.membership-tab.active {
+  background: var(--lunaire-cream);
+  color: var(--lunaire-brown-dark);
+  border: 2px solid var(--lunaire-gray);
+  border-bottom-color: var(--lunaire-cream);
+  margin-bottom: -4px;
+}
+
+/* Form Panel */
+.membership-panel {
+  display: none;
+}
+
+.membership-panel.active {
+  display: block;
+}
+
+/* Form Groups */
+.membership-form__group {
+  margin-bottom: var(--space-4);
+}
+
+.membership-form__label {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--lunaire-brown);
+  margin-bottom: var(--space-2);
+}
+
+.membership-form__input {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: var(--lunaire-cream);
+  border: var(--border-medium) solid var(--lunaire-gray);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--lunaire-brown-dark);
+  transition: all var(--transition-base);
+}
+
+.membership-form__input:focus {
+  outline: none;
+  border-color: var(--lunaire-gold);
+  box-shadow: 0 0 0 3px rgba(218, 145, 0, 0.2);
+}
+
+.membership-form__input::placeholder {
+  color: var(--lunaire-gray-warm);
+}
+
+/* Submit Button */
+.membership-form__submit {
+  width: 100%;
+  padding: var(--space-4);
+  background: linear-gradient(
+    180deg,
+    var(--lunaire-avocado) 0%,
+    var(--lunaire-avocado-deep) 100%
+  );
+  border: var(--border-medium) solid var(--lunaire-avocado-deep);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--lunaire-cream);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.membership-form__submit:hover {
+  background: linear-gradient(
+    180deg,
+    var(--lunaire-avocado-deep) 0%,
+    #3d5702 100%
+  );
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.membership-form__submit:active {
+  transform: translateY(0);
+}
+
+/* Divider */
+.membership-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-6) 0;
+}
+
+.membership-divider::before,
+.membership-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--lunaire-gray),
+    transparent
+  );
+}
+
+.membership-divider__text {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--lunaire-gray-warm);
+}
+
+/* Social Login Options */
+.membership-social {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.membership-social__btn {
+  width: 100%;
+  padding: var(--space-3);
+  background: var(--lunaire-cream);
+  border: var(--border-medium) solid var(--lunaire-gray);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-weight: 600;
+  color: var(--lunaire-brown);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  transition: all var(--transition-base);
+}
+
+.membership-social__btn:hover {
+  border-color: var(--lunaire-brown);
+  background: var(--lunaire-cream-warm);
+}
+
+/* Guest Option */
+.membership-guest {
+  margin-top: var(--space-6);
+  text-align: center;
+}
+
+.membership-guest__link {
+  color: var(--lunaire-teal);
+  text-decoration: none;
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.membership-guest__link:hover {
+  text-decoration: underline;
+}
+
+/* Application Footer */
+.membership-application__footer {
+  padding: var(--space-4) var(--space-6);
+  background: var(--lunaire-cream-cool);
+  border-top: 1px solid var(--lunaire-gray);
+  text-align: center;
+}
+
+.membership-application__fine-print {
+  font-size: var(--text-xs);
+  color: var(--lunaire-gray-warm);
+  line-height: var(--leading-relaxed);
+  font-style: italic;
+}
+
+/* ==========================================================================
+   MEMBERSHIP STATUS DISPLAY
+   ========================================================================== */
+
+.membership-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--lunaire-cream);
+  border: 1px solid var(--lunaire-gray);
+  border-radius: var(--radius-md);
+}
+
+.membership-status__avatar {
+  width: 36px;
+  height: 36px;
+  background: var(--lunaire-gold-light);
+  border: 2px solid var(--lunaire-gold);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--lunaire-brown);
+}
+
+.membership-status__info {
+  flex: 1;
+}
+
+.membership-status__name {
+  font-weight: 600;
+  font-size: var(--text-sm);
+  color: var(--lunaire-brown-dark);
+}
+
+.membership-status__level {
+  font-size: var(--text-xs);
+  color: var(--lunaire-gray-warm);
+}
+
+/* User Dropdown */
+.user-dropdown {
+  position: relative;
+}
+
+.user-dropdown__trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background var(--transition-base);
+}
+
+.user-dropdown__trigger:hover {
+  background: rgba(196, 196, 183, 0.2);
+}
+
+.user-dropdown__avatar {
+  width: 32px;
+  height: 32px;
+  background: var(--lunaire-gold-light);
+  border: 2px solid var(--lunaire-gold);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-dropdown__name {
+  font-weight: 600;
+  font-size: var(--text-sm);
+  color: var(--lunaire-cream);
+}
+
+.user-dropdown__menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: var(--space-2);
+  min-width: 200px;
+  background: var(--lunaire-cream);
+  border: var(--border-medium) solid var(--lunaire-brown);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all var(--transition-base);
+  z-index: 100;
+}
+
+.user-dropdown:hover .user-dropdown__menu,
+.user-dropdown__menu:focus-within {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.user-dropdown__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  color: var(--lunaire-brown);
+  text-decoration: none;
+  font-size: var(--text-sm);
+  transition: background var(--transition-base);
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+
+.user-dropdown__item:hover {
+  background: var(--lunaire-cream-warm);
+}
+
+.user-dropdown__item--danger {
+  color: var(--lunaire-sienna);
+}
+
+.user-dropdown__divider {
+  height: 1px;
+  background: var(--lunaire-gray);
+  margin: var(--space-2) 0;
+}
+
+/* ==========================================================================
+   ERROR STATES
+   ========================================================================== */
+
+.membership-form__error {
+  display: none;
+  padding: var(--space-3);
+  background: rgba(204, 85, 0, 0.1);
+  border: 1px solid var(--lunaire-sienna);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-4);
+  color: var(--lunaire-sienna);
+  font-size: var(--text-sm);
+}
+
+.membership-form__error.visible {
+  display: block;
+}
+
+.membership-form__input.error {
+  border-color: var(--lunaire-sienna);
+}
+
+/* ==========================================================================
+   SUCCESS STATES
+   ========================================================================== */
+
+.membership-success {
+  text-align: center;
+  padding: var(--space-8);
+}
+
+.membership-success__icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto var(--space-4);
+  background: var(--lunaire-avocado);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--lunaire-cream);
+}
+
+.membership-success__title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  margin-bottom: var(--space-2);
+}
+
+.membership-success__message {
+  color: var(--lunaire-gray-warm);
+  margin-bottom: var(--space-6);
+}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+
+@media (max-width: 480px) {
+  .membership-application {
+    margin: var(--space-2);
+    max-height: calc(100vh - var(--space-4));
+  }
+
+  .membership-application__header {
+    padding: var(--space-4);
+  }
+
+  .membership-application__body {
+    padding: var(--space-4);
+  }
+
+  .membership-tabs {
+    flex-direction: column;
+  }
+
+  .membership-tab {
+    border-radius: var(--radius-md);
+  }
+
+  .membership-tab.active {
+    border-bottom-color: var(--lunaire-gray);
+    margin-bottom: 0;
+  }
+}

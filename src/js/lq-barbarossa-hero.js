@@ -1,16 +1,22 @@
 /**
+import { getIconString } from './lunaire-icons.js';
+
+/**
  * Barbarossa hero module.
  * Builds the atomic-age pirate hero section.
  */
 export function createBarbarossaHero() {
-  const section = document.createElement('section');
-  section.className = 'barbarossa-hero module-frame';
-  section.id = 'barbarossa-hero';
+  const section = document.createElement("section");
+  section.className = "barbarossa-hero module-frame";
+  section.id = "barbarossa-hero";
 
   section.innerHTML = `
     <div class="barbarossa-hero-content">
       <div class="barbarossa-hero-copy">
-        <p class="hero-eyebrow">🚀 Retrofuturist Bar Exam Fleet</p>
+        <p class="hero-eyebrow">${getIconString(
+          "rocket",
+          20,
+        )} Retrofuturist Bar Exam Fleet</p>
         <h1 class="hero-title">Barbarossa: Red-Beard Space Pirate of the Atomic Age</h1>
         <p class="hero-subtitle">
           Barbarossa is our mascot — a red-bearded, muscle-queen corsair who captains a chrome
@@ -19,9 +25,14 @@ export function createBarbarossaHero() {
         </p>
         <div class="hero-actions">
           <button class="btn-primary btn-start-quiz" data-mode="barbarossa-overtime">
-            ⚔️ Start the Barbarossa Overtime Exam
+            ${getIconString(
+              "pirateSkull",
+              24,
+            )} Start the Barbarossa Overtime Exam
           </button>
-          <a class="btn-secondary hero-scroll-link" href="#exam-bank">Explore the Question Bank</a>
+          <a class="btn-secondary hero-scroll-link" href="#exam-bank">
+            ${getIconString("telescope", 20)} Explore the Question Bank
+          </a>
         </div>
       </div>
       <div class="barbarossa-mascot">

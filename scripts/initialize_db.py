@@ -121,6 +121,20 @@ def create_schema(conn):
         created_at TEXT
     )
     ''')
+
+    # Create essay cache table
+    print("Creating essay_cache table...")
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS essay_cache (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        essay_prompt TEXT NOT NULL,
+        rubric TEXT NOT NULL,
+        model_answer TEXT NOT NULL,
+        grade_data TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        hash_key TEXT UNIQUE NOT NULL
+    )
+    ''')
     
     conn.commit()
 

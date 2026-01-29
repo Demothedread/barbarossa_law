@@ -1,0 +1,692 @@
+/**
+ * BEACH BOYS EASTER EGG THEME
+ * Animated geometric beach scene with moving waves
+ * Uses Zeplin and Please Display fonts
+ */
+
+/* Beach Boys Theme Variables */
+.beach-boys-theme {
+  /* Beach Colors */
+  --beach-sand-light: #f4e8d1;
+  --beach-sand-mid: #e6d5b8;
+  --beach-sand-dark: #d4c4a8;
+
+  /* Ocean Colors */
+  --ocean-deep: #1e6091;
+  --ocean-mid: #2596be;
+  --ocean-light: #5ec2d4;
+  --ocean-foam: #e8f4f8;
+
+  /* Sky Colors */
+  --sky-top: #87ceeb;
+  --sky-mid: #add8e6;
+  --sky-horizon: #fffaf0;
+
+  /* Sun */
+  --sun-glow: #ffd700;
+  --sun-orange: #ff8c00;
+}
+
+/* Main Beach Background */
+.beach-boys-theme body,
+body.beach-boys-theme {
+  background: linear-gradient(
+    180deg,
+    var(--sky-top) 0%,
+    var(--sky-mid) 25%,
+    var(--sky-horizon) 40%,
+    var(--ocean-light) 40%,
+    var(--ocean-mid) 55%,
+    var(--ocean-deep) 65%,
+    var(--beach-sand-light) 65%,
+    var(--beach-sand-mid) 80%,
+    var(--beach-sand-dark) 100%
+  );
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Geometric Background Layer */
+.beach-boys-theme::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: -1;
+  background: 
+    /* Sun */ radial-gradient(
+      circle at 80% 15%,
+      var(--sun-glow) 0%,
+      var(--sun-orange) 30%,
+      transparent 35%
+    ),
+    /* Beach umbrellas (geometric) */
+      conic-gradient(
+        from 45deg at 20% 85%,
+        #ff6b6b 0deg,
+        #4ecdc4 90deg,
+        #ffe66d 180deg,
+        #ff6b6b 360deg
+      ),
+    conic-gradient(
+      from 45deg at 70% 90%,
+      #ff6b6b 0deg,
+      #fff 90deg,
+      #4ecdc4 180deg,
+      #ff6b6b 360deg
+    );
+  background-size: 100% 100%, 60px 60px, 50px 50px;
+  background-position: 0 0, 15% 82%, 65% 88%;
+  background-repeat: no-repeat;
+}
+
+/* Animated Wave Container */
+.beach-boys-waves {
+  position: fixed;
+  bottom: 35%;
+  left: 0;
+  right: 0;
+  height: 30%;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* SVG Wave Layers */
+.beach-boys-wave {
+  position: absolute;
+  width: 200%;
+  height: 100%;
+  left: 0;
+}
+
+.beach-boys-wave.wave-1 {
+  animation: beachWave1 8s ease-in-out infinite;
+  opacity: 0.8;
+}
+
+.beach-boys-wave.wave-2 {
+  animation: beachWave2 6s ease-in-out infinite;
+  opacity: 0.6;
+  animation-delay: -2s;
+}
+
+.beach-boys-wave.wave-3 {
+  animation: beachWave3 10s ease-in-out infinite;
+  opacity: 0.4;
+  animation-delay: -4s;
+}
+
+@keyframes beachWave1 {
+  0%,
+  100% {
+    transform: translateX(0) translateY(0);
+  }
+  25% {
+    transform: translateX(-5%) translateY(5px);
+  }
+  50% {
+    transform: translateX(-10%) translateY(0);
+  }
+  75% {
+    transform: translateX(-5%) translateY(-5px);
+  }
+}
+
+@keyframes beachWave2 {
+  0%,
+  100% {
+    transform: translateX(-10%) translateY(0);
+  }
+  25% {
+    transform: translateX(-5%) translateY(-8px);
+  }
+  50% {
+    transform: translateX(0) translateY(0);
+  }
+  75% {
+    transform: translateX(-5%) translateY(8px);
+  }
+}
+
+@keyframes beachWave3 {
+  0%,
+  100% {
+    transform: translateX(-5%) translateY(0);
+  }
+  50% {
+    transform: translateX(-15%) translateY(0);
+  }
+}
+
+/* Geometric Polygon Waves (CSS-only) */
+.beach-boys-theme .wave-polygons {
+  position: fixed;
+  bottom: 32%;
+  left: 0;
+  right: 0;
+  height: 25%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.beach-boys-theme .wave-polygon {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+/* Wave 1 - Front wave, largest movement */
+.beach-boys-theme .wave-polygon-1 {
+  clip-path: polygon(
+    0% 60%,
+    5% 55%,
+    10% 50%,
+    15% 55%,
+    20% 60%,
+    25% 55%,
+    30% 45%,
+    35% 50%,
+    40% 60%,
+    45% 55%,
+    50% 50%,
+    55% 55%,
+    60% 60%,
+    65% 50%,
+    70% 45%,
+    75% 55%,
+    80% 60%,
+    85% 55%,
+    90% 50%,
+    95% 55%,
+    100% 60%,
+    100% 100%,
+    0% 100%
+  );
+  background: linear-gradient(
+    180deg,
+    var(--ocean-light) 0%,
+    var(--ocean-mid) 100%
+  );
+  animation: waveMove1 4s ease-in-out infinite;
+}
+
+/* Wave 2 - Middle wave */
+.beach-boys-theme .wave-polygon-2 {
+  clip-path: polygon(
+    0% 50%,
+    8% 45%,
+    16% 40%,
+    24% 50%,
+    32% 55%,
+    40% 45%,
+    48% 50%,
+    56% 55%,
+    64% 45%,
+    72% 40%,
+    80% 50%,
+    88% 55%,
+    96% 45%,
+    100% 50%,
+    100% 100%,
+    0% 100%
+  );
+  background: linear-gradient(
+    180deg,
+    var(--ocean-mid) 0%,
+    var(--ocean-deep) 100%
+  );
+  animation: waveMove2 5s ease-in-out infinite;
+  animation-delay: -1s;
+}
+
+/* Wave 3 - Back wave, slowest */
+.beach-boys-theme .wave-polygon-3 {
+  clip-path: polygon(
+    0% 40%,
+    10% 35%,
+    20% 45%,
+    30% 40%,
+    40% 35%,
+    50% 45%,
+    60% 40%,
+    70% 35%,
+    80% 45%,
+    90% 40%,
+    100% 35%,
+    100% 100%,
+    0% 100%
+  );
+  background: linear-gradient(180deg, var(--ocean-deep) 0%, #1a5276 100%);
+  animation: waveMove3 7s ease-in-out infinite;
+  animation-delay: -3s;
+}
+
+@keyframes waveMove1 {
+  0%,
+  100% {
+    transform: translateX(0) scaleY(1);
+    clip-path: polygon(
+      0% 60%,
+      5% 55%,
+      10% 50%,
+      15% 55%,
+      20% 60%,
+      25% 55%,
+      30% 45%,
+      35% 50%,
+      40% 60%,
+      45% 55%,
+      50% 50%,
+      55% 55%,
+      60% 60%,
+      65% 50%,
+      70% 45%,
+      75% 55%,
+      80% 60%,
+      85% 55%,
+      90% 50%,
+      95% 55%,
+      100% 60%,
+      100% 100%,
+      0% 100%
+    );
+  }
+  50% {
+    transform: translateX(-3%) scaleY(1.05);
+    clip-path: polygon(
+      0% 55%,
+      5% 60%,
+      10% 55%,
+      15% 50%,
+      20% 55%,
+      25% 60%,
+      30% 50%,
+      35% 45%,
+      40% 55%,
+      45% 60%,
+      50% 55%,
+      55% 50%,
+      60% 55%,
+      65% 60%,
+      70% 50%,
+      75% 45%,
+      80% 55%,
+      85% 60%,
+      90% 55%,
+      95% 50%,
+      100% 55%,
+      100% 100%,
+      0% 100%
+    );
+  }
+}
+
+@keyframes waveMove2 {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(2%);
+  }
+}
+
+@keyframes waveMove3 {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-2%);
+  }
+}
+
+/* Foam effect on waves */
+.beach-boys-theme .wave-foam {
+  position: absolute;
+  bottom: 32%;
+  left: 0;
+  right: 0;
+  height: 10px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--ocean-foam) 0px,
+    var(--ocean-foam) 20px,
+    transparent 20px,
+    transparent 40px
+  );
+  animation: foamMove 3s linear infinite;
+  opacity: 0.7;
+}
+
+@keyframes foamMove {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(40px);
+  }
+}
+
+/* Typography - Zeplin for titles */
+.beach-boys-theme h1,
+.beach-boys-theme h2,
+.beach-boys-theme h3,
+.beach-boys-theme .homepage-title,
+.beach-boys-theme .welcome-title,
+.beach-boys-theme .section-title {
+  font-family: "zeplin-vf", "strenuous-3d", sans-serif !important;
+  font-variation-settings: "CONX" 1, "CONY" 1;
+  color: var(--sun-orange) !important;
+  text-shadow: 2px 2px 0 var(--ocean-deep), 4px 4px 0 rgba(30, 96, 145, 0.5);
+  letter-spacing: 0.05em;
+}
+
+/* Typography - Please Display for body/display text */
+.beach-boys-theme p,
+.beach-boys-theme span,
+.beach-boys-theme .card-description,
+.beach-boys-theme .stat-label,
+.beach-boys-theme button {
+  font-family: "please-display", "Montserrat", sans-serif !important;
+}
+
+/* Card and Container Styling */
+.beach-boys-theme .exam-mode-card,
+.beach-boys-theme .module-frame,
+.beach-boys-theme .stat-card {
+  background: linear-gradient(
+    135deg,
+    rgba(244, 232, 209, 0.95) 0%,
+    rgba(230, 213, 184, 0.9) 100%
+  ) !important;
+  border: 3px solid var(--ocean-mid) !important;
+  box-shadow: 0 4px 15px rgba(30, 96, 145, 0.3),
+    inset 0 0 20px rgba(255, 255, 255, 0.5);
+}
+
+.beach-boys-theme .exam-mode-card:hover {
+  transform: translateY(-5px) rotate(1deg);
+  box-shadow: 0 8px 25px rgba(30, 96, 145, 0.4),
+    inset 0 0 30px rgba(255, 255, 255, 0.7);
+}
+
+/* Buttons */
+.beach-boys-theme button,
+.beach-boys-theme .btn-start-quiz {
+  background: linear-gradient(
+    135deg,
+    var(--ocean-light) 0%,
+    var(--ocean-mid) 100%
+  ) !important;
+  border: 2px solid var(--ocean-deep) !important;
+  color: white !important;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.beach-boys-theme button:hover,
+.beach-boys-theme .btn-start-quiz:hover {
+  background: linear-gradient(
+    135deg,
+    var(--sun-glow) 0%,
+    var(--sun-orange) 100%
+  ) !important;
+  transform: scale(1.05);
+}
+
+/* Sun rays animation */
+.beach-boys-theme .sun-rays {
+  position: fixed;
+  top: -50px;
+  right: 5%;
+  width: 200px;
+  height: 200px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.beach-boys-theme .sun-ray {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(255, 215, 0, 0.3) 10deg,
+    transparent 20deg
+  );
+  animation: sunRaysSpin 30s linear infinite;
+}
+
+@keyframes sunRaysSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Palm tree silhouette (geometric) */
+.beach-boys-theme .palm-tree {
+  position: fixed;
+  bottom: 30%;
+  left: 5%;
+  width: 60px;
+  height: 150px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.beach-boys-theme .palm-trunk {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 80px;
+  background: linear-gradient(90deg, #5d4037 0%, #8d6e63 50%, #5d4037 100%);
+  clip-path: polygon(30% 0%, 70% 0%, 60% 100%, 40% 100%);
+}
+
+.beach-boys-theme .palm-frond {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 80px;
+  height: 40px;
+  background: #228b22;
+  transform-origin: left center;
+  animation: frondSway 4s ease-in-out infinite;
+}
+
+.beach-boys-theme .palm-frond:nth-child(1) {
+  transform: translateX(-50%) rotate(-30deg);
+  clip-path: polygon(50% 100%, 0% 50%, 50% 0%, 100% 50%);
+}
+
+.beach-boys-theme .palm-frond:nth-child(2) {
+  transform: translateX(-50%) rotate(30deg);
+  animation-delay: -1s;
+}
+
+.beach-boys-theme .palm-frond:nth-child(3) {
+  transform: translateX(-50%) rotate(-60deg);
+  animation-delay: -2s;
+}
+
+.beach-boys-theme .palm-frond:nth-child(4) {
+  transform: translateX(-50%) rotate(60deg);
+  animation-delay: -0.5s;
+}
+
+@keyframes frondSway {
+  0%,
+  100% {
+    transform: translateX(-50%) rotate(var(--base-rotation, 0deg));
+  }
+  50% {
+    transform: translateX(-50%) rotate(calc(var(--base-rotation, 0deg) + 5deg));
+  }
+}
+
+/* Seagull animation */
+.beach-boys-theme .seagull {
+  position: fixed;
+  width: 30px;
+  height: 10px;
+  pointer-events: none;
+  z-index: 5;
+  animation: seagullFly 15s linear infinite;
+}
+
+.beach-boys-theme .seagull::before,
+.beach-boys-theme .seagull::after {
+  content: "";
+  position: absolute;
+  width: 15px;
+  height: 3px;
+  background: #333;
+  border-radius: 50%;
+}
+
+.beach-boys-theme .seagull::before {
+  left: 0;
+  transform: rotate(-20deg);
+  animation: wingFlap 0.3s ease-in-out infinite;
+}
+
+.beach-boys-theme .seagull::after {
+  right: 0;
+  transform: rotate(20deg);
+  animation: wingFlap 0.3s ease-in-out infinite reverse;
+}
+
+@keyframes wingFlap {
+  0%,
+  100% {
+    transform: rotate(-20deg);
+  }
+  50% {
+    transform: rotate(-40deg);
+  }
+}
+
+@keyframes seagullFly {
+  0% {
+    top: 10%;
+    left: -5%;
+  }
+  100% {
+    top: 25%;
+    left: 105%;
+  }
+}
+
+/* Surfboard decoration */
+.beach-boys-theme .surfboard {
+  position: fixed;
+  bottom: 25%;
+  right: 10%;
+  width: 20px;
+  height: 100px;
+  background: linear-gradient(
+    180deg,
+    #ff6b6b 0%,
+    #feca57 33%,
+    #48dbfb 66%,
+    #ff6b6b 100%
+  );
+  border-radius: 10px 10px 5px 5px;
+  transform: rotate(15deg);
+  z-index: 3;
+  pointer-events: none;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Beach ball */
+.beach-boys-theme .beach-ball {
+  position: fixed;
+  bottom: 22%;
+  right: 25%;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    #ff6b6b 0deg 60deg,
+    #fff 60deg 120deg,
+    #4ecdc4 120deg 180deg,
+    #feca57 180deg 240deg,
+    #fff 240deg 300deg,
+    #ff6b6b 300deg 360deg
+  );
+  z-index: 3;
+  pointer-events: none;
+  animation: ballBounce 2s ease-in-out infinite;
+  box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes ballBounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Header styling override */
+.beach-boys-theme .lunaire-header {
+  background: linear-gradient(
+    90deg,
+    var(--beach-sand-light) 0%,
+    var(--sky-horizon) 50%,
+    var(--ocean-light) 100%
+  ) !important;
+  border-bottom: 4px solid var(--ocean-mid) !important;
+}
+
+/* Footer styling override */
+.beach-boys-theme .lunaire-footer {
+  background: var(--beach-sand-mid) !important;
+  border-top: 4px solid var(--ocean-mid) !important;
+}
+
+/* Transition effect when theme activates */
+.beach-boys-transition-in {
+  animation: beachFadeIn 0.8s ease-out forwards;
+}
+
+@keyframes beachFadeIn {
+  0% {
+    opacity: 0;
+    filter: blur(10px);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+/* Transition effect when theme deactivates */
+.beach-boys-transition-out {
+  animation: beachFadeOut 0.5s ease-in forwards;
+}
+
+@keyframes beachFadeOut {
+  0% {
+    opacity: 1;
+    filter: blur(0);
+  }
+  100% {
+    opacity: 0;
+    filter: blur(10px);
+  }
+}

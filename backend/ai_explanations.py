@@ -14,8 +14,8 @@ from typing import Any, Dict, List, Optional
 
 import aiohttp
 
-# Default to GPT-4o-mini as it's currently the best price-performance model
-DEFAULT_MODEL = "gpt-4o-mini"
+# Use GPT-5-nano as specified for all AI explanation calls
+DEFAULT_MODEL = "gpt-5-nano"
 
 class AIExplainService:
     def __init__(self, db_path: Path, api_key: Optional[str] = None):

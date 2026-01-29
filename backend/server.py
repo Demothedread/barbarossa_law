@@ -20,11 +20,8 @@ except ImportError:
     print("python-dotenv not available - using system environment variables")
 
 # Import our AI explanation service and vector store service
-from ai_explanations import (
-    AIExplainService,
-    ensure_explanations_table,
-    migrate_explanations_table,
-)
+from ai_explanations import (AIExplainService, ensure_explanations_table,
+                             migrate_explanations_table)
 from auth import (authenticate_user, create_user, generate_jwt_token,
                   get_user_from_token, require_auth, update_user_preferences)
 from essay_grader import EssayGraderService
@@ -59,7 +56,7 @@ def initialize_services():
         ensure_explanations_table(DB_PATH)
         migrate_explanations_table(DB_PATH)
         ai_service = AIExplainService(DB_PATH)
-        essay_grader_service = EssayGraderService()
+        essay_grader_service = EssayGraderService(db_path=DB_PATH)
         try:
             vector_store_service = VectorStoreServiceV2(DB_PATH)
             print("Vector store service v2 initialized successfully.")
@@ -1316,6 +1313,371 @@ def check_existing_explanations():
             'explanations_exist': result,
             'total_existing': len(existing_ids),
             'total_requested': len(question_ids)
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# Daily Progress Tracking Routes
+@app.route('/api/daily-progress', methods=['GET'])
+def get_daily_progress():
+    """Get daily progress for a user"""
+    try:
+        user_id = request.args.get('user_id', 'anonymous')
+        date = request.args.get('date', datetime.now().strftime('%Y-%m-%d'))
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Create daily_progress table if it doesn't exist
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS daily_progress (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT NOT NULL,
+            date TEXT NOT NULL,
+            questions_answered INTEGER DEFAULT 0,
+            questions_reviewed INTEGER DEFAULT 0,
+            question_ids_json TEXT DEFAULT '[]',
+            reviewed_ids_json TEXT DEFAULT '[]',
+            created_at TEXT,
+            updated_at TEXT,
+            UNIQUE(user_id, date)
+        )
+        ''')
+        
+        cursor.execute('''
+        SELECT * FROM daily_progress WHERE user_id = ? AND date = ?
+        ''', (user_id, date))
+        
+        row = cursor.fetchone()
+        
+        if row:
+            progress = dict(row)
+            progress['question_ids'] = json.loads(progress.get('question_ids_json', '[]'))
+            progress['reviewed_ids'] = json.loads(progress.get('reviewed_ids_json', '[]'))
+        else:
+            progress = {
+                'user_id': user_id,
+                'date': date,
+                'questions_answered': 0,
+                'questions_reviewed': 0,
+                'question_ids': [],
+                'reviewed_ids': []
+            }
+        
+        conn.close()
+        return jsonify({'progress': progress})
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/daily-progress', methods=['POST'])
+def update_daily_progress():
+    """Update daily progress (questions answered/reviewed)"""
+    try:
+        data = request.get_json()
+        user_id = data.get('user_id', 'anonymous')
+        date = data.get('date', datetime.now().strftime('%Y-%m-%d'))
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Create table if needed
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS daily_progress (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT NOT NULL,
+            date TEXT NOT NULL,
+            questions_answered INTEGER DEFAULT 0,
+            questions_reviewed INTEGER DEFAULT 0,
+            question_ids_json TEXT DEFAULT '[]',
+            reviewed_ids_json TEXT DEFAULT '[]',
+            created_at TEXT,
+            updated_at TEXT,
+            UNIQUE(user_id, date)
+        )
+        ''')
+        
+        # Get current progress
+        cursor.execute('SELECT * FROM daily_progress WHERE user_id = ? AND date = ?', (user_id, date))
+        existing = cursor.fetchone()
+        
+        if existing:
+            current_question_ids = json.loads(existing['question_ids_json'] or '[]')
+            current_reviewed_ids = json.loads(existing['reviewed_ids_json'] or '[]')
+        else:
+            current_question_ids = []
+            current_reviewed_ids = []
+        
+        # Merge new question IDs
+        new_question_ids = data.get('question_ids', [])
+        new_reviewed_ids = data.get('reviewed_ids', [])
+        
+        for qid in new_question_ids:
+            if qid not in current_question_ids:
+                current_question_ids.append(qid)
+        
+        for rid in new_reviewed_ids:
+            if rid not in current_reviewed_ids:
+                current_reviewed_ids.append(rid)
+        
+        # Update or insert
+        cursor.execute('''
+        INSERT INTO daily_progress (user_id, date, questions_answered, questions_reviewed, 
+                                     question_ids_json, reviewed_ids_json, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(user_id, date) DO UPDATE SET
+            questions_answered = excluded.questions_answered,
+            questions_reviewed = excluded.questions_reviewed,
+            question_ids_json = excluded.question_ids_json,
+            reviewed_ids_json = excluded.reviewed_ids_json,
+            updated_at = excluded.updated_at
+        ''', (
+            user_id, date, 
+            len(current_question_ids), len(current_reviewed_ids),
+            json.dumps(current_question_ids), json.dumps(current_reviewed_ids),
+            datetime.now().isoformat(), datetime.now().isoformat()
+        ))
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'progress': {
+                'user_id': user_id,
+                'date': date,
+                'questions_answered': len(current_question_ids),
+                'questions_reviewed': len(current_reviewed_ids),
+                'question_ids': current_question_ids,
+                'reviewed_ids': current_reviewed_ids
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/daily-progress/history', methods=['GET'])
+def get_daily_progress_history():
+    """Get daily progress history for the last N days"""
+    try:
+        user_id = request.args.get('user_id', 'anonymous')
+        days = int(request.args.get('days', 30))
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+        SELECT * FROM daily_progress 
+        WHERE user_id = ? AND date >= date('now', '-' || ? || ' days')
+        ORDER BY date DESC
+        ''', (user_id, days))
+        
+        history = []
+        for row in cursor.fetchall():
+            item = dict(row)
+            item['question_ids'] = json.loads(item.get('question_ids_json', '[]'))
+            item['reviewed_ids'] = json.loads(item.get('reviewed_ids_json', '[]'))
+            history.append(item)
+        
+        conn.close()
+        
+        return jsonify({
+            'history': history,
+            'total_days': len(history),
+            'goals_met': sum(1 for h in history if h['questions_answered'] >= 50 and h['questions_reviewed'] >= 50)
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/explanation-feedback', methods=['POST'])
+def save_explanation_feedback():
+    """Save user feedback on an AI-generated explanation (thumbs up/down)"""
+    try:
+        data = request.get_json()
+        question_id = data.get('question_id')
+        user_id = data.get('user_id', 'anonymous')
+        thumbs_up = data.get('thumbs_up')
+        
+        if question_id is None or thumbs_up is None:
+            return jsonify({'error': 'question_id and thumbs_up are required'}), 400
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Create feedback table if needed
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS explanation_feedback (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            question_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            thumbs_up INTEGER NOT NULL,
+            created_at TEXT,
+            UNIQUE(question_id, user_id)
+        )
+        ''')
+        
+        # Insert or update feedback
+        cursor.execute('''
+        INSERT INTO explanation_feedback (question_id, user_id, thumbs_up, created_at)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(question_id, user_id) DO UPDATE SET
+            thumbs_up = excluded.thumbs_up,
+            created_at = excluded.created_at
+        ''', (question_id, user_id, 1 if thumbs_up else 0, datetime.now().isoformat()))
+        
+        # If thumbs down, mark the explanation as not to be stored/cached
+        if not thumbs_up:
+            # Remove from question_explanations if it exists and was AI-generated
+            cursor.execute('''
+            DELETE FROM question_explanations 
+            WHERE question_id = ? AND ai_explanation IS NOT NULL
+            ''', (question_id,))
+        
+        conn.commit()
+        
+        # Get aggregate feedback stats for this question
+        cursor.execute('''
+        SELECT 
+            SUM(CASE WHEN thumbs_up = 1 THEN 1 ELSE 0 END) as up_count,
+            SUM(CASE WHEN thumbs_up = 0 THEN 1 ELSE 0 END) as down_count
+        FROM explanation_feedback WHERE question_id = ?
+        ''', (question_id,))
+        
+        stats = cursor.fetchone()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Feedback saved',
+            'stats': {
+                'up_count': stats['up_count'] or 0,
+                'down_count': stats['down_count'] or 0
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/explanation-feedback/<question_id>', methods=['GET'])
+def get_explanation_feedback(question_id):
+    """Get feedback status for a question's explanation"""
+    try:
+        user_id = request.args.get('user_id', 'anonymous')
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Get user's feedback
+        cursor.execute('''
+        SELECT thumbs_up FROM explanation_feedback 
+        WHERE question_id = ? AND user_id = ?
+        ''', (question_id, user_id))
+        
+        user_feedback = cursor.fetchone()
+        
+        # Get aggregate stats
+        cursor.execute('''
+        SELECT 
+            SUM(CASE WHEN thumbs_up = 1 THEN 1 ELSE 0 END) as up_count,
+            SUM(CASE WHEN thumbs_up = 0 THEN 1 ELSE 0 END) as down_count
+        FROM explanation_feedback WHERE question_id = ?
+        ''', (question_id,))
+        
+        stats = cursor.fetchone()
+        conn.close()
+        
+        return jsonify({
+            'user_feedback': user_feedback['thumbs_up'] if user_feedback else None,
+            'stats': {
+                'up_count': stats['up_count'] or 0 if stats else 0,
+                'down_count': stats['down_count'] or 0 if stats else 0
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/track-review', methods=['POST'])
+def track_question_review():
+    """Track when a user views an explanation (for daily review goal)"""
+    try:
+        data = request.get_json()
+        question_id = data.get('question_id')
+        user_id = data.get('user_id', 'anonymous')
+        
+        if not question_id:
+            return jsonify({'error': 'question_id is required'}), 400
+        
+        today = datetime.now().strftime('%Y-%m-%d')
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Create table if needed
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS daily_progress (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT NOT NULL,
+            date TEXT NOT NULL,
+            questions_answered INTEGER DEFAULT 0,
+            questions_reviewed INTEGER DEFAULT 0,
+            question_ids_json TEXT DEFAULT '[]',
+            reviewed_ids_json TEXT DEFAULT '[]',
+            created_at TEXT,
+            updated_at TEXT,
+            UNIQUE(user_id, date)
+        )
+        ''')
+        
+        # Get or create today's progress
+        cursor.execute('SELECT * FROM daily_progress WHERE user_id = ? AND date = ?', (user_id, today))
+        existing = cursor.fetchone()
+        
+        if existing:
+            reviewed_ids = json.loads(existing['reviewed_ids_json'] or '[]')
+            question_ids = json.loads(existing['question_ids_json'] or '[]')
+        else:
+            reviewed_ids = []
+            question_ids = []
+        
+        # Add to reviewed if not already there
+        already_reviewed = question_id in reviewed_ids
+        if not already_reviewed:
+            reviewed_ids.append(question_id)
+        
+        # Update database
+        cursor.execute('''
+        INSERT INTO daily_progress (user_id, date, questions_answered, questions_reviewed, 
+                                     question_ids_json, reviewed_ids_json, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(user_id, date) DO UPDATE SET
+            questions_reviewed = excluded.questions_reviewed,
+            reviewed_ids_json = excluded.reviewed_ids_json,
+            updated_at = excluded.updated_at
+        ''', (
+            user_id, today, 
+            len(question_ids), len(reviewed_ids),
+            json.dumps(question_ids), json.dumps(reviewed_ids),
+            datetime.now().isoformat(), datetime.now().isoformat()
+        ))
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'already_reviewed': already_reviewed,
+            'reviews_today': len(reviewed_ids),
+            'review_goal': 50,
+            'goal_met': len(reviewed_ids) >= 50
         })
         
     except Exception as e:

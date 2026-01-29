@@ -3,9 +3,13 @@
  * Comprehensive question generation interface with advanced features
  */
 
-import { extractQuestionsFromVectorStore, getVectorStoreStatus } from './lq-api.js';
-import { authManager } from './lq-auth.js';
-import { FREE_RANGE_PREFILL_KEY } from './lq-free-range.js';
+import {
+  extractQuestionsFromVectorStore,
+  getVectorStoreStatus,
+} from "./lq-api.js";
+import { authManager } from "./lq-auth.js";
+import { FREE_RANGE_PREFILL_KEY } from "./lq-free-range.js";
+import { getIconString } from "./lunaire-icons.js";
 
 /**
  * Create a comprehensive question generation interface
@@ -13,8 +17,8 @@ import { FREE_RANGE_PREFILL_KEY } from './lq-free-range.js';
  * @returns {HTMLElement}
  */
 export function createQuestionGenerator(onComplete) {
-  const container = document.createElement('div');
-  container.className = 'question-generator';
+  const container = document.createElement("div");
+  container.className = "question-generator";
 
   // Initialize user statistics
   let userStats = getUserStats();
@@ -35,13 +39,13 @@ export function createQuestionGenerator(onComplete) {
 
   // === HEADER SECTION ===
   function createHeader() {
-    const header = document.createElement('div');
-    header.className = 'generator-header';
+    const header = document.createElement("div");
+    header.className = "generator-header";
     header.innerHTML = `
       <div class="header-content">
         <div class="header-main">
           <h2 class="generator-title">
-            <span class="generator-icon">🤖</span>
+            <span class="generator-icon">${getIconString("hal", 28)}</span>
             AI Question Generator
           </h2>
           <p class="generator-subtitle">
@@ -50,11 +54,15 @@ export function createQuestionGenerator(onComplete) {
         </div>
         <div class="header-stats">
           <div class="quick-stat">
-            <span class="stat-number" id="totalGenerated">${userStats.totalGenerated}</span>
+            <span class="stat-number" id="totalGenerated">${
+              userStats.totalGenerated
+            }</span>
             <span class="stat-label">Total Generated</span>
           </div>
           <div class="quick-stat">
-            <span class="stat-number" id="sessionCount">${generationHistory.length}</span>
+            <span class="stat-number" id="sessionCount">${
+              generationHistory.length
+            }</span>
             <span class="stat-label">Sessions</span>
           </div>
         </div>
@@ -65,13 +73,13 @@ export function createQuestionGenerator(onComplete) {
 
   // === STATUS DASHBOARD ===
   function createStatusDashboard() {
-    const dashboard = document.createElement('div');
-    dashboard.className = 'generator-dashboard';
-    dashboard.id = 'statusDashboard';
+    const dashboard = document.createElement("div");
+    dashboard.className = "generator-dashboard";
+    dashboard.id = "statusDashboard";
     dashboard.innerHTML = `
       <div class="dashboard-card">
         <div class="card-header">
-          <h3>📊 Database Status</h3>
+          <h3>${getIconString("book", 20)} Database Status</h3>
         </div>
         <div class="card-content" id="databaseStatus">
           <div class="status-loading">
@@ -82,7 +90,7 @@ export function createQuestionGenerator(onComplete) {
       </div>
       <div class="dashboard-card">
         <div class="card-header">
-          <h3>🔗 Vector Store Connection</h3>
+          <h3>${getIconString("lightning", 20)} Vector Store Connection</h3>
         </div>
         <div class="card-content" id="vectorStoreStatus">
           <div class="status-loading">
@@ -97,17 +105,17 @@ export function createQuestionGenerator(onComplete) {
 
   // === GENERATION FORM ===
   function createGenerationForm() {
-    const formSection = document.createElement('div');
-    formSection.className = 'generator-form-section';
-    formSection.id = 'formSection';
-    formSection.style.display = 'none';
+    const formSection = document.createElement("div");
+    formSection.className = "generator-form-section";
+    formSection.id = "formSection";
+    formSection.style.display = "none";
 
     formSection.innerHTML = `
       <div class="form-container">
-        <div class="form-header">
-          <h3>⚙️ Generation Settings</h3>
-          <p>Configure your question generation parameters</p>
-        </div>
+      <div class="form-header">
+        <h3>${getIconString("gear", 24)} Generation Settings</h3>
+        <p>Configure your question generation parameters</p>
+      </div>
         
         <form id="generationForm" class="generation-form">
           <div class="form-grid">
@@ -196,11 +204,11 @@ export function createQuestionGenerator(onComplete) {
 
           <div class="form-actions">
             <button type="button" class="btn btn-secondary" id="previewBtn">
-              <span class="btn-icon">👁️</span>
+              <span class="btn-icon">${getIconString("telescope", 18)}</span>
               Preview Settings
             </button>
             <button type="submit" class="btn btn-primary" id="generateBtn">
-              <span class="btn-icon">🚀</span>
+              <span class="btn-icon">${getIconString("rocket", 18)}</span>
               Generate Questions
             </button>
           </div>
@@ -213,20 +221,24 @@ export function createQuestionGenerator(onComplete) {
 
   // === HISTORY SECTION ===
   function createHistorySection() {
-    const historySection = document.createElement('div');
-    historySection.className = 'generator-history';
-    historySection.id = 'historySection';
-    
+    const historySection = document.createElement("div");
+    historySection.className = "generator-history";
+    historySection.id = "historySection";
+
     historySection.innerHTML = `
       <div class="history-header">
-        <h3>📋 Generation History</h3>
+        <h3>${getIconString("scorecard", 24)} Generation History</h3>
         <div class="history-controls">
           <button class="btn btn-outline" id="clearHistoryBtn">Clear History</button>
           <button class="btn btn-outline" id="exportHistoryBtn">Export History</button>
         </div>
       </div>
       <div class="history-content" id="historyContent">
-        ${generationHistory.length > 0 ? renderHistory() : '<p class="no-history">No generation history yet. Start generating questions to see your history here.</p>'}
+        ${
+          generationHistory.length > 0
+            ? renderHistory()
+            : '<p class="no-history">No generation history yet. Start generating questions to see your history here.</p>'
+        }
       </div>
     `;
 
@@ -235,11 +247,11 @@ export function createQuestionGenerator(onComplete) {
 
   // === LOADING SECTION ===
   function createLoadingSection() {
-    const loadingSection = document.createElement('div');
-    loadingSection.className = 'generator-loading';
-    loadingSection.id = 'loadingSection';
-    loadingSection.style.display = 'none';
-    
+    const loadingSection = document.createElement("div");
+    loadingSection.className = "generator-loading";
+    loadingSection.id = "loadingSection";
+    loadingSection.style.display = "none";
+
     loadingSection.innerHTML = `
       <div class="loading-container">
         <div class="loading-animation">
@@ -253,19 +265,19 @@ export function createQuestionGenerator(onComplete) {
         </div>
         <div class="loading-steps">
           <div class="step" id="step1">
-            <span class="step-icon">🔍</span>
+            <span class="step-icon">${getIconString("telescope")}</span>
             <span class="step-text">Analyzing vector store content</span>
           </div>
           <div class="step" id="step2">
-            <span class="step-icon">🤖</span>
+            <span class="step-icon">${getIconString("hal")}</span>
             <span class="step-text">AI processing legal materials</span>
           </div>
           <div class="step" id="step3">
-            <span class="step-icon">✍️</span>
+            <span class="step-icon">${getIconString("pencil")}</span>
             <span class="step-text">Generating questions</span>
           </div>
           <div class="step" id="step4">
-            <span class="step-icon">💾</span>
+            <span class="step-icon">${getIconString("treasure")}</span>
             <span class="step-text">Saving to database</span>
           </div>
         </div>
@@ -280,10 +292,10 @@ export function createQuestionGenerator(onComplete) {
 
   // === RESULTS SECTION ===
   function createResultsSection() {
-    const resultsSection = document.createElement('div');
-    resultsSection.className = 'generator-results';
-    resultsSection.id = 'resultsSection';
-    resultsSection.style.display = 'none';
+    const resultsSection = document.createElement("div");
+    resultsSection.className = "generator-results";
+    resultsSection.id = "resultsSection";
+    resultsSection.style.display = "none";
     return resultsSection;
   }
 
@@ -298,27 +310,31 @@ export function createQuestionGenerator(onComplete) {
 
   // === STATUS CHECKING ===
   async function checkVectorStoreStatus() {
-    const statusEl = document.getElementById('vectorStoreStatus');
-    
+    const statusEl = document.getElementById("vectorStoreStatus");
+
     try {
       const status = await getVectorStoreStatus();
-      
+
       if (status.available) {
         statusEl.innerHTML = `
           <div class="status-success">
-            <div class="status-icon">✅</div>
+            <div class="status-icon">${getIconString("check")}</div>
             <div class="status-info">
               <div class="status-title">Connected</div>
               <div class="status-details">${status.message}</div>
-              ${status.vector_store_id ? `<div class="status-meta">Store ID: ${status.vector_store_id}</div>` : ''}
+              ${
+                status.vector_store_id
+                  ? `<div class="status-meta">Store ID: ${status.vector_store_id}</div>`
+                  : ""
+              }
             </div>
           </div>
         `;
-        document.getElementById('formSection').style.display = 'block';
+        document.getElementById("formSection").style.display = "block";
       } else {
         statusEl.innerHTML = `
           <div class="status-error">
-            <div class="status-icon">❌</div>
+            <div class="status-icon">${getIconString("wrong")}</div>
             <div class="status-info">
               <div class="status-title">Unavailable</div>
               <div class="status-details">${status.message}</div>
@@ -328,10 +344,10 @@ export function createQuestionGenerator(onComplete) {
         `;
       }
     } catch (error) {
-      console.error('Error checking vector store status:', error);
+      console.error("Error checking vector store status:", error);
       statusEl.innerHTML = `
         <div class="status-error">
-          <div class="status-icon">⚠️</div>
+          <div class="status-icon">${getIconString("warning")}</div>
           <div class="status-info">
             <div class="status-title">Connection Error</div>
             <div class="status-details">Unable to verify status</div>
@@ -343,31 +359,31 @@ export function createQuestionGenerator(onComplete) {
   }
 
   async function updateDatabaseStatus() {
-    const statusEl = document.getElementById('databaseStatus');
-    
+    const statusEl = document.getElementById("databaseStatus");
+
     // Simulate database status check (would be real API call in production)
     setTimeout(() => {
       const remainingQuestions = Math.floor(Math.random() * 5000) + 1000; // Simulated
       const generatedToday = Math.floor(Math.random() * 50);
-      
+
       statusEl.innerHTML = `
         <div class="database-stats">
           <div class="db-stat">
-            <div class="stat-icon">📚</div>
+            <div class="stat-icon">${getIconString("book", 24)}</div>
             <div class="stat-info">
               <div class="stat-number">${remainingQuestions.toLocaleString()}</div>
               <div class="stat-label">Remaining Questions</div>
             </div>
           </div>
           <div class="db-stat">
-            <div class="stat-icon">🔥</div>
+            <div class="stat-icon">${getIconString("lightning", 24)}</div>
             <div class="stat-info">
               <div class="stat-number">${generatedToday}</div>
               <div class="stat-label">Generated Today</div>
             </div>
           </div>
           <div class="db-stat">
-            <div class="stat-icon">📈</div>
+            <div class="stat-icon">${getIconString("chart", 24)}</div>
             <div class="stat-info">
               <div class="stat-number">${userStats.totalGenerated}</div>
               <div class="stat-label">Your Total</div>
@@ -380,43 +396,43 @@ export function createQuestionGenerator(onComplete) {
 
   // === FORM INTERACTIONS ===
   function setupFormInteractions() {
-    const form = document.getElementById('generationForm');
-    const slider = document.getElementById('questionsSlider');
-    const numberInput = document.getElementById('numQuestions');
-    const textarea = document.getElementById('customInstructions');
-    const charCount = document.getElementById('charCount');
+    const form = document.getElementById("generationForm");
+    const slider = document.getElementById("questionsSlider");
+    const numberInput = document.getElementById("numQuestions");
+    const textarea = document.getElementById("customInstructions");
+    const charCount = document.getElementById("charCount");
 
     // Sync slider and number input
-    slider.addEventListener('input', () => {
+    slider.addEventListener("input", () => {
       numberInput.value = slider.value;
     });
 
-    numberInput.addEventListener('input', () => {
+    numberInput.addEventListener("input", () => {
       slider.value = numberInput.value;
     });
 
     // Character count for textarea
-    textarea.addEventListener('input', () => {
+    textarea.addEventListener("input", () => {
       const count = textarea.value.length;
       charCount.textContent = `${count}/500`;
       if (count > 500) {
         textarea.value = textarea.value.substring(0, 500);
-        charCount.textContent = '500/500';
+        charCount.textContent = "500/500";
       }
     });
 
     // Show examples for custom instructions
-    document.getElementById('showExamples').addEventListener('click', () => {
+    document.getElementById("showExamples").addEventListener("click", () => {
       showInstructionExamples();
     });
 
     // Preview settings
-    document.getElementById('previewBtn').addEventListener('click', () => {
+    document.getElementById("previewBtn").addEventListener("click", () => {
       showGenerationPreview();
     });
 
     // Handle form submission
-    form.addEventListener('submit', handleGeneration);
+    form.addEventListener("submit", handleGeneration);
   }
 
   function applyFreeRangePrefill() {
@@ -427,22 +443,27 @@ export function createQuestionGenerator(onComplete) {
       const data = JSON.parse(prefill);
       const count = Math.min(Math.max(data.count || 10, 1), 50);
 
-      document.getElementById('numQuestions').value = count;
-      document.getElementById('questionsSlider').value = count;
-      const focusTopic = data.topic || '';
-      document.getElementById('focusTopic').value = focusTopic;
-      document.getElementById('questionSet').value = data.questionSet || 'mixed';
-      const instructionsField = document.getElementById('customInstructions');
+      document.getElementById("numQuestions").value = count;
+      document.getElementById("questionsSlider").value = count;
+      const focusTopic = data.topic || "";
+      document.getElementById("focusTopic").value = focusTopic;
+      document.getElementById("questionSet").value =
+        data.questionSet || "mixed";
+      const instructionsField = document.getElementById("customInstructions");
       if (data.notes) {
         instructionsField.value = data.notes;
-        document.getElementById('charCount').textContent = `${data.notes.length}/500`;
+        document.getElementById(
+          "charCount",
+        ).textContent = `${data.notes.length}/500`;
       } else if (focusTopic) {
         const autoNote = `Focus on: ${focusTopic}`;
         instructionsField.value = autoNote;
-        document.getElementById('charCount').textContent = `${autoNote.length}/500`;
+        document.getElementById(
+          "charCount",
+        ).textContent = `${autoNote.length}/500`;
       }
     } catch (error) {
-      console.warn('Unable to apply free-range prefill:', error);
+      console.warn("Unable to apply free-range prefill:", error);
     } finally {
       localStorage.removeItem(FREE_RANGE_PREFILL_KEY);
     }
@@ -450,43 +471,45 @@ export function createQuestionGenerator(onComplete) {
 
   // === HISTORY INTERACTIONS ===
   function setupHistoryInteractions() {
-    document.getElementById('clearHistoryBtn').addEventListener('click', () => {
-      if (confirm('Are you sure you want to clear your generation history?')) {
-        localStorage.removeItem('questionGenerationHistory');
+    document.getElementById("clearHistoryBtn").addEventListener("click", () => {
+      if (confirm("Are you sure you want to clear your generation history?")) {
+        localStorage.removeItem("questionGenerationHistory");
         generationHistory = [];
         updateHistoryDisplay();
       }
     });
 
-    document.getElementById('exportHistoryBtn').addEventListener('click', () => {
-      exportGenerationHistory();
-    });
+    document
+      .getElementById("exportHistoryBtn")
+      .addEventListener("click", () => {
+        exportGenerationHistory();
+      });
   }
 
   // === GENERATION HANDLING ===
   async function handleGeneration(e) {
     e.preventDefault();
-    
+
     const formData = getFormData();
-    
+
     if (!validateFormData(formData)) {
       return;
     }
 
     showLoadingState();
-    
+
     try {
       const result = await performGeneration(formData);
-      
+
       if (result.success) {
         addToHistory(formData, result);
         showSuccessResults(result, formData);
         updateUserStats(result);
       } else {
-        throw new Error(result.message || 'Generation failed');
+        throw new Error(result.message || "Generation failed");
       }
     } catch (error) {
-      console.error('Generation error:', error);
+      console.error("Generation error:", error);
       showErrorResults(error.message);
     } finally {
       hideLoadingState();
@@ -495,20 +518,22 @@ export function createQuestionGenerator(onComplete) {
 
   function getFormData() {
     return {
-      numQuestions: parseInt(document.getElementById('numQuestions').value),
-      subjectFocus: document.getElementById('subjectFocus').value,
-      difficultyLevel: document.getElementById('difficultyLevel').value,
-      focusTopic: document.getElementById('focusTopic').value.trim(),
-      questionSet: document.getElementById('questionSet').value,
-      customInstructions: document.getElementById('customInstructions').value.trim(),
+      numQuestions: parseInt(document.getElementById("numQuestions").value),
+      subjectFocus: document.getElementById("subjectFocus").value,
+      difficultyLevel: document.getElementById("difficultyLevel").value,
+      focusTopic: document.getElementById("focusTopic").value.trim(),
+      questionSet: document.getElementById("questionSet").value,
+      customInstructions: document
+        .getElementById("customInstructions")
+        .value.trim(),
       timestamp: new Date().toISOString(),
-      userId: getCurrentUserId()
+      userId: getCurrentUserId(),
     };
   }
 
   function validateFormData(formData) {
     if (formData.numQuestions < 1 || formData.numQuestions > 50) {
-      alert('Please enter a number between 1 and 50 questions.');
+      alert("Please enter a number between 1 and 50 questions.");
       return false;
     }
     return true;
@@ -516,101 +541,111 @@ export function createQuestionGenerator(onComplete) {
 
   async function performGeneration(formData) {
     // Simulate generation steps with progress updates
-    updateProgress(0, 'Initializing generation...');
+    updateProgress(0, "Initializing generation...");
     await delay(1000);
-    
-    updateProgress(25, 'Analyzing vector store content...');
-    setStepActive('step1');
+
+    updateProgress(25, "Analyzing vector store content...");
+    setStepActive("step1");
     await delay(1500);
-    
-    updateProgress(50, 'AI processing legal materials...');
-    setStepActive('step2');
+
+    updateProgress(50, "AI processing legal materials...");
+    setStepActive("step2");
     await delay(2000);
-    
-    updateProgress(75, 'Generating questions...');
-    setStepActive('step3');
-    
+
+    updateProgress(75, "Generating questions...");
+    setStepActive("step3");
+
     // Make actual API call
-    const result = await extractQuestionsFromVectorStore(formData.numQuestions, {
-      subject_focus: formData.subjectFocus,
-      difficulty_level: formData.difficultyLevel,
-      focus_topic: formData.focusTopic,
-      question_set: formData.questionSet,
-      instructions: formData.customInstructions
-    });
-    
-    updateProgress(90, 'Saving to database...');
-    setStepActive('step4');
+    const result = await extractQuestionsFromVectorStore(
+      formData.numQuestions,
+      {
+        subject_focus: formData.subjectFocus,
+        difficulty_level: formData.difficultyLevel,
+        focus_topic: formData.focusTopic,
+        question_set: formData.questionSet,
+        instructions: formData.customInstructions,
+      },
+    );
+
+    updateProgress(90, "Saving to database...");
+    setStepActive("step4");
     await delay(1000);
-    
-    updateProgress(100, 'Complete!');
-    
+
+    updateProgress(100, "Complete!");
+
     return result;
   }
 
   // === UI STATE MANAGEMENT ===
   function showLoadingState() {
-    document.getElementById('formSection').style.display = 'none';
-    document.getElementById('resultsSection').style.display = 'none';
-    document.getElementById('loadingSection').style.display = 'block';
+    document.getElementById("formSection").style.display = "none";
+    document.getElementById("resultsSection").style.display = "none";
+    document.getElementById("loadingSection").style.display = "block";
     resetLoadingSteps();
   }
 
   function hideLoadingState() {
-    document.getElementById('loadingSection').style.display = 'none';
+    document.getElementById("loadingSection").style.display = "none";
   }
 
   function resetLoadingSteps() {
-    document.querySelectorAll('.step').forEach(step => {
-      step.classList.remove('active', 'completed');
+    document.querySelectorAll(".step").forEach((step) => {
+      step.classList.remove("active", "completed");
     });
   }
 
   function setStepActive(stepId) {
     const step = document.getElementById(stepId);
-    step.classList.add('active');
-    
+    step.classList.add("active");
+
     // Mark previous steps as completed
-    const stepNumber = parseInt(stepId.replace('step', ''));
+    const stepNumber = parseInt(stepId.replace("step", ""));
     for (let i = 1; i < stepNumber; i++) {
-      document.getElementById(`step${i}`).classList.add('completed');
+      document.getElementById(`step${i}`).classList.add("completed");
     }
   }
 
   function updateProgress(percentage, text) {
-    document.getElementById('progressFill').style.width = `${percentage}%`;
-    document.getElementById('progressText').textContent = text;
+    document.getElementById("progressFill").style.width = `${percentage}%`;
+    document.getElementById("progressText").textContent = text;
   }
 
   function showSuccessResults(result, formData) {
-    const resultsSection = document.getElementById('resultsSection');
-    resultsSection.className = 'generator-results success';
+    const resultsSection = document.getElementById("resultsSection");
+    resultsSection.className = "generator-results success";
     resultsSection.innerHTML = `
       <div class="results-container">
         <div class="results-header">
-          <h3>🎉 Questions Generated Successfully!</h3>
+          <h3>${getIconString(
+            "treasure",
+            28,
+          )} Questions Generated Successfully!</h3>
           <p>Your questions have been created and added to the database.</p>
         </div>
         
         <div class="results-stats">
           <div class="result-stat">
-            <div class="stat-icon">📝</div>
+            <div class="stat-icon">${getIconString("pencil", 24)}</div>
             <div class="stat-info">
-              <div class="stat-number">${result.results.questions_extracted}</div>
+              <div class="stat-number">${
+                result.results.questions_extracted
+              }</div>
               <div class="stat-label">Questions Created</div>
             </div>
           </div>
           <div class="result-stat">
-            <div class="stat-icon">💾</div>
+            <div class="stat-icon">${getIconString("document", 24)}</div>
             <div class="stat-info">
               <div class="stat-number">${result.results.questions_saved}</div>
               <div class="stat-label">Saved to Database</div>
             </div>
           </div>
           <div class="result-stat">
-            <div class="stat-icon">⚡</div>
+            <div class="stat-icon">${getIconString("lightning", 24)}</div>
             <div class="stat-info">
-              <div class="stat-number">${Math.round(result.results.questions_saved / formData.numQuestions * 100)}%</div>
+              <div class="stat-number">${Math.round(
+                (result.results.questions_saved / formData.numQuestions) * 100,
+              )}%</div>
               <div class="stat-label">Success Rate</div>
             </div>
           </div>
@@ -618,15 +653,15 @@ export function createQuestionGenerator(onComplete) {
 
         <div class="results-actions">
           <button class="btn btn-primary" id="startQuizBtn">
-            <span class="btn-icon">🎯</span>
+            <span class="btn-icon">${getIconString("flagPin", 18)}</span>
             Start Quiz with New Questions
           </button>
           <button class="btn btn-secondary" id="generateMoreBtn">
-            <span class="btn-icon">🔄</span>
+            <span class="btn-icon">${getIconString("play", 18)}</span>
             Generate More
           </button>
           <button class="btn btn-outline" id="viewHistoryBtn">
-            <span class="btn-icon">📋</span>
+            <span class="btn-icon">${getIconString("scorecard", 18)}</span>
             View History
           </button>
         </div>
@@ -634,59 +669,61 @@ export function createQuestionGenerator(onComplete) {
     `;
 
     setupResultActions(result, formData);
-    resultsSection.style.display = 'block';
+    resultsSection.style.display = "block";
   }
 
   function showErrorResults(message) {
-    const resultsSection = document.getElementById('resultsSection');
-    resultsSection.className = 'generator-results error';
+    const resultsSection = document.getElementById("resultsSection");
+    resultsSection.className = "generator-results error";
     resultsSection.innerHTML = `
       <div class="results-container">
         <div class="results-header">
-          <h3>❌ Generation Failed</h3>
+          <h3>${getIconString("wrong", 28)} Generation Failed</h3>
           <p>${message}</p>
         </div>
         
         <div class="results-actions">
           <button class="btn btn-primary" id="retryBtn">
-            <span class="btn-icon">🔄</span>
+            <span class="btn-icon">${getIconString("play", 18)}</span>
             Try Again
           </button>
           <button class="btn btn-outline" id="reportIssueBtn">
-            <span class="btn-icon">🐛</span>
+            <span class="btn-icon">${getIconString("warning", 18)}</span>
             Report Issue
           </button>
         </div>
       </div>
     `;
 
-    document.getElementById('retryBtn').addEventListener('click', () => {
-      document.getElementById('formSection').style.display = 'block';
-      resultsSection.style.display = 'none';
+    document.getElementById("retryBtn").addEventListener("click", () => {
+      document.getElementById("formSection").style.display = "block";
+      resultsSection.style.display = "none";
     });
 
-    resultsSection.style.display = 'block';
+    resultsSection.style.display = "block";
   }
 
   function setupResultActions(result, formData) {
-    document.getElementById('startQuizBtn').addEventListener('click', () => {
+    document.getElementById("startQuizBtn").addEventListener("click", () => {
       if (onComplete) {
         onComplete({
           n: Math.min(result.results.questions_saved, 20),
-          subject: formData.subjectFocus || '',
-          questionType: 'generated',
-          timer: 1.8
+          subject: formData.subjectFocus || "",
+          questionType: "generated",
+          timer: 1.8,
         });
       }
     });
 
-    document.getElementById('generateMoreBtn').addEventListener('click', () => {
-      document.getElementById('formSection').style.display = 'block';
-      document.getElementById('resultsSection').style.display = 'none';
+    document.getElementById("generateMoreBtn").addEventListener("click", () => {
+      document.getElementById("formSection").style.display = "block";
+      document.getElementById("resultsSection").style.display = "none";
     });
 
-    document.getElementById('viewHistoryBtn').addEventListener('click', () => {
-      document.getElementById('historySection').scrollIntoView({ behavior: 'smooth' });
+    document.getElementById("viewHistoryBtn").addEventListener("click", () => {
+      document
+        .getElementById("historySection")
+        .scrollIntoView({ behavior: "smooth" });
     });
   }
 
@@ -700,22 +737,24 @@ export function createQuestionGenerator(onComplete) {
   }
 
   function getAnonymousUserId() {
-    let userId = localStorage.getItem('userId');
+    let userId = localStorage.getItem("userId");
     if (!userId) {
-      userId = 'anonymous_' + Math.random().toString(36).substring(2, 15);
-      localStorage.setItem('userId', userId);
+      userId = "anonymous_" + Math.random().toString(36).substring(2, 15);
+      localStorage.setItem("userId", userId);
     }
     return userId;
   }
 
   function getUserStats() {
-    const stats = localStorage.getItem('questionGeneratorStats');
-    return stats ? JSON.parse(stats) : {
-      totalGenerated: 0,
-      totalSessions: 0,
-      lastGeneration: null,
-      successfulGenerations: 0
-    };
+    const stats = localStorage.getItem("questionGeneratorStats");
+    return stats
+      ? JSON.parse(stats)
+      : {
+          totalGenerated: 0,
+          totalSessions: 0,
+          lastGeneration: null,
+          successfulGenerations: 0,
+        };
   }
 
   function updateUserStats(result) {
@@ -723,16 +762,18 @@ export function createQuestionGenerator(onComplete) {
     userStats.totalSessions += 1;
     userStats.lastGeneration = new Date().toISOString();
     userStats.successfulGenerations += 1;
-    
-    localStorage.setItem('questionGeneratorStats', JSON.stringify(userStats));
-    
+
+    localStorage.setItem("questionGeneratorStats", JSON.stringify(userStats));
+
     // Update header stats
-    document.getElementById('totalGenerated').textContent = userStats.totalGenerated;
-    document.getElementById('sessionCount').textContent = generationHistory.length;
+    document.getElementById("totalGenerated").textContent =
+      userStats.totalGenerated;
+    document.getElementById("sessionCount").textContent =
+      generationHistory.length;
   }
 
   function getGenerationHistory() {
-    const history = localStorage.getItem('questionGenerationHistory');
+    const history = localStorage.getItem("questionGenerationHistory");
     return history ? JSON.parse(history) : [];
   }
 
@@ -742,53 +783,91 @@ export function createQuestionGenerator(onComplete) {
       timestamp: formData.timestamp,
       settings: formData,
       results: result.results,
-      success: result.success
+      success: result.success,
     };
-    
+
     generationHistory.unshift(historyEntry);
-    
+
     // Keep only last 20 entries
     if (generationHistory.length > 20) {
       generationHistory = generationHistory.slice(0, 20);
     }
-    
-    localStorage.setItem('questionGenerationHistory', JSON.stringify(generationHistory));
+
+    localStorage.setItem(
+      "questionGenerationHistory",
+      JSON.stringify(generationHistory),
+    );
     updateHistoryDisplay();
   }
 
   function updateHistoryDisplay() {
-    const historyContent = document.getElementById('historyContent');
-    historyContent.innerHTML = generationHistory.length > 0 ? renderHistory() : '<p class="no-history">No generation history yet.</p>';
+    const historyContent = document.getElementById("historyContent");
+    historyContent.innerHTML =
+      generationHistory.length > 0
+        ? renderHistory()
+        : '<p class="no-history">No generation history yet.</p>';
   }
 
   function renderHistory() {
-    return generationHistory.map(entry => `
-      <div class="history-entry ${entry.success ? 'success' : 'failed'}">
+    return generationHistory
+      .map(
+        (entry) => `
+      <div class="history-entry ${entry.success ? "success" : "failed"}">
         <div class="entry-header">
-          <div class="entry-time">${new Date(entry.timestamp).toLocaleString()}</div>
-          <div class="entry-status ${entry.success ? 'success' : 'failed'}">
-            ${entry.success ? '✅ Success' : '❌ Failed'}
+          <div class="entry-time">${new Date(
+            entry.timestamp,
+          ).toLocaleString()}</div>
+          <div class="entry-status ${entry.success ? "success" : "failed"}">
+            ${
+              entry.success
+                ? `${getIconString("check", 16)} Success`
+                : `${getIconString("wrong", 16)} Failed`
+            }
           </div>
         </div>
         <div class="entry-details">
           <span class="detail">${entry.settings.numQuestions} questions</span>
-          ${entry.settings.subjectFocus ? `<span class="detail">${entry.settings.subjectFocus}</span>` : ''}
-          ${entry.settings.difficultyLevel !== 'mixed' ? `<span class="detail">${entry.settings.difficultyLevel}</span>` : ''}
-          ${entry.settings.focusTopic ? `<span class="detail">${entry.settings.focusTopic}</span>` : ''}
-          ${entry.settings.questionSet ? `<span class="detail">${entry.settings.questionSet}</span>` : ''}
-          ${entry.success ? `<span class="detail success">${entry.results.questions_saved} saved</span>` : ''}
+          ${
+            entry.settings.subjectFocus
+              ? `<span class="detail">${entry.settings.subjectFocus}</span>`
+              : ""
+          }
+          ${
+            entry.settings.difficultyLevel !== "mixed"
+              ? `<span class="detail">${entry.settings.difficultyLevel}</span>`
+              : ""
+          }
+          ${
+            entry.settings.focusTopic
+              ? `<span class="detail">${entry.settings.focusTopic}</span>`
+              : ""
+          }
+          ${
+            entry.settings.questionSet
+              ? `<span class="detail">${entry.settings.questionSet}</span>`
+              : ""
+          }
+          ${
+            entry.success
+              ? `<span class="detail success">${entry.results.questions_saved} saved</span>`
+              : ""
+          }
         </div>
       </div>
-    `).join('');
+    `,
+      )
+      .join("");
   }
 
   function exportGenerationHistory() {
     const dataStr = JSON.stringify(generationHistory, null, 2);
-    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+    const dataBlob = new Blob([dataStr], { type: "application/json" });
     const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
-    link.download = `question-generation-history-${new Date().toISOString().split('T')[0]}.json`;
+    link.download = `question-generation-history-${
+      new Date().toISOString().split("T")[0]
+    }.json`;
     link.click();
     URL.revokeObjectURL(url);
   }
@@ -799,10 +878,13 @@ export function createQuestionGenerator(onComplete) {
       "Generate questions about contract formation and breach of contract remedies",
       "Include recent Supreme Court cases and their precedential value",
       "Emphasize practical applications over theoretical concepts",
-      "Create scenario-based questions that test analytical skills"
+      "Create scenario-based questions that test analytical skills",
     ];
-    
-    alert('Example Instructions:\n\n' + examples.map((ex, i) => `${i + 1}. ${ex}`).join('\n\n'));
+
+    alert(
+      "Example Instructions:\n\n" +
+        examples.map((ex, i) => `${i + 1}. ${ex}`).join("\n\n"),
+    );
   }
 
   function showGenerationPreview() {
@@ -810,17 +892,17 @@ export function createQuestionGenerator(onComplete) {
     const preview = `
 Generation Preview:
 • Questions: ${formData.numQuestions}
-• Subject: ${formData.subjectFocus || 'All subjects'}
+• Subject: ${formData.subjectFocus || "All subjects"}
 • Difficulty: ${formData.difficultyLevel}
-• Focus Topic: ${formData.focusTopic || 'None'}
-• Question Set: ${formData.questionSet || 'Mixed'}
-• Instructions: ${formData.customInstructions || 'None'}
+• Focus Topic: ${formData.focusTopic || "None"}
+• Question Set: ${formData.questionSet || "Mixed"}
+• Instructions: ${formData.customInstructions || "None"}
     `.trim();
-    
+
     alert(preview);
   }
 
   function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

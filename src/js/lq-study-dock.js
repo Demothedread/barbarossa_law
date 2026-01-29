@@ -1,15 +1,18 @@
 /**
+import { getIconString } from './lunaire-icons.js';
+
+/**
  * Study dock section with bar prep topics and material highlights.
  * @returns {HTMLElement}
  */
 export function createStudyDockSection() {
-  const section = document.createElement('section');
-  section.className = 'study-dock-section module-frame';
-  section.id = 'study-dock';
+  const section = document.createElement("section");
+  section.className = "study-dock-section module-frame";
+  section.id = "study-dock";
 
   section.innerHTML = `
     <div class="study-dock-header">
-      <h2>📚 Study Dock: Bar Exam Topics & Prep</h2>
+      <h2>${getIconString("book", 32)} Study Dock: Bar Exam Topics & Prep</h2>
       <p>
         Dock here for a quick map of the bar exam universe. Review the core subjects,
         then raid the question bank for targeted practice.
