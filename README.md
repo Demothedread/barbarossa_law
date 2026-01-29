@@ -1,4 +1,3 @@
-
 # ☠️ BARBAROSSA BAR PREP
 
 > The Cheap Bar Review - Because $4,000 is for suckers.
@@ -24,6 +23,7 @@ California Bar Exam preparation with AI-powered explanations, advanced analytics
 ## Quick Start
 
 ### Prerequisites
+
 - Node.js v20+
 - Python 3.11+
 - OpenAI API key (optional, for AI features)
@@ -54,6 +54,7 @@ python scripts/initialize_db.py
 ### Environment Variables
 
 Create `.env` in project root:
+
 ```env
 OPENAI_API_KEY=sk-your-key-here
 ```
@@ -86,6 +87,7 @@ barbarossa_law/
 See [DEPLOYMENT.md](DEPLOYMENT.md) for full instructions.
 
 **Quick deploy:**
+
 1. **Render**: Import repo → auto-detects `render.yaml` → deploys API + PostgreSQL
 2. **Vercel**: Import repo → auto-detects `vercel.json` → builds Nuxt SPA
 

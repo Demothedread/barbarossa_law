@@ -12,7 +12,13 @@
     "db:init": "python scripts/initialize_db.py",
     "db:reset": "python scripts/reset_db.py"
   },
-  "keywords": ["bar-exam", "law", "quiz", "nuxt", "vue"],
+  "keywords": [
+    "bar-exam",
+    "law",
+    "quiz",
+    "nuxt",
+    "vue"
+  ],
   "author": "",
   "license": "ISC"
 }
