@@ -3,9 +3,10 @@
   "name": "barbarossa-law",
   "version": 2,
   "framework": "nuxtjs",
-  "buildCommand": "cd lunaire-spa && npm install && npm run generate",
-  "outputDirectory": "lunaire-spa/.output/public",
-  "installCommand": "cd lunaire-spa && npm install",
+  "rootDirectory": "lunaire-spa",
+  "buildCommand": "npm run generate",
+  "outputDirectory": ".output/public",
+  "installCommand": "npm install",
   "rewrites": [
     {
       "source": "/api/:path*",
