@@ -2,9 +2,10 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "name": "barbarossa-law",
   "version": 2,
-  "framework": null,
-  "buildCommand": null,
-  "outputDirectory": "src",
+  "framework": "nuxt",
+  "buildCommand": "cd lunaire-spa && npm install && npm run generate",
+  "outputDirectory": "lunaire-spa/.output/public",
+  "installCommand": "cd lunaire-spa && npm install",
   "rewrites": [
     {
       "source": "/api/:path*",
@@ -31,6 +32,7 @@
     }
   ],
   "env": {
-    "VITE_API_URL": "https://barbarossa-api.onrender.com"
+    "API_BASE": "https://barbarossa-api.onrender.com/api",
+    "NUXT_PUBLIC_API_BASE": "https://barbarossa-api.onrender.com/api"
   }
 }

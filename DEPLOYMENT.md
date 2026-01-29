@@ -2,7 +2,7 @@
 
 This guide explains how to deploy Barbarossa Law Quiz with:
 
-- **Frontend**: Vercel (static site)
+- **Frontend**: Vercel (Nuxt 4 SPA)
 - **Backend**: Render (Flask API)
 - **Database**: Render PostgreSQL (free tier)
 
@@ -11,8 +11,8 @@ This guide explains how to deploy Barbarossa Law Quiz with:
 ```
 ┌─────────────────┐      ┌─────────────────────┐
 │   Vercel CDN    │      │    Render           │
-│   (Frontend)    │─────▶│    (Flask API)      │
-│   src/*.html    │      │    backend/         │
+│   (Nuxt SPA)    │─────▶│    (Flask API)      │
+│   lunaire-spa/  │      │    backend/         │
 └─────────────────┘      └─────────┬───────────┘
                                    │
                          ┌─────────▼───────────┐
@@ -61,11 +61,13 @@ This guide explains how to deploy Barbarossa Law Quiz with:
 
 1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
 2. Import GitHub repo: `Demothedread/barbarossa_law`
-3. Configure:
-   - Framework: Other
-   - Output Directory: `src`
-   - Build Command: (leave empty)
-4. Deploy!
+3. Vercel auto-detects `vercel.json` and configures:
+   - Framework: Nuxt
+   - Build: `cd lunaire-spa && npm install && npm run generate`
+   - Output: `lunaire-spa/.output/public`
+4. Add environment variable:
+   - `NUXT_PUBLIC_API_BASE`: `https://barbarossa-api.onrender.com/api`
+5. Deploy!
 
 ## Environment Variables
 
