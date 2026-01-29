@@ -1,96 +1,94 @@
 
-# ☠️ BARBAROSSA
+# ☠️ BARBAROSSA BAR PREP
 
-> Navigate the Cosmos of Legal Knowledge
+> The Cheap Bar Review - Because $4,000 is for suckers.
 
-A swashbuckling space pirate themed quiz platform for California Bar Exam and legal study. Chart your course through thousands of questions with AI-powered explanations, advanced analytics, and an immersive, post-modern interface.
+California Bar Exam preparation with AI-powered explanations, advanced analytics, and a retrofuturist space pirate aesthetic.
+
+## 🚀 Tech Stack
+
+- **Frontend**: Nuxt 4 / Vue 3 SPA (`lunaire-spa/`)
+- **Backend**: Flask API (`backend/`)
+- **Database**: SQLite (dev) / PostgreSQL (prod)
+- **Hosting**: Vercel (frontend) + Render (backend + DB)
 
 ## ⚡ Features
 
-- **🏴‍☠️ Immersive Space Pirate Theme**: Post-modern blocky design with burgundy, royal purple, gold, and cosmic accents
-- **Interactive Web Quiz**: Responsive UI with timer, progress, and digital scratch paper
-- **AI Explanations**: OpenAI-powered, subtopic-classified answer explanations
-- **Subject & Subtopic Selection**: Filter by subject and subtopic (CA Bar breakdown)
-- **Customizable Timing**: Set minutes per question, pause/resume timer
-- **Performance Analytics**: Track scores, overtime, and subtopic mastery
-- **Text Highlighting**: Three-color highlight system for question text
-- **Question Types**: MBE, AI-generated, or mixed
-- **CLI Mode**: Standalone Python script for terminal quizzes
-- **Digital Scratch Paper**: Slide-out notepad, persistent during exam, copy/download as .txt
-- **3D Mind Map**: Explore bodies of law through an interactive 3D visualization
+- 🏴‍☠️ Retrofuturist space pirate design
+- 📚 1500+ MBE-style practice questions
+- 🤖 AI-powered answer explanations (OpenAI)
+- 📊 Performance analytics by subject/subtopic
+- ✍️ Essay grading with model answers
+- 🎯 Adaptive question selection
 
 ## Quick Start
 
 ### Prerequisites
-- Python 3.8+
 - Node.js v20+
-- pip (Python package installer)
+- Python 3.11+
 - OpenAI API key (optional, for AI features)
 
-### Installation
+### Development
 
 ```bash
-# Clone and enter repo
-git clone <repo-url>
-cd lawquizzer
-
-# Install JS dependencies
+# Frontend (Nuxt)
+cd lunaire-spa
 npm install
+npm run dev
+# → http://localhost:3000
 
-# Install Python backend dependencies
+# Backend (Flask) - in separate terminal
 cd backend
 pip install -r requirements.txt
-cd ..
+python server.py
+# → http://localhost:5001
+```
 
-# Initialize database
+### Database Setup
+
+```bash
+# Initialize SQLite database with questions
 python scripts/initialize_db.py
 ```
 
-### Configuration
-- To enable AI explanations, set `OPENAI_API_KEY` in your environment or `.env` file.
+### Environment Variables
 
-### Running the App
-
-```bash
-npm start
-```
-- Launches Flask API (http://localhost:5001) and static server (http://localhost:3000)
-
-### CLI Mode
-
-```bash
-python scripts/law_quiz.py
+Create `.env` in project root:
+```env
+OPENAI_API_KEY=sk-your-key-here
 ```
 
-## Usage
-- **Start Quiz**: Choose number, subject, subtopic, type, and timer
-- **During Quiz**: Answer, highlight, eliminate, use scratch paper (📝 tab)
-- **Review**: See AI explanations, subtopic, and performance breakdown
-- **Analytics**: Track progress by subject, subtopic, and over time
-- **Mind Map**: Open `mindmap.html` to explore bodies of law in 3D
+## 📁 Project Structure
 
-## Digital Scratch Paper
-- Click the 📝 tab to open/close
-- Notes persist throughout the exam (localStorage)
-- Copy to clipboard or download as .txt
-
-## Project Structure
-- `src/`: Frontend (HTML, CSS, JS)
-- `backend/`: Flask API, AI explanation service
-- `scripts/`: DB and CLI tools
-- `qa.csv`: Question dataset
-- `law_quiz.db`: SQLite database
-- `tests/`: Jest unit tests
-
-## Testing
-
-```bash
-npm test
 ```
-- Runs Jest tests for frontend logic
+barbarossa_law/
+├── lunaire-spa/        # Nuxt 4 frontend
+│   ├── app/
+│   │   ├── components/
+│   │   ├── composables/
+│   │   ├── pages/
+│   │   └── stores/
+│   └── nuxt.config.ts
+├── backend/            # Flask API
+│   ├── server.py
+│   ├── ai_explanations.py
+│   ├── essay_grader.py
+│   └── requirements.txt
+├── scripts/            # Database utilities
+├── qa.csv              # Question bank
+├── render.yaml         # Render deployment config
+├── vercel.json         # Vercel deployment config
+└── _deprecated/        # Legacy static site (staged for removal)
+```
+
+## 🌐 Deployment
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for full instructions.
+
+**Quick deploy:**
+1. **Render**: Import repo → auto-detects `render.yaml` → deploys API + PostgreSQL
+2. **Vercel**: Import repo → auto-detects `vercel.json` → builds Nuxt SPA
 
 ## License
-Specify your license here.
 
----
-For full documentation, see code comments and in-app help. All other README files have been consolidated here.
+ISC

@@ -1,22 +1,18 @@
 {
-  "name": "barbarossa",
-  "version": "2.0.0",
-  "description": "Barbarossa - A swashbuckling space pirate quiz adventure",
-  "main": "index.js",
+  "name": "barbarossa-law",
+  "version": "3.0.0",
+  "description": "Barbarossa Bar Prep - California Bar Exam preparation with Nuxt/Vue",
+  "private": true,
   "scripts": {
-    "start": "bash start.sh",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "lint": "eslint \"src/**/*.js\"",
-    "test:all": "npm run lint && npm test && python -m pytest"
+    "dev": "cd lunaire-spa && npm run dev",
+    "build": "cd lunaire-spa && npm run build",
+    "generate": "cd lunaire-spa && npm run generate",
+    "preview": "cd lunaire-spa && npm run preview",
+    "backend": "cd backend && python server.py",
+    "db:init": "python scripts/initialize_db.py",
+    "db:reset": "python scripts/reset_db.py"
   },
-  "keywords": [],
+  "keywords": ["bar-exam", "law", "quiz", "nuxt", "vue"],
   "author": "",
-  "license": "ISC",
-  "type": "module",
-  "devDependencies": {
-    "dotenv": "^17.2.3",
-    "eslint": "^9.31.0",
-    "jest": "^30.0.4",
-    "jest-environment-jsdom": "^30.0.4"
-  }
+  "license": "ISC"
 }
