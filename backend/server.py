@@ -31,10 +31,31 @@ from vector_store_service_v2 import (VectorStoreServiceV2,
                                      extract_questions_from_vector_store_v2)
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for frontend requests
 
-# Database path
-DB_PATH = Path(__file__).parent.parent / 'law_quiz.db'
+# CORS configuration - allow frontend origins
+CORS_ORIGINS = [
+    'http://localhost:3000',
+    'http://localhost:5001',
+    'http://127.0.0.1:3000',
+    'https://barbarossa-law.vercel.app',
+    'https://*.vercel.app',  # Allow all Vercel preview deployments
+]
+# Add any custom domain from environment
+if os.environ.get('FRONTEND_URL'):
+    CORS_ORIGINS.append(os.environ.get('FRONTEND_URL'))
+
+CORS(app, origins=CORS_ORIGINS, supports_credentials=True)
+
+# Database path - use PostgreSQL in production, SQLite locally
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if DATABASE_URL:
+    # Production: Use PostgreSQL via DATABASE_URL
+    DB_PATH = DATABASE_URL
+    print(f"Using PostgreSQL database")
+else:
+    # Development: Use local SQLite
+    DB_PATH = Path(__file__).parent.parent / 'law_quiz.db'
+    print(f"Using SQLite database at {DB_PATH}")
 
 # Initialized services
 ai_service = None

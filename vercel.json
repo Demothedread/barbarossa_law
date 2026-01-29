@@ -1,0 +1,36 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "name": "barbarossa-law",
+  "version": 2,
+  "framework": null,
+  "buildCommand": null,
+  "outputDirectory": "src",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://barbarossa-api.onrender.com/api/:path*"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
+    }
+  ],
+  "env": {
+    "VITE_API_URL": "https://barbarossa-api.onrender.com"
+  }
+}
