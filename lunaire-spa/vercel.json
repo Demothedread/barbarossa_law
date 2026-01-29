@@ -2,8 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "name": "barbarossa-law",
   "version": 2,
-  "framework": "nuxtjs",
-  "rootDirectory": "lunaire-spa",
   "buildCommand": "npm run generate",
   "outputDirectory": ".output/public",
   "installCommand": "npm install",
