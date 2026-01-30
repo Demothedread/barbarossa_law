@@ -23,12 +23,21 @@ DISPLAY_MODEL_NAME = "gpt-5"
 class EssayGraderService:
     """Act like a Bar Exam Grader and Grade essay responses using OpenAI with a strict, precedent-based rubric."""
 
-    def __init__(self, db_path: Optional[Path] = None, api_key: Optional[str] = None):
+    def __init__(self, db_path: Optional[Path] = None, api_key: Optional[str] = None, use_postgres: bool = False):
         self.api_key = api_key or os.environ.get("OPENAI_API_KEY")
         self.db_path = db_path or Path(__file__).parent.parent / 'law_quiz.db'
+        self.use_postgres = use_postgres
         
         if not self.api_key:
             raise ValueError("OpenAI API key not found. Set OPENAI_API_KEY environment variable.")
+    
+    def _get_connection(self):
+        """Get database connection - PostgreSQL or SQLite based on configuration."""
+        if self.use_postgres:
+            import psycopg2
+            return psycopg2.connect(str(self.db_path))
+        else:
+            return sqlite3.connect(str(self.db_path))
 
     def _get_cache_key(self, question_text: str, rubric: str = "standard_bar") -> str:
         """Generate a hash key for the question + rubric combination."""
@@ -37,15 +46,18 @@ class EssayGraderService:
 
     def _check_cache(self, cache_key: str) -> Optional[Dict[str, Any]]:
         """Check if we have a cached grading schema/rubric for this question."""
-        if not self.db_path.exists():
+        # For SQLite, check file exists
+        if not self.use_postgres and hasattr(self.db_path, 'exists') and not self.db_path.exists():
             return None
             
         try:
-            conn = sqlite3.connect(str(self.db_path))
+            conn = self._get_connection()
             cursor = conn.cursor()
+            # Use parameterized query with correct placeholder
+            placeholder = "%s" if self.use_postgres else "?"
             # Retrieve specifically the rubric and model answer if available to maintain consistency
             cursor.execute(
-                "SELECT rubric, model_answer FROM essay_cache WHERE hash_key = ?",
+                f"SELECT rubric, model_answer FROM essay_cache WHERE hash_key = {placeholder}",
                 (cache_key,)
             )
             row = cursor.fetchone()
@@ -65,7 +77,7 @@ class EssayGraderService:
     def _save_to_cache(self, cache_key: str, question_text: str, grade_result: Dict[str, Any]):
         """Save the grading result to cache for future consistency."""
         try:
-            conn = sqlite3.connect(str(self.db_path))
+            conn = self._get_connection()
             cursor = conn.cursor()
             
             # Use provided text as prompt, extract rubric/model from result if available
@@ -73,11 +85,23 @@ class EssayGraderService:
             model_answer = "Derived from rubric" # Placeholder as we generate on fly
             grade_data = json.dumps(grade_result)
             
-            cursor.execute('''
-            INSERT OR REPLACE INTO essay_cache 
-            (essay_prompt, rubric, model_answer, grade_data, hash_key)
-            VALUES (?, ?, ?, ?, ?)
-            ''', (question_text, rubric, model_answer, grade_data, cache_key))
+            if self.use_postgres:
+                cursor.execute('''
+                INSERT INTO essay_cache 
+                (essay_prompt, rubric, model_answer, grade_data, hash_key)
+                VALUES (%s, %s, %s, %s, %s)
+                ON CONFLICT (hash_key) DO UPDATE SET
+                    essay_prompt = EXCLUDED.essay_prompt,
+                    rubric = EXCLUDED.rubric,
+                    model_answer = EXCLUDED.model_answer,
+                    grade_data = EXCLUDED.grade_data
+                ''', (question_text, rubric, model_answer, grade_data, cache_key))
+            else:
+                cursor.execute('''
+                INSERT OR REPLACE INTO essay_cache 
+                (essay_prompt, rubric, model_answer, grade_data, hash_key)
+                VALUES (?, ?, ?, ?, ?)
+                ''', (question_text, rubric, model_answer, grade_data, cache_key))
             
             conn.commit()
             conn.close()

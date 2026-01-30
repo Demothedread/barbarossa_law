@@ -19,17 +19,19 @@ import aiohttp
 DEFAULT_VECTOR_STORE_ID = "vs_6875b6f14b788191aed0702450e5ca49"
 
 class VectorStoreServiceV2:
-    def __init__(self, db_path: Path, api_key: Optional[str] = None, vector_store_id: Optional[str] = None):
+    def __init__(self, db_path: Path, api_key: Optional[str] = None, vector_store_id: Optional[str] = None, use_postgres: bool = False):
         """Initialize the vector store service
         
         Args:
-            db_path: Path to the SQLite database
+            db_path: Path to the SQLite database or PostgreSQL connection string
             api_key: OpenAI API key (uses env var OPENAI_API_KEY if not provided)
             vector_store_id: Vector store ID (uses env var or default if not provided)
+            use_postgres: Whether to use PostgreSQL instead of SQLite
         """
         self.db_path = db_path
         self.api_key = api_key or os.environ.get("OPENAI_API_KEY")
         self.vector_store_id = vector_store_id or os.environ.get("VECTOR_STORE_ID", DEFAULT_VECTOR_STORE_ID)
+        self.use_postgres = use_postgres
         
         if not self.api_key:
             raise ValueError("OpenAI API key not found. Set OPENAI_API_KEY environment variable.")
@@ -40,6 +42,14 @@ class VectorStoreServiceV2:
             "Content-Type": "application/json",
             "OpenAI-Beta": "assistants=v2"
         }
+    
+    def _get_connection(self):
+        """Get database connection - PostgreSQL or SQLite based on configuration."""
+        if self.use_postgres:
+            import psycopg2
+            return psycopg2.connect(str(self.db_path))
+        else:
+            return sqlite3.connect(str(self.db_path))
 
     async def generate_questions_using_assistant(self, num_questions: int = 5) -> List[Dict[str, Any]]:
         """Generate questions by asking the assistant to create them based on vector store content
@@ -217,7 +227,7 @@ Create exactly {num_questions} high-quality questions.""",
         if not questions:
             return 0
         
-        conn = sqlite3.connect(str(self.db_path))
+        conn = self._get_connection()
         cursor = conn.cursor()
         
         saved_count = 0
@@ -254,19 +264,35 @@ Create exactly {num_questions} high-quality questions.""",
                 }
                 
                 # Insert into database (ignore duplicates)
-                cursor.execute('''
-                    INSERT OR IGNORE INTO questions (
-                        idx, dataset, example_id, prompt_id, source, subject, question_number,
-                        prompt, question, choice_a, choice_b, choice_c, choice_d, answer, gold_passage, gold_idx, generated
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ''', (
-                    question_data['idx'], question_data['dataset'], question_data['example_id'],
-                    question_data['prompt_id'], question_data['source'], question_data['subject'],
-                    question_data['question_number'], question_data['prompt'], question_data['question'],
-                    question_data['choice_a'], question_data['choice_b'], question_data['choice_c'],
-                    question_data['choice_d'], question_data['answer'], question_data['gold_passage'],
-                    question_data['gold_idx'], 1  # Mark as generated
-                ))
+                if self.use_postgres:
+                    cursor.execute('''
+                        INSERT INTO questions (
+                            idx, dataset, example_id, prompt_id, source, subject, question_number,
+                            prompt, question, choice_a, choice_b, choice_c, choice_d, answer, gold_passage, gold_idx, generated
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        ON CONFLICT (idx) DO NOTHING
+                    ''', (
+                        question_data['idx'], question_data['dataset'], question_data['example_id'],
+                        question_data['prompt_id'], question_data['source'], question_data['subject'],
+                        question_data['question_number'], question_data['prompt'], question_data['question'],
+                        question_data['choice_a'], question_data['choice_b'], question_data['choice_c'],
+                        question_data['choice_d'], question_data['answer'], question_data['gold_passage'],
+                        question_data['gold_idx'], 1  # Mark as generated
+                    ))
+                else:
+                    cursor.execute('''
+                        INSERT OR IGNORE INTO questions (
+                            idx, dataset, example_id, prompt_id, source, subject, question_number,
+                            prompt, question, choice_a, choice_b, choice_c, choice_d, answer, gold_passage, gold_idx, generated
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ''', (
+                        question_data['idx'], question_data['dataset'], question_data['example_id'],
+                        question_data['prompt_id'], question_data['source'], question_data['subject'],
+                        question_data['question_number'], question_data['prompt'], question_data['question'],
+                        question_data['choice_a'], question_data['choice_b'], question_data['choice_c'],
+                        question_data['choice_d'], question_data['answer'], question_data['gold_passage'],
+                        question_data['gold_idx'], 1  # Mark as generated
+                    ))
                 
                 if cursor.rowcount > 0:
                     saved_count += 1
