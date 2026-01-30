@@ -78,12 +78,17 @@ def initialize_services():
         print(f"Using database at {DB_PATH}")
 
     if os.environ.get("OPENAI_API_KEY"):
-        ensure_explanations_table(DB_PATH)
-        migrate_explanations_table(DB_PATH)
-        ai_service = AIExplainService(DB_PATH)
-        essay_grader_service = EssayGraderService(db_path=DB_PATH)
+        # Only run SQLite-specific table creation in local dev mode
+        # In production (PostgreSQL), init_postgres.py handles schema creation
+        if not USE_POSTGRES:
+            ensure_explanations_table(DB_PATH)
+            migrate_explanations_table(DB_PATH)
+        
+        # Initialize services with appropriate db_path
+        ai_service = AIExplainService(DB_PATH, use_postgres=USE_POSTGRES)
+        essay_grader_service = EssayGraderService(db_path=DB_PATH, use_postgres=USE_POSTGRES)
         try:
-            vector_store_service = VectorStoreServiceV2(DB_PATH)
+            vector_store_service = VectorStoreServiceV2(DB_PATH, use_postgres=USE_POSTGRES)
             print("Vector store service v2 initialized successfully.")
         except Exception as e:
             print(f"WARNING: Could not initialize vector store service: {e}")

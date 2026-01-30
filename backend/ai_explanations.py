@@ -17,18 +17,37 @@ import aiohttp
 # Use GPT-5-nano as specified for all AI explanation calls
 DEFAULT_MODEL = "gpt-5-nano"
 
+# Database connection helper
+def get_db_connection(db_path, use_postgres=False):
+    """Get a database connection based on mode"""
+    if use_postgres:
+        import psycopg2
+        from psycopg2.extras import RealDictCursor
+        conn = psycopg2.connect(db_path)
+        return conn, True  # Returns (connection, is_postgres)
+    else:
+        conn = sqlite3.connect(str(db_path))
+        conn.row_factory = sqlite3.Row
+        return conn, False
+
 class AIExplainService:
-    def __init__(self, db_path: Path, api_key: Optional[str] = None):
+    def __init__(self, db_path: Path, api_key: Optional[str] = None, use_postgres: bool = False):
         """Initialize the AI explanation service
         
         Args:
-            db_path: Path to the SQLite database
+            db_path: Path to the SQLite database or PostgreSQL connection string
             api_key: OpenAI API key (uses env var OPENAI_API_KEY if not provided)
+            use_postgres: Whether to use PostgreSQL instead of SQLite
         """
         self.db_path = db_path
+        self.use_postgres = use_postgres
         self.api_key = api_key or os.environ.get("OPENAI_API_KEY")
         if not self.api_key:
             raise ValueError("OpenAI API key not found. Set OPENAI_API_KEY environment variable.")
+    
+    def _get_connection(self):
+        """Get a database connection"""
+        return get_db_connection(self.db_path, self.use_postgres)
     
     async def _call_openai_api(self, prompt: str) -> Dict[str, Any]:
         """Make an async call to OpenAI API
@@ -248,22 +267,28 @@ Provide your analysis of all answer choices according to the format specified.""
         This format ensures each answer choice is mapped to its explanation
         which can be displayed in clickable boxes during the post-exam review.
         """
-        conn = sqlite3.connect(str(self.db_path))
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
+        conn, is_postgres = self._get_connection()
+        if is_postgres:
+            from psycopg2.extras import RealDictCursor
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
+            param_style = "%s"
+        else:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            param_style = "?"
         
         results = {}
         
         for q_id in question_ids:
             # Check if we already have an explanation
             cursor.execute(
-                "SELECT ai_explanation, subtopic FROM question_explanations WHERE question_id = ?",
+                f"SELECT ai_explanation, subtopic FROM question_explanations WHERE question_id = {param_style}",
                 (q_id,)
             )
             existing = cursor.fetchone()
             
             # Get question data to get correct answer
-            cursor.execute("SELECT * FROM questions WHERE idx = ?", (q_id,))
+            cursor.execute(f"SELECT * FROM questions WHERE idx = {param_style}", (q_id,))
             question = cursor.fetchone()
             
             if not question:
