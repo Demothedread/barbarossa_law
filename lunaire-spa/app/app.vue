@@ -19,7 +19,7 @@
 
     <!-- Toast Container -->
     <ToastContainer />
-    
+
     <!-- Auth Modal -->
     <AuthModal />
   </div>

@@ -103,6 +103,33 @@ def create_schema(conn):
     )
     ''')
     
+    # Create users table for authentication
+    print("Creating users table...")
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        email TEXT UNIQUE,
+        password_hash TEXT NOT NULL,
+        created_at TEXT,
+        preferred_mode TEXT
+    )
+    ''')
+    
+    # Create user_preferences table
+    print("Creating user_preferences table...")
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS user_preferences (
+        user_id INTEGER PRIMARY KEY,
+        audio_enabled INTEGER DEFAULT 1,
+        background_music_enabled INTEGER DEFAULT 1,
+        volume_level REAL DEFAULT 0.7,
+        preferred_subjects TEXT,
+        theme_preference TEXT DEFAULT 'classic',
+        FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+    ''')
+    
     # Create quiz attempt logs table
     print("Creating quiz_attempt_logs table...")
     cursor.execute('''

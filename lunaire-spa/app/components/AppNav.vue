@@ -28,10 +28,13 @@
       >
         <IconContrast />
       </button>
-      
+
       <!-- Authenticated: show user dropdown -->
       <div v-if="authStore.isAuthenticated" class="user-dropdown">
-        <button class="btn btn--secondary" @click="showDropdown = !showDropdown">
+        <button
+          class="btn btn--secondary"
+          @click="showDropdown = !showDropdown"
+        >
           <IconUser />
           {{ authStore.displayName }}
         </button>
@@ -39,9 +42,13 @@
           <button @click="handleLogout">Sign Out</button>
         </div>
       </div>
-      
+
       <!-- Not authenticated: show sign in button -->
-      <button v-else class="btn btn--secondary" @click="authStore.openAuthModal('login')">
+      <button
+        v-else
+        class="btn btn--secondary"
+        @click="authStore.openAuthModal('login')"
+      >
         <IconUser />
         Sign In
       </button>
@@ -50,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from '~/stores/auth';
+import { useAuthStore } from "~/stores/auth";
 
 const route = useRoute();
 const authStore = useAuthStore();
@@ -82,9 +89,9 @@ const handleLogout = async () => {
 // Close dropdown when clicking outside
 onMounted(() => {
   if (import.meta.client) {
-    document.addEventListener('click', (e) => {
+    document.addEventListener("click", (e) => {
       const target = e.target as HTMLElement;
-      if (!target.closest('.user-dropdown')) {
+      if (!target.closest(".user-dropdown")) {
         showDropdown.value = false;
       }
     });

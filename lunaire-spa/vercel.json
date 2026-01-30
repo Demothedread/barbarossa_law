@@ -5,6 +5,11 @@
   "buildCommand": "npm run generate",
   "outputDirectory": ".output/public",
   "installCommand": "npm install",
+  "build": {
+    "env": {
+      "API_BASE": "https://barbarossa-api.onrender.com/api"
+    }
+  },
   "rewrites": [
     {
       "source": "/api/:path*",

@@ -46,11 +46,13 @@ if os.environ.get('FRONTEND_URL'):
 
 CORS(app, origins=CORS_ORIGINS, supports_credentials=True)
 
-# Database path - use PostgreSQL in production, SQLite locally
+# Database configuration - use PostgreSQL in production, SQLite locally
 DATABASE_URL = os.environ.get('DATABASE_URL')
-if DATABASE_URL:
+USE_POSTGRES = bool(DATABASE_URL)
+
+if USE_POSTGRES:
     # Production: Use PostgreSQL via DATABASE_URL
-    DB_PATH = DATABASE_URL
+    DB_PATH = DATABASE_URL  # Connection string for PostgreSQL
     print(f"Using PostgreSQL database")
 else:
     # Development: Use local SQLite
@@ -66,7 +68,9 @@ def initialize_services():
     """Initialize optional services and check configuration."""
     global ai_service, essay_grader_service, vector_store_service
 
-    if not DB_PATH.exists():
+    if USE_POSTGRES:
+        print("PostgreSQL database configured via DATABASE_URL")
+    elif not DB_PATH.exists():
         print(
             f"WARNING: Database not found at {DB_PATH}. Run scripts/initialize_db.py to create it."
         )
@@ -89,13 +93,24 @@ def initialize_services():
         )
 
 
+from db_adapter import DatabaseAdapter
+
+# Create database adapter instance
+db_adapter = DatabaseAdapter(DB_PATH if not USE_POSTGRES else None)
+
 initialize_services()
 
 def get_db_connection():
     """Get database connection with proper setup"""
-    conn = sqlite3.connect(str(DB_PATH))
-    conn.row_factory = sqlite3.Row
-    return conn
+    if USE_POSTGRES:
+        import psycopg2
+        from psycopg2.extras import RealDictCursor
+        conn = psycopg2.connect(DB_PATH)
+        return conn
+    else:
+        conn = sqlite3.connect(str(DB_PATH))
+        conn.row_factory = sqlite3.Row
+        return conn
 
 def ensure_quiz_attempt_logs_table(cursor):
     """Ensure quiz attempt logs table exists. Schema migrations are handled by initialize_db.py."""

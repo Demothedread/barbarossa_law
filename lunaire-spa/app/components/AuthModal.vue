@@ -1,14 +1,22 @@
 <template>
   <Teleport to="body">
     <Transition name="modal">
-      <div v-if="authStore.showAuthModal" class="auth-modal-overlay" @click.self="authStore.closeAuthModal">
+      <div
+        v-if="authStore.showAuthModal"
+        class="auth-modal-overlay"
+        @click.self="authStore.closeAuthModal"
+      >
         <div class="auth-modal">
-          <button class="auth-modal__close" @click="authStore.closeAuthModal">×</button>
-          
+          <button class="auth-modal__close" @click="authStore.closeAuthModal">
+            ×
+          </button>
+
           <h2 class="auth-modal__title">
-            {{ authStore.authMode === 'login' ? 'Welcome Back' : 'Create Account' }}
+            {{
+              authStore.authMode === "login" ? "Welcome Back" : "Create Account"
+            }}
           </h2>
-          
+
           <form class="auth-form" @submit.prevent="handleSubmit">
             <div class="auth-form__field">
               <label for="username">Username</label>
@@ -21,8 +29,11 @@
                 placeholder="Enter username"
               />
             </div>
-            
-            <div v-if="authStore.authMode === 'register'" class="auth-form__field">
+
+            <div
+              v-if="authStore.authMode === 'register'"
+              class="auth-form__field"
+            >
               <label for="email">Email (optional)</label>
               <input
                 id="email"
@@ -32,7 +43,7 @@
                 placeholder="Enter email"
               />
             </div>
-            
+
             <div class="auth-form__field">
               <label for="password">Password</label>
               <input
@@ -44,30 +55,42 @@
                 placeholder="Enter password"
               />
             </div>
-            
+
             <div v-if="authStore.error" class="auth-form__error">
               {{ authStore.error }}
             </div>
-            
+
             <button
               type="submit"
               class="btn btn--primary auth-form__submit"
               :disabled="authStore.isLoading"
             >
-              {{ authStore.isLoading ? 'Please wait...' : (authStore.authMode === 'login' ? 'Sign In' : 'Create Account') }}
+              {{
+                authStore.isLoading
+                  ? "Please wait..."
+                  : authStore.authMode === "login"
+                    ? "Sign In"
+                    : "Create Account"
+              }}
             </button>
           </form>
-          
+
           <div class="auth-modal__switch">
             <template v-if="authStore.authMode === 'login'">
               Don't have an account?
-              <button class="auth-modal__link" @click="authStore.authMode = 'register'">
+              <button
+                class="auth-modal__link"
+                @click="authStore.authMode = 'register'"
+              >
                 Sign up
               </button>
             </template>
             <template v-else>
               Already have an account?
-              <button class="auth-modal__link" @click="authStore.authMode = 'login'">
+              <button
+                class="auth-modal__link"
+                @click="authStore.authMode = 'login'"
+              >
                 Sign in
               </button>
             </template>
@@ -79,37 +102,44 @@
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from '~/stores/auth';
+import { useAuthStore } from "~/stores/auth";
 
 const authStore = useAuthStore();
 
-const username = ref('');
-const email = ref('');
-const password = ref('');
+const username = ref("");
+const email = ref("");
+const password = ref("");
 
 const handleSubmit = async () => {
-  if (authStore.authMode === 'login') {
+  if (authStore.authMode === "login") {
     await authStore.login(username.value, password.value);
   } else {
-    await authStore.register(username.value, password.value, email.value || undefined);
+    await authStore.register(
+      username.value,
+      password.value,
+      email.value || undefined,
+    );
   }
-  
+
   if (authStore.isAuthenticated) {
     // Clear form on success
-    username.value = '';
-    email.value = '';
-    password.value = '';
+    username.value = "";
+    email.value = "";
+    password.value = "";
   }
 };
 
 // Clear form when modal opens
-watch(() => authStore.showAuthModal, (isOpen) => {
-  if (isOpen) {
-    username.value = '';
-    email.value = '';
-    password.value = '';
-  }
-});
+watch(
+  () => authStore.showAuthModal,
+  (isOpen) => {
+    if (isOpen) {
+      username.value = "";
+      email.value = "";
+      password.value = "";
+    }
+  },
+);
 </script>
 
 <style scoped>
