@@ -1,4 +1,3 @@
-e
 <template>
   <nav class="app-nav">
     <!-- Brand -->
@@ -29,16 +28,33 @@ e
       >
         <IconContrast />
       </button>
-      <button class="btn btn--secondary">
+      
+      <!-- Authenticated: show user dropdown -->
+      <div v-if="authStore.isAuthenticated" class="user-dropdown">
+        <button class="btn btn--secondary" @click="showDropdown = !showDropdown">
+          <IconUser />
+          {{ authStore.displayName }}
+        </button>
+        <div v-if="showDropdown" class="user-dropdown__menu">
+          <button @click="handleLogout">Sign Out</button>
+        </div>
+      </div>
+      
+      <!-- Not authenticated: show sign in button -->
+      <button v-else class="btn btn--secondary" @click="authStore.openAuthModal('login')">
         <IconUser />
-        Account
+        Sign In
       </button>
     </div>
   </nav>
 </template>
 
 <script setup lang="ts">
+import { useAuthStore } from '~/stores/auth';
+
 const route = useRoute();
+const authStore = useAuthStore();
+const showDropdown = ref(false);
 
 const navLinks = [
   { path: "/", label: "Home" },
@@ -57,4 +73,60 @@ const isActive = (path: string) => {
 const toggleContrast = () => {
   document.body.classList.toggle("low-contrast");
 };
+
+const handleLogout = async () => {
+  await authStore.logout();
+  showDropdown.value = false;
+};
+
+// Close dropdown when clicking outside
+onMounted(() => {
+  if (import.meta.client) {
+    document.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.user-dropdown')) {
+        showDropdown.value = false;
+      }
+    });
+  }
+});
+
+// Initialize auth on mount
+onMounted(() => {
+  authStore.initAuth();
+});
 </script>
+
+<style scoped>
+.user-dropdown {
+  position: relative;
+}
+
+.user-dropdown__menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.5rem;
+  background: var(--color-surface, #1a1a2e);
+  border: 1px solid var(--color-border, #333);
+  border-radius: 8px;
+  padding: 0.5rem;
+  min-width: 120px;
+  z-index: 100;
+}
+
+.user-dropdown__menu button {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  background: none;
+  border: none;
+  color: var(--color-text, #fff);
+  text-align: left;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.user-dropdown__menu button:hover {
+  background: var(--color-bg, #0a0a1a);
+}
+</style>
