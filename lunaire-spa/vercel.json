@@ -7,7 +7,7 @@
   "installCommand": "npm install",
   "build": {
     "env": {
-      "API_BASE": "https://barbarossa-api.onrender.com/api"
+      "NUXT_PUBLIC_API_BASE": "https://barbarossa-api.onrender.com/api"
     }
   },
   "rewrites": [

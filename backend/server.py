@@ -110,12 +110,22 @@ def get_db_connection():
     if USE_POSTGRES:
         import psycopg2
         from psycopg2.extras import RealDictCursor
-        conn = psycopg2.connect(DB_PATH)
+        conn = psycopg2.connect(DB_PATH, cursor_factory=RealDictCursor)
         return conn
     else:
         conn = sqlite3.connect(str(DB_PATH))
         conn.row_factory = sqlite3.Row
         return conn
+
+def get_placeholder():
+    """Return the correct SQL placeholder based on database type."""
+    return '%s' if USE_POSTGRES else '?'
+
+def convert_query(query):
+    """Convert SQLite-style query (?) to PostgreSQL (%s) if needed."""
+    if USE_POSTGRES:
+        return query.replace('?', '%s')
+    return query
 
 def ensure_quiz_attempt_logs_table(cursor):
     """Ensure quiz attempt logs table exists. Schema migrations are handled by initialize_db.py."""
@@ -211,16 +221,19 @@ def get_questions():
         conn = get_db_connection()
         cursor = conn.cursor()
         
+        # Use correct placeholder for database type
+        placeholder = '%s' if USE_POSTGRES else '?'
+        
         # Build query based on filters
         where_conditions = []
         params = []
         
         if subject:
-            where_conditions.append('subject = ?')
+            where_conditions.append(f'subject = {placeholder}')
             params.append(subject)
         
         if subtopic:
-            where_conditions.append('subtopic = ?')
+            where_conditions.append(f'subtopic = {placeholder}')
             params.append(subtopic)
         
         # Filter by question type
@@ -296,12 +309,12 @@ def log_quiz_attempt():
             cursor = conn.cursor()
             ensure_quiz_attempt_logs_table(cursor)
 
-            cursor.execute("""
+            cursor.execute(convert_query("""
             INSERT INTO quiz_attempt_logs (
                 user_id, question_id, selected_answer, correct_answer, is_correct,
                 subject, subtopic, mode, elapsed_seconds, payload_json, created_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
+            """), (
                 normalized["user_id"],
                 normalized["question_id"],
                 normalized["selected_answer"],
@@ -484,14 +497,14 @@ def log_quiz_history():
             subtopic = questions[0].get('subtopic', '') if isinstance(questions[0], dict) else ''
         
         # Insert enhanced quiz history
-        cursor.execute("""
+        cursor.execute(convert_query("""
         INSERT INTO quiz_history (
             user_id, subject, subtopic, correct, total, duration_seconds,
             questions_json, answers_json, time_per_question_json,
             question_difficulties_json, mode, negative_time, streak_correct,
             streak_total, avg_time_per_question, accuracy_percentage, created_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
+        """), (
             data.get('user_id', 'anonymous'),
             data.get('subject', ''),
             subtopic,
@@ -878,7 +891,7 @@ def get_subtopics():
         cursor = conn.cursor()
         
         if subject:
-            cursor.execute("SELECT DISTINCT subtopic FROM questions WHERE subject = ? AND subtopic IS NOT NULL", (subject,))
+            cursor.execute(convert_query("SELECT DISTINCT subtopic FROM questions WHERE subject = ? AND subtopic IS NOT NULL"), (subject,))
         else:
             cursor.execute("SELECT DISTINCT subtopic FROM questions WHERE subtopic IS NOT NULL")
         
@@ -972,16 +985,24 @@ def get_advanced_analytics():
         cursor = conn.cursor()
         
         # Get quiz history for the specified period
-        query = """
-        SELECT * FROM quiz_history
-        WHERE user_id = ? AND created_at >= datetime('now', '-{} days')
-        ORDER BY created_at ASC
-        """.format(days)
-        cursor.execute(query, (user_id,))
+        # Note: PostgreSQL uses different date syntax
+        if USE_POSTGRES:
+            query = """
+            SELECT * FROM quiz_history
+            WHERE user_id = %s AND created_at >= NOW() - INTERVAL '%s days'
+            ORDER BY created_at ASC
+            """
+        else:
+            query = """
+            SELECT * FROM quiz_history
+            WHERE user_id = ? AND created_at >= datetime('now', '-{} days')
+            ORDER BY created_at ASC
+            """.format(days)
+        cursor.execute(query, (user_id,) if not USE_POSTGRES else (user_id, days))
         recent_history = [dict(row) for row in cursor.fetchall()]
         
         # Get all-time history for comparison
-        cursor.execute("SELECT * FROM quiz_history WHERE user_id = ? ORDER BY created_at ASC", (user_id,))
+        cursor.execute(convert_query("SELECT * FROM quiz_history WHERE user_id = ? ORDER BY created_at ASC"), (user_id,))
         all_history = [dict(row) for row in cursor.fetchall()]
         
         analytics = {
@@ -1011,7 +1032,7 @@ def export_statistics():
         cursor = conn.cursor()
         
         # Get comprehensive data
-        cursor.execute("SELECT * FROM quiz_history WHERE user_id = ? ORDER BY created_at DESC", (user_id,))
+        cursor.execute(convert_query("SELECT * FROM quiz_history WHERE user_id = ? ORDER BY created_at DESC"), (user_id,))
         history = [dict(row) for row in cursor.fetchall()]
         
         stats = calculate_comprehensive_stats(history)
@@ -1285,26 +1306,48 @@ def store_ai_explanations():
                 ai_explanation_json = json.dumps(explanation_obj)
                 
                 # Insert/update in database
-                cursor.execute('''
-                INSERT INTO question_explanations (
-                    question_id, correct_answer, choice_a_explanation, choice_b_explanation,
-                    choice_c_explanation, choice_d_explanation, subtopic, ai_explanation,
-                    created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT(question_id) DO UPDATE SET
-                    correct_answer = excluded.correct_answer,
-                    choice_a_explanation = excluded.choice_a_explanation,
-                    choice_b_explanation = excluded.choice_b_explanation,
-                    choice_c_explanation = excluded.choice_c_explanation,
-                    choice_d_explanation = excluded.choice_d_explanation,
-                    subtopic = excluded.subtopic,
-                    ai_explanation = excluded.ai_explanation,
-                    updated_at = excluded.updated_at
-                ''', (
-                    question_id, correct_answer, choice_a_explanation, choice_b_explanation,
-                    choice_c_explanation, choice_d_explanation, subtopic, ai_explanation_json,
-                    datetime.now().isoformat(), datetime.now().isoformat()
-                ))
+                if USE_POSTGRES:
+                    cursor.execute('''
+                    INSERT INTO question_explanations (
+                        question_id, correct_answer, choice_a_explanation, choice_b_explanation,
+                        choice_c_explanation, choice_d_explanation, subtopic, ai_explanation,
+                        created_at, updated_at
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ON CONFLICT(question_id) DO UPDATE SET
+                        correct_answer = EXCLUDED.correct_answer,
+                        choice_a_explanation = EXCLUDED.choice_a_explanation,
+                        choice_b_explanation = EXCLUDED.choice_b_explanation,
+                        choice_c_explanation = EXCLUDED.choice_c_explanation,
+                        choice_d_explanation = EXCLUDED.choice_d_explanation,
+                        subtopic = EXCLUDED.subtopic,
+                        ai_explanation = EXCLUDED.ai_explanation,
+                        updated_at = EXCLUDED.updated_at
+                    ''', (
+                        question_id, correct_answer, choice_a_explanation, choice_b_explanation,
+                        choice_c_explanation, choice_d_explanation, subtopic, ai_explanation_json,
+                        datetime.now().isoformat(), datetime.now().isoformat()
+                    ))
+                else:
+                    cursor.execute('''
+                    INSERT INTO question_explanations (
+                        question_id, correct_answer, choice_a_explanation, choice_b_explanation,
+                        choice_c_explanation, choice_d_explanation, subtopic, ai_explanation,
+                        created_at, updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT(question_id) DO UPDATE SET
+                        correct_answer = excluded.correct_answer,
+                        choice_a_explanation = excluded.choice_a_explanation,
+                        choice_b_explanation = excluded.choice_b_explanation,
+                        choice_c_explanation = excluded.choice_c_explanation,
+                        choice_d_explanation = excluded.choice_d_explanation,
+                        subtopic = excluded.subtopic,
+                        ai_explanation = excluded.ai_explanation,
+                        updated_at = excluded.updated_at
+                    ''', (
+                        question_id, correct_answer, choice_a_explanation, choice_b_explanation,
+                        choice_c_explanation, choice_d_explanation, subtopic, ai_explanation_json,
+                        datetime.now().isoformat(), datetime.now().isoformat()
+                    ))
                 stored_count += 1
             except Exception as e:
                 print(f"Error storing explanation for question {question_id}: {e}")
@@ -1442,7 +1485,7 @@ def update_daily_progress():
         ''')
         
         # Get current progress
-        cursor.execute('SELECT * FROM daily_progress WHERE user_id = ? AND date = ?', (user_id, date))
+        cursor.execute(convert_query('SELECT * FROM daily_progress WHERE user_id = ? AND date = ?'), (user_id, date))
         existing = cursor.fetchone()
         
         if existing:
@@ -1465,22 +1508,40 @@ def update_daily_progress():
                 current_reviewed_ids.append(rid)
         
         # Update or insert
-        cursor.execute('''
-        INSERT INTO daily_progress (user_id, date, questions_answered, questions_reviewed, 
-                                     question_ids_json, reviewed_ids_json, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        ON CONFLICT(user_id, date) DO UPDATE SET
-            questions_answered = excluded.questions_answered,
-            questions_reviewed = excluded.questions_reviewed,
-            question_ids_json = excluded.question_ids_json,
-            reviewed_ids_json = excluded.reviewed_ids_json,
-            updated_at = excluded.updated_at
-        ''', (
-            user_id, date, 
-            len(current_question_ids), len(current_reviewed_ids),
-            json.dumps(current_question_ids), json.dumps(current_reviewed_ids),
-            datetime.now().isoformat(), datetime.now().isoformat()
-        ))
+        if USE_POSTGRES:
+            cursor.execute('''
+            INSERT INTO daily_progress (user_id, date, questions_answered, questions_reviewed, 
+                                         question_ids_json, reviewed_ids_json, created_at, updated_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT(user_id, date) DO UPDATE SET
+                questions_answered = EXCLUDED.questions_answered,
+                questions_reviewed = EXCLUDED.questions_reviewed,
+                question_ids_json = EXCLUDED.question_ids_json,
+                reviewed_ids_json = EXCLUDED.reviewed_ids_json,
+                updated_at = EXCLUDED.updated_at
+            ''', (
+                user_id, date, 
+                len(current_question_ids), len(current_reviewed_ids),
+                json.dumps(current_question_ids), json.dumps(current_reviewed_ids),
+                datetime.now().isoformat(), datetime.now().isoformat()
+            ))
+        else:
+            cursor.execute('''
+            INSERT INTO daily_progress (user_id, date, questions_answered, questions_reviewed, 
+                                         question_ids_json, reviewed_ids_json, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(user_id, date) DO UPDATE SET
+                questions_answered = excluded.questions_answered,
+                questions_reviewed = excluded.questions_reviewed,
+                question_ids_json = excluded.question_ids_json,
+                reviewed_ids_json = excluded.reviewed_ids_json,
+                updated_at = excluded.updated_at
+            ''', (
+                user_id, date, 
+                len(current_question_ids), len(current_reviewed_ids),
+                json.dumps(current_question_ids), json.dumps(current_reviewed_ids),
+                datetime.now().isoformat(), datetime.now().isoformat()
+            ))
         
         conn.commit()
         conn.close()
@@ -1511,11 +1572,18 @@ def get_daily_progress_history():
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        cursor.execute('''
-        SELECT * FROM daily_progress 
-        WHERE user_id = ? AND date >= date('now', '-' || ? || ' days')
-        ORDER BY date DESC
-        ''', (user_id, days))
+        if USE_POSTGRES:
+            cursor.execute('''
+            SELECT * FROM daily_progress 
+            WHERE user_id = %s AND date >= CURRENT_DATE - INTERVAL '%s days'
+            ORDER BY date DESC
+            ''', (user_id, days))
+        else:
+            cursor.execute('''
+            SELECT * FROM daily_progress 
+            WHERE user_id = ? AND date >= date('now', '-' || ? || ' days')
+            ORDER BY date DESC
+            ''', (user_id, days))
         
         history = []
         for row in cursor.fetchall():
@@ -1564,31 +1632,40 @@ def save_explanation_feedback():
         ''')
         
         # Insert or update feedback
-        cursor.execute('''
-        INSERT INTO explanation_feedback (question_id, user_id, thumbs_up, created_at)
-        VALUES (?, ?, ?, ?)
-        ON CONFLICT(question_id, user_id) DO UPDATE SET
-            thumbs_up = excluded.thumbs_up,
-            created_at = excluded.created_at
-        ''', (question_id, user_id, 1 if thumbs_up else 0, datetime.now().isoformat()))
+        if USE_POSTGRES:
+            cursor.execute('''
+            INSERT INTO explanation_feedback (question_id, user_id, thumbs_up, created_at)
+            VALUES (%s, %s, %s, %s)
+            ON CONFLICT(question_id, user_id) DO UPDATE SET
+                thumbs_up = EXCLUDED.thumbs_up,
+                created_at = EXCLUDED.created_at
+            ''', (question_id, user_id, 1 if thumbs_up else 0, datetime.now().isoformat()))
+        else:
+            cursor.execute('''
+            INSERT INTO explanation_feedback (question_id, user_id, thumbs_up, created_at)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(question_id, user_id) DO UPDATE SET
+                thumbs_up = excluded.thumbs_up,
+                created_at = excluded.created_at
+            ''', (question_id, user_id, 1 if thumbs_up else 0, datetime.now().isoformat()))
         
         # If thumbs down, mark the explanation as not to be stored/cached
         if not thumbs_up:
             # Remove from question_explanations if it exists and was AI-generated
-            cursor.execute('''
+            cursor.execute(convert_query('''
             DELETE FROM question_explanations 
             WHERE question_id = ? AND ai_explanation IS NOT NULL
-            ''', (question_id,))
+            '''), (question_id,))
         
         conn.commit()
         
         # Get aggregate feedback stats for this question
-        cursor.execute('''
+        cursor.execute(convert_query('''
         SELECT 
             SUM(CASE WHEN thumbs_up = 1 THEN 1 ELSE 0 END) as up_count,
             SUM(CASE WHEN thumbs_up = 0 THEN 1 ELSE 0 END) as down_count
         FROM explanation_feedback WHERE question_id = ?
-        ''', (question_id,))
+        '''), (question_id,))
         
         stats = cursor.fetchone()
         conn.close()
@@ -1616,20 +1693,20 @@ def get_explanation_feedback(question_id):
         cursor = conn.cursor()
         
         # Get user's feedback
-        cursor.execute('''
+        cursor.execute(convert_query('''
         SELECT thumbs_up FROM explanation_feedback 
         WHERE question_id = ? AND user_id = ?
-        ''', (question_id, user_id))
+        '''), (question_id, user_id))
         
         user_feedback = cursor.fetchone()
         
         # Get aggregate stats
-        cursor.execute('''
+        cursor.execute(convert_query('''
         SELECT 
             SUM(CASE WHEN thumbs_up = 1 THEN 1 ELSE 0 END) as up_count,
             SUM(CASE WHEN thumbs_up = 0 THEN 1 ELSE 0 END) as down_count
         FROM explanation_feedback WHERE question_id = ?
-        ''', (question_id,))
+        '''), (question_id,))
         
         stats = cursor.fetchone()
         conn.close()
@@ -1679,7 +1756,7 @@ def track_question_review():
         ''')
         
         # Get or create today's progress
-        cursor.execute('SELECT * FROM daily_progress WHERE user_id = ? AND date = ?', (user_id, today))
+        cursor.execute(convert_query('SELECT * FROM daily_progress WHERE user_id = ? AND date = ?'), (user_id, today))
         existing = cursor.fetchone()
         
         if existing:
@@ -1695,20 +1772,36 @@ def track_question_review():
             reviewed_ids.append(question_id)
         
         # Update database
-        cursor.execute('''
-        INSERT INTO daily_progress (user_id, date, questions_answered, questions_reviewed, 
-                                     question_ids_json, reviewed_ids_json, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        ON CONFLICT(user_id, date) DO UPDATE SET
-            questions_reviewed = excluded.questions_reviewed,
-            reviewed_ids_json = excluded.reviewed_ids_json,
-            updated_at = excluded.updated_at
-        ''', (
-            user_id, today, 
-            len(question_ids), len(reviewed_ids),
-            json.dumps(question_ids), json.dumps(reviewed_ids),
-            datetime.now().isoformat(), datetime.now().isoformat()
-        ))
+        if USE_POSTGRES:
+            cursor.execute('''
+            INSERT INTO daily_progress (user_id, date, questions_answered, questions_reviewed, 
+                                         question_ids_json, reviewed_ids_json, created_at, updated_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT(user_id, date) DO UPDATE SET
+                questions_reviewed = EXCLUDED.questions_reviewed,
+                reviewed_ids_json = EXCLUDED.reviewed_ids_json,
+                updated_at = EXCLUDED.updated_at
+            ''', (
+                user_id, today, 
+                len(question_ids), len(reviewed_ids),
+                json.dumps(question_ids), json.dumps(reviewed_ids),
+                datetime.now().isoformat(), datetime.now().isoformat()
+            ))
+        else:
+            cursor.execute('''
+            INSERT INTO daily_progress (user_id, date, questions_answered, questions_reviewed, 
+                                         question_ids_json, reviewed_ids_json, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(user_id, date) DO UPDATE SET
+                questions_reviewed = excluded.questions_reviewed,
+                reviewed_ids_json = excluded.reviewed_ids_json,
+                updated_at = excluded.updated_at
+            ''', (
+                user_id, today, 
+                len(question_ids), len(reviewed_ids),
+                json.dumps(question_ids), json.dumps(reviewed_ids),
+                datetime.now().isoformat(), datetime.now().isoformat()
+            ))
         
         conn.commit()
         conn.close()
