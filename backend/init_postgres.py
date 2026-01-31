@@ -53,18 +53,19 @@ def create_schema(conn):
         choice_b TEXT,
         choice_c TEXT,
         choice_d TEXT,
-        answer TEXT,
+        answer TEXT NOT NULL,
         gold_passage TEXT,
         gold_idx TEXT,
         generated INTEGER DEFAULT 0,
-        subtopic TEXT
+        subtopic TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     ''')
     
     print("Creating question_explanations table...")
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS question_explanations (
-        question_id TEXT PRIMARY KEY,
+        question_id TEXT PRIMARY KEY REFERENCES questions(idx) ON DELETE CASCADE,
         correct_answer TEXT,
         choice_a_explanation TEXT,
         choice_b_explanation TEXT,
@@ -72,12 +73,101 @@ def create_schema(conn):
         choice_d_explanation TEXT,
         subtopic TEXT,
         ai_explanation TEXT,
-        created_at TEXT,
-        updated_at TEXT
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     ''')
     
-    print("Creating quiz_history table...")
+    print("Creating question_second_best table...")
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS question_second_best (
+        question_id TEXT PRIMARY KEY REFERENCES questions(idx) ON DELETE CASCADE,
+        second_best_choice TEXT NOT NULL,
+        analysis_text TEXT,
+        confidence_score REAL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    
+    print("Creating users table...")
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        username TEXT UNIQUE NOT NULL,
+        email TEXT UNIQUE,
+        password_hash TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        last_login TIMESTAMP,
+        preferred_mode VARCHAR(20) DEFAULT 'classic',
+        preferences_json TEXT
+    )
+    ''')
+    
+    print("Creating user_preferences table...")
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS user_preferences (
+        user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+        audio_enabled BOOLEAN DEFAULT TRUE,
+        background_music_enabled BOOLEAN DEFAULT TRUE,
+        volume_level REAL DEFAULT 0.7,
+        preferred_subjects TEXT,
+        theme_preference VARCHAR(20) DEFAULT 'classic'
+    )
+    ''')
+    
+    print("Creating quiz_sessions table...")
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS quiz_sessions (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        anonymous_id TEXT,
+        subject TEXT,
+        question_type TEXT,
+        question_count INTEGER,
+        mode TEXT DEFAULT 'classic',
+        score INTEGER,
+        total INTEGER,
+        duration_seconds INTEGER,
+        started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        completed_at TIMESTAMP
+    )
+    ''')
+    
+    print("Creating quiz_answers table...")
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS quiz_answers (
+        id SERIAL PRIMARY KEY,
+        session_id INTEGER REFERENCES quiz_sessions(id) ON DELETE CASCADE,
+        question_id TEXT REFERENCES questions(idx) ON DELETE CASCADE,
+        selected_choice TEXT NOT NULL,
+        correct BOOLEAN NOT NULL,
+        elapsed_seconds REAL,
+        answered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    
+    print("Creating question_usage table...")
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS question_usage (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        anonymous_id TEXT,
+        question_id TEXT REFERENCES questions(idx) ON DELETE CASCADE,
+        times_seen INTEGER DEFAULT 1,
+        times_correct INTEGER DEFAULT 0,
+        last_seen_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, question_id)
+    )
+    ''')
+    
+    # Create unique index for anonymous users separately
+    cursor.execute('''
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_question_usage_anonymous_unique 
+    ON question_usage(anonymous_id, question_id) 
+    WHERE anonymous_id IS NOT NULL
+    ''')
+    
+    print("Creating quiz_history table (legacy)...")
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS quiz_history (
         id SERIAL PRIMARY KEY,
@@ -89,11 +179,11 @@ def create_schema(conn):
         questions_json TEXT,
         answers_json TEXT,
         negative_time BOOLEAN,
-        created_at TEXT
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     ''')
     
-    print("Creating quiz_attempt_logs table...")
+    print("Creating quiz_attempt_logs table (legacy)...")
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS quiz_attempt_logs (
         id SERIAL PRIMARY KEY,
@@ -107,7 +197,7 @@ def create_schema(conn):
         mode TEXT,
         elapsed_seconds REAL,
         payload_json TEXT,
-        created_at TEXT
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     ''')
     
@@ -124,17 +214,16 @@ def create_schema(conn):
     )
     ''')
     
-    print("Creating users table...")
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        username TEXT UNIQUE NOT NULL,
-        email TEXT UNIQUE,
-        password_hash TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        preferences_json TEXT
-    )
-    ''')
+    print("Creating indexes...")
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_questions_subject ON questions(subject)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_questions_subtopic ON questions(subtopic)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_questions_generated ON questions(generated)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_quiz_sessions_user ON quiz_sessions(user_id)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_quiz_sessions_anonymous ON quiz_sessions(anonymous_id)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_quiz_answers_session ON quiz_answers(session_id)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_question_usage_user ON question_usage(user_id)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_question_usage_anonymous ON question_usage(anonymous_id)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_quiz_history_user ON quiz_history(user_id)')
     
     conn.commit()
     print("✓ Schema created successfully!")

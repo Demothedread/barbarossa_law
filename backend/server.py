@@ -292,6 +292,406 @@ def get_questions():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
+@app.route('/api/questions/smart', methods=['GET'])
+def get_smart_questions():
+    """
+    Get questions with smart selection that avoids repeats for users.
+    Prioritizes questions the user hasn't seen, then questions they got wrong.
+    """
+    try:
+        n = int(request.args.get('n', 10))
+        subject = request.args.get('subject', '')
+        subtopic = request.args.get('subtopic', '')
+        question_type = request.args.get('type', 'mix')
+        user_id = request.args.get('user_id', '')
+        anonymous_id = request.args.get('anonymous_id', '')
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        placeholder = '%s' if USE_POSTGRES else '?'
+        
+        # Build base query
+        where_conditions = []
+        params = []
+        
+        if subject:
+            where_conditions.append(f'q.subject = {placeholder}')
+            params.append(subject)
+        
+        if subtopic:
+            where_conditions.append(f'q.subtopic = {placeholder}')
+            params.append(subtopic)
+        
+        if question_type == 'generated':
+            where_conditions.append("(q.idx LIKE 'vs_%' OR q.generated = 1)")
+        elif question_type == 'mbe':
+            where_conditions.append("(q.idx NOT LIKE 'vs_%' AND (q.generated IS NULL OR q.generated = 0))")
+        
+        where_clause = f'WHERE {" AND ".join(where_conditions)}' if where_conditions else ''
+        
+        # Check if question_usage table exists and user has history
+        has_usage_table = False
+        user_has_history = False
+        
+        try:
+            if USE_POSTGRES:
+                cursor.execute("""
+                    SELECT EXISTS (
+                        SELECT FROM information_schema.tables 
+                        WHERE table_name = 'question_usage'
+                    )
+                """)
+            else:
+                cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='question_usage'")
+            has_usage_table = bool(cursor.fetchone())
+            
+            if has_usage_table and (user_id or anonymous_id):
+                if user_id:
+                    cursor.execute(convert_query(
+                        "SELECT COUNT(*) FROM question_usage WHERE user_id = ?"
+                    ), (user_id,))
+                else:
+                    cursor.execute(convert_query(
+                        "SELECT COUNT(*) FROM question_usage WHERE anonymous_id = ?"
+                    ), (anonymous_id,))
+                user_has_history = cursor.fetchone()[0] > 0
+        except Exception:
+            pass
+        
+        # Smart selection logic
+        if has_usage_table and user_has_history and (user_id or anonymous_id):
+            # Get questions user hasn't seen
+            user_filter = f'qu.user_id = {placeholder}' if user_id else f'qu.anonymous_id = {placeholder}'
+            user_param = user_id if user_id else anonymous_id
+            
+            unseen_query = f'''
+                SELECT q.* FROM questions q
+                LEFT JOIN question_usage qu ON q.idx = qu.question_id 
+                    AND ({user_filter})
+                {where_clause}
+                {"AND" if where_clause else "WHERE"} qu.question_id IS NULL
+            '''
+            cursor.execute(unseen_query, params + [user_param])
+            unseen_questions = cursor.fetchall()
+            
+            # Get questions user got wrong (but has seen)
+            wrong_query = f'''
+                SELECT q.* FROM questions q
+                INNER JOIN question_usage qu ON q.idx = qu.question_id
+                {where_clause}
+                {"AND" if where_clause else "WHERE"} {user_filter}
+                AND qu.times_correct < qu.times_seen
+                ORDER BY qu.times_correct ASC, qu.last_seen_at ASC
+            '''
+            cursor.execute(wrong_query, params + [user_param])
+            wrong_questions = cursor.fetchall()
+            
+            # Combine: prioritize unseen, then wrong answers
+            all_candidates = list(unseen_questions) + list(wrong_questions)
+            
+            # If not enough, fall back to all questions
+            if len(all_candidates) < n:
+                cursor.execute(f'SELECT * FROM questions q {where_clause}', params)
+                all_candidates = cursor.fetchall()
+        else:
+            # No user history - return random questions
+            cursor.execute(f'SELECT * FROM questions q {where_clause}', params)
+            all_candidates = cursor.fetchall()
+        
+        conn.close()
+        
+        if not all_candidates:
+            return jsonify({'questions': [], 'available': 0, 'smart_selection': False})
+        
+        # Convert to list of dicts
+        questions_list = []
+        for row in all_candidates:
+            question_dict = dict(row)
+            question_dict['choices'] = [
+                question_dict['choice_a'],
+                question_dict['choice_b'], 
+                question_dict['choice_c'],
+                question_dict['choice_d']
+            ]
+            if 'gold_passage' not in question_dict or not question_dict['gold_passage']:
+                question_dict['gold_passage'] = "No explanation available for this question."
+            question_dict['is_generated'] = (
+                question_dict['idx'].startswith('vs_') or 
+                question_dict.get('generated', 0) == 1
+            )
+            questions_list.append(question_dict)
+        
+        # Select n questions (prioritizing order from smart selection)
+        selected = questions_list[:n] if len(questions_list) >= n else questions_list
+        if len(questions_list) > n:
+            # Add some randomization while keeping priority
+            priority_count = min(n // 2, len(selected))
+            remaining = questions_list[priority_count:]
+            random.shuffle(remaining)
+            selected = questions_list[:priority_count] + remaining[:n - priority_count]
+        
+        return jsonify({
+            'questions': selected,
+            'available': len(questions_list),
+            'smart_selection': has_usage_table and user_has_history
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/questions/usage', methods=['POST'])
+def update_question_usage():
+    """
+    Update question usage tracking after a quiz.
+    Call this when a quiz is completed to track which questions the user has seen.
+    """
+    try:
+        data = request.get_json()
+        user_id = data.get('user_id')
+        anonymous_id = data.get('anonymous_id')
+        answers = data.get('answers', [])  # List of {question_id, selected, correct}
+        
+        if not answers:
+            return jsonify({'error': 'No answers provided'}), 400
+        
+        if not user_id and not anonymous_id:
+            return jsonify({'error': 'user_id or anonymous_id required'}), 400
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        placeholder = '%s' if USE_POSTGRES else '?'
+        
+        # Ensure table exists
+        if USE_POSTGRES:
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS question_usage (
+                    id SERIAL PRIMARY KEY,
+                    user_id INTEGER,
+                    anonymous_id TEXT,
+                    question_id TEXT,
+                    times_seen INTEGER DEFAULT 1,
+                    times_correct INTEGER DEFAULT 0,
+                    last_seen_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE(user_id, question_id)
+                )
+            ''')
+            cursor.execute('''
+                CREATE UNIQUE INDEX IF NOT EXISTS idx_question_usage_anonymous_unique 
+                ON question_usage(anonymous_id, question_id) 
+                WHERE anonymous_id IS NOT NULL
+            ''')
+        else:
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS question_usage (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER,
+                    anonymous_id TEXT,
+                    question_id TEXT,
+                    times_seen INTEGER DEFAULT 1,
+                    times_correct INTEGER DEFAULT 0,
+                    last_seen_at TEXT,
+                    UNIQUE(user_id, question_id),
+                    UNIQUE(anonymous_id, question_id)
+                )
+            ''')
+        
+        updated_count = 0
+        for answer in answers:
+            question_id = answer.get('question_id')
+            is_correct = 1 if answer.get('correct', False) else 0
+            
+            if not question_id:
+                continue
+            
+            now = datetime.now().isoformat()
+            
+            if USE_POSTGRES:
+                if user_id:
+                    cursor.execute(f'''
+                        INSERT INTO question_usage (user_id, question_id, times_seen, times_correct, last_seen_at)
+                        VALUES ({placeholder}, {placeholder}, 1, {placeholder}, CURRENT_TIMESTAMP)
+                        ON CONFLICT (user_id, question_id) DO UPDATE SET
+                            times_seen = question_usage.times_seen + 1,
+                            times_correct = question_usage.times_correct + EXCLUDED.times_correct,
+                            last_seen_at = CURRENT_TIMESTAMP
+                    ''', (user_id, question_id, is_correct))
+                else:
+                    cursor.execute(f'''
+                        INSERT INTO question_usage (anonymous_id, question_id, times_seen, times_correct, last_seen_at)
+                        VALUES ({placeholder}, {placeholder}, 1, {placeholder}, CURRENT_TIMESTAMP)
+                        ON CONFLICT DO NOTHING
+                    ''', (anonymous_id, question_id, is_correct))
+                    cursor.execute(f'''
+                        UPDATE question_usage SET
+                            times_seen = times_seen + 1,
+                            times_correct = times_correct + {placeholder},
+                            last_seen_at = CURRENT_TIMESTAMP
+                        WHERE anonymous_id = {placeholder} AND question_id = {placeholder}
+                    ''', (is_correct, anonymous_id, question_id))
+            else:
+                if user_id:
+                    cursor.execute(f'''
+                        INSERT INTO question_usage (user_id, question_id, times_seen, times_correct, last_seen_at)
+                        VALUES ({placeholder}, {placeholder}, 1, {placeholder}, {placeholder})
+                        ON CONFLICT(user_id, question_id) DO UPDATE SET
+                            times_seen = times_seen + 1,
+                            times_correct = times_correct + excluded.times_correct,
+                            last_seen_at = excluded.last_seen_at
+                    ''', (user_id, question_id, is_correct, now))
+                else:
+                    cursor.execute(f'''
+                        INSERT INTO question_usage (anonymous_id, question_id, times_seen, times_correct, last_seen_at)
+                        VALUES ({placeholder}, {placeholder}, 1, {placeholder}, {placeholder})
+                        ON CONFLICT(anonymous_id, question_id) DO UPDATE SET
+                            times_seen = times_seen + 1,
+                            times_correct = times_correct + excluded.times_correct,
+                            last_seen_at = excluded.last_seen_at
+                    ''', (anonymous_id, question_id, is_correct, now))
+            
+            updated_count += 1
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({'success': True, 'updated': updated_count})
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/questions/<question_id>/second-best', methods=['GET'])
+async def get_second_best_analysis(question_id):
+    """
+    Get AI analysis of the second-best (closest wrong) answer for a question.
+    Useful for understanding why certain wrong answers are tempting.
+    """
+    try:
+        if not ai_service:
+            return jsonify({'error': 'AI service not available'}), 500
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        placeholder = '%s' if USE_POSTGRES else '?'
+        
+        # Check cache first
+        try:
+            cursor.execute(convert_query(
+                'SELECT * FROM question_second_best WHERE question_id = ?'
+            ), (question_id,))
+            cached = cursor.fetchone()
+            if cached:
+                return jsonify({
+                    'question_id': question_id,
+                    'second_best_choice': dict(cached)['second_best_choice'],
+                    'analysis': dict(cached)['analysis_text'],
+                    'confidence': dict(cached).get('confidence_score', 0.8),
+                    'cached': True
+                })
+        except Exception:
+            pass  # Table might not exist yet
+        
+        # Get the question
+        cursor.execute(convert_query(
+            'SELECT * FROM questions WHERE idx = ?'
+        ), (question_id,))
+        question = cursor.fetchone()
+        
+        if not question:
+            conn.close()
+            return jsonify({'error': 'Question not found'}), 404
+        
+        question_dict = dict(question)
+        
+        # Generate second-best analysis using AI
+        prompt = f"""Analyze this multiple choice question and identify the SECOND BEST answer (the most tempting wrong answer).
+
+Question: {question_dict['question']}
+
+A) {question_dict['choice_a']}
+B) {question_dict['choice_b']}
+C) {question_dict['choice_c']}
+D) {question_dict['choice_d']}
+
+Correct Answer: {question_dict['answer']}
+
+Respond in JSON format:
+{{
+    "second_best_choice": "X",
+    "analysis": "Brief explanation of why this wrong answer is the most tempting and how to distinguish it from the correct answer",
+    "confidence": 0.8
+}}"""
+        
+        import openai
+        client = openai.OpenAI()
+        
+        response = await asyncio.to_thread(
+            client.chat.completions.create,
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            response_format={"type": "json_object"}
+        )
+        
+        result = json.loads(response.choices[0].message.content)
+        
+        # Cache the result
+        try:
+            if USE_POSTGRES:
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS question_second_best (
+                        question_id TEXT PRIMARY KEY,
+                        second_best_choice TEXT NOT NULL,
+                        analysis_text TEXT,
+                        confidence_score REAL,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                ''')
+            else:
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS question_second_best (
+                        question_id TEXT PRIMARY KEY,
+                        second_best_choice TEXT NOT NULL,
+                        analysis_text TEXT,
+                        confidence_score REAL,
+                        created_at TEXT
+                    )
+                ''')
+            
+            now = datetime.now().isoformat()
+            if USE_POSTGRES:
+                cursor.execute(f'''
+                    INSERT INTO question_second_best (question_id, second_best_choice, analysis_text, confidence_score)
+                    VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder})
+                    ON CONFLICT (question_id) DO UPDATE SET
+                        second_best_choice = EXCLUDED.second_best_choice,
+                        analysis_text = EXCLUDED.analysis_text,
+                        confidence_score = EXCLUDED.confidence_score
+                ''', (question_id, result['second_best_choice'], result['analysis'], result.get('confidence', 0.8)))
+            else:
+                cursor.execute(f'''
+                    INSERT OR REPLACE INTO question_second_best (question_id, second_best_choice, analysis_text, confidence_score, created_at)
+                    VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+                ''', (question_id, result['second_best_choice'], result['analysis'], result.get('confidence', 0.8), now))
+            
+            conn.commit()
+        except Exception as e:
+            print(f"Warning: Could not cache second-best analysis: {e}")
+        
+        conn.close()
+        
+        return jsonify({
+            'question_id': question_id,
+            'second_best_choice': result['second_best_choice'],
+            'analysis': result['analysis'],
+            'confidence': result.get('confidence', 0.8),
+            'cached': False
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/api/log', methods=['POST'])
 def log_quiz_attempt():
     """Log a quiz attempt"""

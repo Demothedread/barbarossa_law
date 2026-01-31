@@ -94,7 +94,6 @@
             :key="choice.letter"
             class="choice-card"
             :class="getChoiceClass(choice.letter)"
-            :disabled="isLocked"
             @click="selectChoice(choice.letter)"
           >
             <span class="choice-letter">{{ choice.letter }}</span>
@@ -177,9 +176,9 @@
 </template>
 
 <script setup lang="ts">
+import { useTheme } from "~/composables/useTheme";
 import { useQuizStore } from "~/stores/quiz";
 import { useToastStore } from "~/stores/toast";
-import { useTheme } from "~/composables/useTheme";
 
 const router = useRouter();
 const quizStore = useQuizStore();
@@ -189,7 +188,6 @@ const { modeClass, terminology } = useTheme();
 const questionBody = ref<HTMLElement | null>(null);
 const activeHighlight = ref<string | null>(null);
 const elapsedTime = ref(0);
-const isLocked = ref(false);
 const isWarping = ref(false);
 const isEntering = ref(true);
 
@@ -237,14 +235,8 @@ const timerClass = computed(() => {
 // Methods
 const getChoiceClass = (letter: string) => {
   if (!selectedAnswer.value) return "";
-  if (!isLocked.value) {
-    return selectedAnswer.value === letter ? "choice-card--selected" : "";
-  }
-  // After locking (answer revealed)
-  const correct = currentQuestion.value?.answer;
-  if (letter === correct) return "choice-card--correct";
-  if (letter === selectedAnswer.value) return "choice-card--incorrect";
-  return "";
+  // During quiz, only show selected state - answers revealed after completion
+  return selectedAnswer.value === letter ? "choice-card--selected" : "";
 };
 
 const triggerWarp = (callback: () => void) => {
@@ -260,25 +252,13 @@ const triggerWarp = (callback: () => void) => {
 };
 
 const selectChoice = (letter: string) => {
-  if (isLocked.value) return;
+  // Allow changing answer - don't lock during quiz
   quizStore.selectAnswer(letter);
-
-  // Lock after selection to show result
-  isLocked.value = true;
-
-  const isCorrect = letter === currentQuestion.value?.answer;
-  if (isCorrect) {
-    toastStore.success("Correct! Maybe you're not hopeless after all.");
-  } else {
-    toastStore.warning(
-      `Wrong. The answer was ${currentQuestion.value?.answer}. NCBE sends their regards.`,
-    );
-  }
+  // No toast showing correct/incorrect - answers revealed after completion
 };
 
 const nextQuestion = () => {
   triggerWarp(() => {
-    isLocked.value = false;
     elapsedTime.value = 0;
     clearHighlights();
     quizStore.nextQuestion();
@@ -287,9 +267,6 @@ const nextQuestion = () => {
 
 const previousQuestion = () => {
   triggerWarp(() => {
-    isLocked.value = !!quizStore.selectedAnswers.get(
-      quizStore.currentIndex - 1,
-    );
     clearHighlights();
     quizStore.previousQuestion();
   });

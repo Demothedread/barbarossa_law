@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { useApi } from "~/composables/useApi";
 import { useDailyTrackerStore } from "./dailyTracker";
 
 export interface Question {
@@ -158,8 +159,40 @@ export const useQuizStore = defineStore("quiz", {
         dailyTracker.recordQuestionAnswered(subject, subtopic, correct);
       }
 
+      // Track question usage for smart selection (async, fire-and-forget)
+      this.trackQuestionUsage(result.answers);
+
       this.quizHistory.unshift(result);
       return result;
+    },
+
+    // Track which questions the user has seen for smart question selection
+    async trackQuestionUsage(
+      answers: { questionId: string; selected: string; correct: boolean }[],
+    ) {
+      try {
+        const { updateQuestionUsage } = useApi();
+        const anonymousId =
+          localStorage.getItem("barbarossa_anonymous_id") ||
+          crypto.randomUUID();
+
+        // Ensure we have an anonymous ID stored
+        if (!localStorage.getItem("barbarossa_anonymous_id")) {
+          localStorage.setItem("barbarossa_anonymous_id", anonymousId);
+        }
+
+        await updateQuestionUsage(
+          answers.map((a) => ({
+            question_id: a.questionId,
+            selected: a.selected,
+            correct: a.correct,
+          })),
+          undefined, // user_id (for logged-in users, future)
+          anonymousId,
+        );
+      } catch (error) {
+        console.warn("Failed to track question usage:", error);
+      }
     },
 
     updateSettings(settings: Partial<QuizState["settings"]>) {

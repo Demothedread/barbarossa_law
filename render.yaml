@@ -9,10 +9,17 @@ services:
     region: oregon
     plan: free
     branch: main
+    rootDir: .
     buildCommand: |
       pip install -r backend/requirements.txt
     startCommand: |
-      cd backend && python init_postgres.py && gunicorn server:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+      cd backend && \
+      echo "=== Initializing PostgreSQL schema ===" && \
+      python init_postgres.py && \
+      echo "=== Migrating SQLite data to PostgreSQL ===" && \
+      python migrate_sqlite_to_postgres.py && \
+      echo "=== Starting Gunicorn server ===" && \
+      gunicorn server:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.6

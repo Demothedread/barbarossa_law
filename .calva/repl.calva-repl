@@ -6,3 +6,127 @@ nil
 joyride꞉user꞉> 
 ; Jack-in done.
 joyride꞉user꞉> 
+; Using host:port localhost:65380 ...
+; Hooking up nREPL sessions on port 65380...
+; Connected session: joyride, port: 65380
+; Evaluating code from settings: 'calva.autoEvaluateCode.onConnect.clj'
+nil
+joyride꞉user꞉> 
+; Jack-in done.
+joyride꞉user꞉> 
+copy-manager/
+; Invalid symbol: copy-manager/
+joyride꞉user꞉> 
+(ns joyride.scripts.copy-manager
+  (:require
+   [joyride.vscode :as vscode]
+   [joyride.scripts.joyride :as joyride]
+   [clojure.string :as str]))
+; Could not find namespace: joyride.vscode.
+joyride꞉user꞉> 
+(ns copy-manager
+  "Website Copy Management Tool for Barbarossa Law
+   
+   Provides tools to:
+   - List all website copy/text in one place
+   - Search for specific text
+   - Update text, fonts, and sizes
+   - Export/import copy configurations
+   
+   Usage: Evaluate (main) or run from command palette"
+  (:require ["vscode" :as vscode]
+            [clojure.string :as str]
+            [joyride.core :as joyride]))
+nil
+joyride꞉user꞉> 
+;; Configuration
+(def copy-store-path "lunaire-spa/app/stores/copy.ts")
+#'copy-manager/copy-store-path
+joyride꞉user꞉> 
+(def style-presets
+  {"heading1" {:font "'Orbitron', sans-serif" :size "3rem" :weight "700"}
+   "heading2" {:font "'Orbitron', sans-serif" :size "1.5rem" :weight "600"}
+   "heading3" {:font "'Space Grotesk', sans-serif" :size "1.25rem" :weight "600"}
+   "tagline"  {:font "'Space Grotesk', sans-serif" :size "1.5rem" :weight "400"}
+   "body"     {:font "'Space Grotesk', sans-serif" :size "1rem" :weight "400"}
+   "button"   {:font "'Space Grotesk', sans-serif" :size "0.875rem" :weight "600"}
+   "label"    {:font "'Space Grotesk', sans-serif" :size "0.75rem" :weight "500"}})
+#'copy-manager/style-presets
+joyride꞉user꞉> 
+;; Helpers
+(defn show-info [msg]
+; Unable to resolve symbol: msg
+  joyride꞉user꞉> 
+  (defn show-info [msg]
+    (vscode/window.showInformationMessage msg))
+  #'copy-manager/show-info
+  joyride꞉user꞉> 
+  (defn extract-copy-entries [content]
+    "Extract all copy('text', 'style') entries from TypeScript"
+    (let [pattern #"copy\('([^']+)'(?:,\s*'([^']+)')?\)"
+          matches (re-seq pattern content)]
+      (map (fn [[full text style]]
+             {:text text
+              :style (or style "body")
+              :full full})
+           matches)))
+  #'copy-manager/extract-copy-entries
+  joyride꞉user꞉> 
+  ;; Main Functions
+  (defn list-all-copy []
+    "Show all website copy in a searchable list"
+    (-> (joyride/slurp copy-store-path)
+        (.then
+         (fn [content]
+           (let [entries (extract-copy-entries content)
+                 items (map-indexed
+                        (fn [i {:keys [text style]}]
+                          #js {:label (str (subs text 0 (min 55 (count text)))
+                                           (when (> (count text) 55) "..."))
+                               :description style
+                               :detail text})
+                        entries)]
+             (vscode/window.showQuickPick
+              (clj->js items)
+              #js {:placeHolder (str "📝 " (count entries) " copy entries - type to search")
+                   :matchOnDetail true}))))
+        (.then
+         (fn [selected]
+           (when selected
+             (edit-text (.-detail selected)))))))
+  #'copy-manager/list-all-copy
+  joyride꞉user꞉> 
+  (defn edit-text [old-text]
+    "Edit a piece of copy text d"
+    (-> (vscode/window.showInputBox
+         #js {:prompt "Edit this text"
+              :value old-text
+              :valueSelection #js [0 (count old-text)]})
+        (.then
+         (fn [new-text]
+           (when (and new-text (not= new-text old-text))
+             (-> (joyride/slurp copy-store-path)
+                 (.then
+                  (fn [content]
+                    (let [new-content (str/replace-first
+                                       content                                                                                                                                                                   ...................                              mmmm,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+                                       (str "copy('" old-text "'")
+                                       (str "copy('" new-text "'"))]
+                      (write-file copy-store-path n tagged-literalew-content)))       b                                             ))))))))
+; Unable to resolve symbol: joyride꞉user꞉> 
+; Connecting using "joyride" project type.
+; Connecting ...
+; Reading port file: file:///Users/jreback
+/Projects/barbarossa_law/.joyride/.nrepl-port ...
+; Using host:port localhost:65380 ...
+; Reconnecting: disconnecting existing client for sessions: joyride
+; Hooking up nREPL sessions on port 65380...
+; Connected session: joyride, port: 65380
+; Evaluating code from settings: 'calva.autoEvaluateCode.onConnect.clj'
+nil
+joyride꞉copy-manager꞉> show-info
+#object[Function]
+joyride꞉copy-manager꞉> 
+; Unable to resolve symbol: text
+joyride꞉copy-manager꞉> 
+cd

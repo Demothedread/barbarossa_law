@@ -38,6 +38,9 @@ export const useApi = () => {
     count: number,
     subject: string,
     type: string,
+    userId?: string,
+    anonymousId?: string,
+    smart: boolean = false,
   ): Promise<Question[]> => {
     const params = new URLSearchParams({
       n: count.toString(),
@@ -45,13 +48,65 @@ export const useApi = () => {
       type,
     });
 
-    const response = await fetch(`${baseUrl}/questions?${params}`);
+    // Add user tracking for smart selection
+    if (smart) {
+      if (userId) params.append("user_id", userId);
+      if (anonymousId) params.append("anonymous_id", anonymousId);
+    }
+
+    const endpoint = smart ? "/questions/smart" : "/questions";
+    const response = await fetch(`${baseUrl}${endpoint}?${params}`);
     if (!response.ok) {
       throw new Error("Failed to fetch questions");
     }
 
     const data = await response.json();
     return data.questions || data;
+  };
+
+  // Track question usage after quiz completion (for smart selection)
+  const updateQuestionUsage = async (
+    answers: { question_id: string; selected: string; correct: boolean }[],
+    userId?: string,
+    anonymousId?: string,
+  ): Promise<{ success: boolean; updated: number }> => {
+    const response = await fetch(`${baseUrl}/questions/usage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: userId,
+        anonymous_id: anonymousId,
+        answers,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to update question usage");
+    }
+
+    return response.json();
+  };
+
+  // Get second-best answer analysis for a question
+  const getSecondBestAnalysis = async (
+    questionId: string,
+  ): Promise<{
+    question_id: string;
+    second_best_choice: string;
+    analysis: string;
+    confidence: number;
+    cached: boolean;
+  } | null> => {
+    try {
+      const response = await fetch(
+        `${baseUrl}/questions/${questionId}/second-best`,
+      );
+      if (!response.ok) return null;
+
+      return response.json();
+    } catch {
+      return null;
+    }
   };
 
   const fetchSubjects = async (): Promise<string[]> => {
@@ -334,6 +389,8 @@ export const useApi = () => {
 
   return {
     fetchQuestions,
+    updateQuestionUsage,
+    getSecondBestAnalysis,
     fetchSubjects,
     fetchExplanation,
     submitQuizResult,

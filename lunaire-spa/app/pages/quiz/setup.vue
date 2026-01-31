@@ -56,11 +56,27 @@
                   v-for="count in questionCounts"
                   :key="count"
                   class="count-btn"
-                  :class="{ 'count-btn--active': selectedCount === count }"
-                  @click="selectedCount = count"
+                  :class="{
+                    'count-btn--active':
+                      selectedCount === count && !useCustomCount,
+                  }"
+                  @click="selectPresetCount(count)"
                 >
                   {{ count }}
                 </button>
+                <div class="custom-count-wrapper">
+                  <input
+                    v-model.number="customCount"
+                    type="number"
+                    min="1"
+                    max="100"
+                    placeholder="Custom"
+                    class="custom-count-input"
+                    :class="{ 'custom-count-input--active': useCustomCount }"
+                    @focus="useCustomCount = true"
+                    @input="onCustomCountInput"
+                  />
+                </div>
               </div>
             </div>
 
@@ -177,7 +193,24 @@ const questionTypes = [
   { value: "generated", name: "AI", desc: "Generated questions" },
 ];
 
-const questionCounts = [9, 18, 33];
+const questionCounts = [9, 18, 33, 50];
+
+// Custom count support
+const useCustomCount = ref(false);
+const customCount = ref<number | null>(null);
+
+const selectPresetCount = (count: number) => {
+  useCustomCount.value = false;
+  customCount.value = null;
+  selectedCount.value = count;
+};
+
+const onCustomCountInput = () => {
+  useCustomCount.value = true;
+  if (customCount.value && customCount.value >= 1 && customCount.value <= 100) {
+    selectedCount.value = customCount.value;
+  }
+};
 
 const modes = [
   {
@@ -219,10 +252,23 @@ const startQuiz = async () => {
   loading.value = true;
 
   try {
+    // Get anonymous ID for smart question selection
+    const anonymousId =
+      localStorage.getItem("barbarossa_anonymous_id") || crypto.randomUUID();
+
+    // Ensure we have an anonymous ID stored
+    if (!localStorage.getItem("barbarossa_anonymous_id")) {
+      localStorage.setItem("barbarossa_anonymous_id", anonymousId);
+    }
+
+    // Use smart question selection to avoid repeats
     const questions = await api.fetchQuestions(
       selectedCount.value,
       selectedSubject.value,
       selectedType.value,
+      undefined, // user_id (for logged-in users, future)
+      anonymousId,
+      true, // smart = true (use smart selection)
     );
 
     if (!questions || questions.length === 0) {
@@ -368,6 +414,61 @@ const startQuiz = async () => {
   color: var(--solar-gold);
   background: rgba(255, 215, 0, 0.1);
   border-color: var(--solar-gold);
+}
+
+.custom-count-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.custom-count-input {
+  width: 80px;
+  height: 64px;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--star-silver);
+  background: rgba(27, 38, 59, 0.4);
+  border: 1px solid rgba(65, 90, 119, 0.3);
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.custom-count-input::placeholder {
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--star-silver);
+  opacity: 0.7;
+}
+
+.custom-count-input:hover {
+  color: var(--lunar-white);
+  border-color: var(--star-silver);
+}
+
+.custom-count-input:focus {
+  outline: none;
+  color: var(--lunar-white);
+  border-color: var(--nebula-teal);
+}
+
+.custom-count-input--active {
+  color: var(--solar-gold);
+  background: rgba(255, 215, 0, 0.1);
+  border-color: var(--solar-gold);
+}
+
+/* Hide number input spinners */
+.custom-count-input::-webkit-outer-spin-button,
+.custom-count-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.custom-count-input[type="number"] {
+  -moz-appearance: textfield;
 }
 
 /* Mode Grid - 2x2 layout */
