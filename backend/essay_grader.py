@@ -3,6 +3,7 @@
 Essay grading service for Law Quizzer.
 Uses OpenAI to evaluate essay responses against bar-style grading criteria.
 Implements "Linked Collection" caching strategy for consistent grading.
+Optionally uses vector store for California Bar exam context.
 """
 
 import hashlib
@@ -19,14 +20,18 @@ import aiohttp
 MODEL_NAME = "gpt-5-nano" 
 DISPLAY_MODEL_NAME = "gpt-5"
 
+# Default vector store ID for California Bar grading context
+ESSAY_VECTOR_STORE_ID = os.environ.get('ESSAY_VECTOR_STORE_ID', 'vs_68884d7436748191984636f06588ef5b')
+
 
 class EssayGraderService:
     """Act like a Bar Exam Grader and Grade essay responses using OpenAI with a strict, precedent-based rubric."""
 
-    def __init__(self, db_path: Optional[Path] = None, api_key: Optional[str] = None, use_postgres: bool = False):
+    def __init__(self, db_path: Optional[Path] = None, api_key: Optional[str] = None, use_postgres: bool = False, vector_store_id: Optional[str] = None):
         self.api_key = api_key or os.environ.get("OPENAI_API_KEY")
         self.db_path = db_path or Path(__file__).parent.parent / 'law_quiz.db'
         self.use_postgres = use_postgres
+        self.vector_store_id = vector_store_id or ESSAY_VECTOR_STORE_ID
         
         if not self.api_key:
             raise ValueError("OpenAI API key not found. Set OPENAI_API_KEY environment variable.")
@@ -112,9 +117,17 @@ class EssayGraderService:
         self,
         question_text: str,
         answer_text: str,
-        max_points: Optional[int] = None
+        max_points: Optional[int] = None,
+        use_vector_store: bool = True
     ) -> Dict[str, Any]:
-        """Grade the essay with a precedent-based rubric and line-by-line scoring."""
+        """Grade the essay with a precedent-based rubric and line-by-line scoring.
+        
+        Args:
+            question_text: The essay prompt/question
+            answer_text: The student's essay response
+            max_points: Maximum points for the essay (default: 100)
+            use_vector_store: Whether to query vector store for legal context
+        """
         
         cache_key = self._get_cache_key(question_text)
         cached_data = self._check_cache(cache_key)
@@ -124,7 +137,15 @@ class EssayGraderService:
             existing_rubric = cached_data["rubric_points"]
             print(f"Found existing rubric for question hash {cache_key[:8]}... Using precedent.")
 
-        prompt = self._build_prompt(question_text, answer_text, max_points, existing_rubric)
+        # Optionally query vector store for relevant legal context
+        legal_context = None
+        if use_vector_store and self.vector_store_id:
+            try:
+                legal_context = await self._query_vector_store(question_text)
+            except Exception as e:
+                print(f"Vector store query failed: {e}")
+
+        prompt = self._build_prompt(question_text, answer_text, max_points, existing_rubric, legal_context)
         response = await self._call_openai_api(prompt)
         result = self._parse_response(response)
         
@@ -132,11 +153,127 @@ class EssayGraderService:
         result["grader_model"] = DISPLAY_MODEL_NAME
         result["system_message"] = "Graded by the Renegade Flotilla Central AI. Dispute at your own peril."
         result["is_precedent_based"] = existing_rubric is not None
+        result["used_vector_store"] = legal_context is not None
         
         # 2. Cache the result (updates the precedent if one didn't exist, or reinforces it)
         self._save_to_cache(cache_key, question_text, result)
         
         return result
+
+    async def _query_vector_store(self, question_text: str) -> Optional[str]:
+        """Query the vector store for relevant California Bar exam context."""
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self.api_key}",
+            "OpenAI-Beta": "assistants=v2"
+        }
+        
+        # Create a temporary assistant with vector store access
+        async with aiohttp.ClientSession() as session:
+            # Create assistant
+            assistant_payload = {
+                "name": "CA Bar Exam Context Retriever",
+                "instructions": """You are a California Bar Exam expert. Given an essay question, 
+                identify the key legal issues and return relevant rules, precedents, and grading criteria 
+                from the bar exam materials. Focus on:
+                1. Key legal rules that should be discussed
+                2. Important cases or precedents
+                3. Common issues examinees should spot
+                4. Standard grading criteria for this type of question
+                Return a concise summary (500-800 words max).""",
+                "model": "gpt-4o-mini",
+                "tools": [{"type": "file_search"}],
+                "tool_resources": {
+                    "file_search": {
+                        "vector_store_ids": [self.vector_store_id]
+                    }
+                }
+            }
+            
+            async with session.post(
+                "https://api.openai.com/v1/assistants",
+                headers=headers,
+                json=assistant_payload
+            ) as response:
+                if response.status != 200:
+                    return None
+                assistant = await response.json()
+            
+            assistant_id = assistant["id"]
+            
+            try:
+                # Create thread
+                async with session.post(
+                    "https://api.openai.com/v1/threads",
+                    headers=headers,
+                    json={}
+                ) as response:
+                    thread = await response.json()
+                
+                thread_id = thread["id"]
+                
+                # Add message
+                async with session.post(
+                    f"https://api.openai.com/v1/threads/{thread_id}/messages",
+                    headers=headers,
+                    json={
+                        "role": "user",
+                        "content": f"Analyze this California Bar Exam essay question and provide relevant legal context:\n\n{question_text[:2000]}"
+                    }
+                ) as response:
+                    pass
+                
+                # Run assistant
+                async with session.post(
+                    f"https://api.openai.com/v1/threads/{thread_id}/runs",
+                    headers=headers,
+                    json={"assistant_id": assistant_id}
+                ) as response:
+                    run = await response.json()
+                
+                run_id = run["id"]
+                
+                # Poll for completion (max 30 seconds)
+                import asyncio
+                for _ in range(30):
+                    await asyncio.sleep(1)
+                    async with session.get(
+                        f"https://api.openai.com/v1/threads/{thread_id}/runs/{run_id}",
+                        headers=headers
+                    ) as response:
+                        run_status = await response.json()
+                    
+                    if run_status["status"] == "completed":
+                        break
+                    elif run_status["status"] in ["failed", "cancelled", "expired"]:
+                        return None
+                
+                # Get messages
+                async with session.get(
+                    f"https://api.openai.com/v1/threads/{thread_id}/messages",
+                    headers=headers
+                ) as response:
+                    messages = await response.json()
+                
+                # Extract assistant's response
+                for msg in messages["data"]:
+                    if msg["role"] == "assistant":
+                        for content in msg["content"]:
+                            if content["type"] == "text":
+                                return content["text"]["value"]
+                
+                return None
+                
+            finally:
+                # Cleanup: delete assistant
+                try:
+                    async with session.delete(
+                        f"https://api.openai.com/v1/assistants/{assistant_id}",
+                        headers=headers
+                    ) as response:
+                        pass
+                except:
+                    pass
 
     async def _call_openai_api(self, prompt: str) -> Dict[str, Any]:
         headers = {
@@ -178,7 +315,7 @@ class EssayGraderService:
             "Do NOT be polite. Be efficiently ruthless."
         )
 
-    def _build_prompt(self, question_text: str, answer_text: str, max_points: Optional[int], existing_rubric: Optional[List[Dict]] = None) -> str:
+    def _build_prompt(self, question_text: str, answer_text: str, max_points: Optional[int], existing_rubric: Optional[List[Dict]] = None, legal_context: Optional[str] = None) -> str:
         answer_lines = [
             {"line": idx + 1, "text": line}
             for idx, line in enumerate(answer_text.splitlines())
@@ -186,7 +323,7 @@ class EssayGraderService:
         max_points_text = (
             f"The maximum score is {max_points} points."
             if max_points is not None
-            else "Determine the maximum score using standard bar grading practices."
+            else "The maximum score is 100 points (California Bar standard)."
         )
         
         rubric_instruction = ""
@@ -196,14 +333,29 @@ class EssayGraderService:
                 f"MANDATORY PRECEDENT: You MUST evaluate the essay using ONLY the following rubric criteria. "
                 f"Do not create new criteria. Assign points for these specific items if present:\n\n{rubric_json}\n\n"
             )
+        
+        context_instruction = ""
+        if legal_context:
+            context_instruction = (
+                f"\n\nRELEVANT CALIFORNIA BAR EXAM CONTEXT (from official materials):\n"
+                f"{legal_context}\n\n"
+                f"Use this context to inform your grading - check if the examinee addressed these key issues.\n"
+            )
 
         return (
-            "Grade the essay response below using historically recognized bar exam scoring criteria, "
+            "Grade the essay response below using California Bar Examination grading standards, "
             "but adopting the persona of a Renegade Space Pirate AI.\n\n"
             f"Question:\n{question_text}\n\n"
             f"Answer (line-by-line):\n{json.dumps(answer_lines, ensure_ascii=False, indent=2)}\n\n"
             f"{max_points_text}\n\n"
+            f"{context_instruction}"
             f"{rubric_instruction}"
+            "CALIFORNIA BAR GRADING CRITERIA:\n"
+            "- Issue Spotting: Did the examinee identify all major legal issues? (30-40%)\n"
+            "- Rule Statement: Are legal rules stated accurately and completely? (20-25%)\n"
+            "- Analysis/Application: Is there thorough IRAC analysis applying rules to facts? (25-35%)\n"
+            "- Conclusion: Are conclusions clearly stated and supported? (10-15%)\n"
+            "- Organization: Is the answer well-organized and easy to follow?\n\n"
             "Return ONLY valid JSON in this exact schema:\n"
             "{\n"
             '  "max_score": number,\n'

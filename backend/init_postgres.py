@@ -214,6 +214,50 @@ def create_schema(conn):
     )
     ''')
     
+    print("Creating essay_prompts table...")
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS essay_prompts (
+        id SERIAL PRIMARY KEY,
+        exam_id TEXT UNIQUE NOT NULL,
+        exam_year INTEGER NOT NULL,
+        exam_month TEXT NOT NULL,
+        question_number INTEGER NOT NULL,
+        subject TEXT,
+        prompt_text TEXT NOT NULL,
+        model_answer TEXT,
+        source_pdf TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    
+    print("Creating user_essays table...")
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS user_essays (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        anonymous_id TEXT,
+        prompt_id INTEGER REFERENCES essay_prompts(id) ON DELETE CASCADE,
+        essay_text TEXT NOT NULL,
+        word_count INTEGER,
+        submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    
+    print("Creating essay_grades table...")
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS essay_grades (
+        id SERIAL PRIMARY KEY,
+        essay_id INTEGER REFERENCES user_essays(id) ON DELETE CASCADE,
+        score INTEGER NOT NULL,
+        max_score INTEGER DEFAULT 100,
+        rubric_breakdown TEXT,
+        overall_feedback TEXT,
+        line_feedback TEXT,
+        grader_model TEXT,
+        graded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    
     print("Creating indexes...")
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_questions_subject ON questions(subject)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_questions_subtopic ON questions(subtopic)')
@@ -224,6 +268,11 @@ def create_schema(conn):
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_question_usage_user ON question_usage(user_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_question_usage_anonymous ON question_usage(anonymous_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_quiz_history_user ON quiz_history(user_id)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_essay_prompts_year ON essay_prompts(exam_year)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_essay_prompts_subject ON essay_prompts(subject)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_user_essays_user ON user_essays(user_id)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_user_essays_prompt ON user_essays(prompt_id)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_essay_grades_essay ON essay_grades(essay_id)')
     
     conn.commit()
     print("✓ Schema created successfully!")

@@ -5,47 +5,93 @@
       <div class="panel panel--wide">
         <div class="panel__header">
           <h2 class="panel__title">Essay Practice</h2>
+          <div class="header-filters">
+            <select v-model="selectedSubject" class="filter-select">
+              <option value="">All Subjects</option>
+              <option v-for="s in subjects" :key="s.subject" :value="s.subject">
+                {{ s.subject }} ({{ s.count }})
+              </option>
+            </select>
+            <select v-model="selectedYear" class="filter-select">
+              <option value="">All Years</option>
+              <option
+                v-for="y in years"
+                :key="`${y.year}-${y.month}`"
+                :value="y.year"
+              >
+                {{ y.year }}
+              </option>
+            </select>
+          </div>
         </div>
         <div class="panel__body">
           <div class="essays-intro">
-            <h1 class="essays-intro__title">Master the Written Portion</h1>
+            <h1 class="essays-intro__title">California Bar Essay Practice</h1>
             <p class="essays-intro__desc">
-              The MEE (Multistate Essay Examination) tests your ability to
-              communicate legal analysis in writing. Practice makes perfect — or
-              at least passable.
+              Practice with real California Bar Exam essay questions from
+              2012-2025. Write your response and receive AI-powered feedback
+              with rubric-based scoring.
             </p>
           </div>
 
-          <!-- Essay Categories -->
-          <div class="essay-categories">
+          <!-- Loading State -->
+          <div v-if="loading" class="loading-state">
+            <div class="loading-spinner"></div>
+            <p>Loading essay prompts...</p>
+          </div>
+
+          <!-- Essay Prompts Grid -->
+          <div v-else class="essay-prompts-grid">
             <div
-              v-for="category in essayCategories"
-              :key="category.subject"
-              class="essay-category"
-              @click="selectCategory(category.subject)"
+              v-for="prompt in filteredPrompts"
+              :key="prompt.id"
+              class="essay-prompt-card"
+              @click="navigateTo(`/essays/write/${prompt.id}`)"
             >
-              <div class="essay-category__icon">{{ category.icon }}</div>
-              <div class="essay-category__content">
-                <h3 class="essay-category__title">{{ category.subject }}</h3>
-                <p class="essay-category__count">
-                  {{ category.count }} essays available
-                </p>
-                <div class="essay-category__progress">
-                  <div
-                    class="essay-category__progress-bar"
-                    :style="{ width: `${category.progress}%` }"
-                  ></div>
-                </div>
-                <span class="essay-category__progress-text"
-                  >{{ category.progress }}% completed</span
-                >
+              <div class="card-header">
+                <span class="card-exam">
+                  {{ prompt.exam_month }} {{ prompt.exam_year }}
+                </span>
+                <span class="card-question">Q{{ prompt.question_number }}</span>
+              </div>
+              <div class="card-body">
+                <span v-if="prompt.subject" class="card-subject">
+                  {{ prompt.subject }}
+                </span>
+                <span v-else class="card-subject card-subject--unknown">
+                  Mixed/Unknown
+                </span>
+              </div>
+              <div class="card-footer">
+                <span class="card-meta">
+                  ~{{ Math.round((prompt.prompt_length || 500) / 5) }} words
+                </span>
+                <span v-if="prompt.has_model_answer" class="card-badge">
+                  📚 Model Answer
+                </span>
               </div>
             </div>
+          </div>
+
+          <!-- Empty State -->
+          <div
+            v-if="!loading && filteredPrompts.length === 0"
+            class="empty-state"
+          >
+            <div class="empty-icon">📝</div>
+            <h3>No Essays Found</h3>
+            <p v-if="selectedSubject || selectedYear">
+              Try adjusting your filters or run the extraction script.
+            </p>
+            <p v-else>
+              Run <code>python scripts/extract_cbx_essays.py</code> to populate
+              the database.
+            </p>
           </div>
         </div>
       </div>
 
-      <!-- Recent Essays Panel -->
+      <!-- Stats Panel -->
       <div class="panel panel--narrow">
         <div class="panel__header">
           <h2 class="panel__title">Your Essay Stats</h2>
@@ -53,93 +99,158 @@
         <div class="panel__body">
           <div class="essay-stats">
             <div class="stat-card stat-card--featured">
-              <div class="stat-card__value">{{ essayStats.completed }}</div>
-              <div class="stat-card__label">Essays Completed</div>
+              <div class="stat-card__value">{{ stats.user_essays || 0 }}</div>
+              <div class="stat-card__label">Essays Written</div>
             </div>
             <div class="stats-grid">
               <div class="stat-card">
-                <div class="stat-card__value">{{ essayStats.avgScore }}</div>
+                <div class="stat-card__value">
+                  {{ stats.avg_score ? Math.round(stats.avg_score) : "—" }}
+                </div>
                 <div class="stat-card__label">Avg Score</div>
               </div>
               <div class="stat-card">
-                <div class="stat-card__value">{{ essayStats.bestSubject }}</div>
-                <div class="stat-card__label">Best Subject</div>
+                <div class="stat-card__value">
+                  {{ stats.total_prompts || 0 }}
+                </div>
+                <div class="stat-card__label">Available</div>
               </div>
             </div>
           </div>
 
-          <div class="coming-soon">
-            <div class="coming-soon__icon">📝</div>
-            <h3 class="coming-soon__title">More Essays Coming Soon</h3>
-            <p class="coming-soon__desc">
-              Essay content is being prepared. Check back soon for practice
-              prompts and AI-powered grading.
-            </p>
+          <!-- Subject Breakdown -->
+          <div v-if="subjects.length > 0" class="subject-breakdown">
+            <h3 class="section-title">By Subject</h3>
+            <div class="subject-list">
+              <div
+                v-for="s in subjects"
+                :key="s.subject"
+                class="subject-item"
+                @click="selectedSubject = s.subject"
+              >
+                <span class="subject-name">{{ s.subject }}</span>
+                <span class="subject-count">{{ s.count }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Essays -->
+          <div v-if="recentEssays.length > 0" class="recent-essays">
+            <h3 class="section-title">Recent Essays</h3>
+            <div class="recent-list">
+              <div
+                v-for="essay in recentEssays"
+                :key="essay.id"
+                class="recent-item"
+              >
+                <div class="recent-info">
+                  <span class="recent-subject">{{
+                    essay.subject || "Essay"
+                  }}</span>
+                  <span class="recent-date">{{
+                    formatDate(essay.submitted_at)
+                  }}</span>
+                </div>
+                <div v-if="essay.score" class="recent-score">
+                  {{ essay.score }}/{{ essay.max_score || 100 }}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-
-    <!-- Essay Selection Modal -->
-    <Teleport to="body">
-      <div
-        v-if="selectedCategory"
-        class="modal-overlay"
-        @click.self="selectedCategory = null"
-      >
-        <div class="modal">
-          <div class="modal__header">
-            <h3>{{ selectedCategory }} Essays</h3>
-            <button class="modal__close" @click="selectedCategory = null">
-              ×
-            </button>
-          </div>
-          <div class="modal__body">
-            <p class="modal__placeholder">
-              Essay prompts for {{ selectedCategory }} will be available soon.
-              This section will include:
-            </p>
-            <ul class="feature-list">
-              <li>Timed essay practice</li>
-              <li>Model answers for comparison</li>
-              <li>AI-powered grading and feedback</li>
-              <li>Issue spotting hints</li>
-              <li>IRAC structure guidance</li>
-            </ul>
-            <button class="btn btn--primary btn--disabled" disabled>
-              Coming Soon
-            </button>
-          </div>
-        </div>
-      </div>
-    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-const selectedCategory = ref<string | null>(null);
+const api = useApi();
 
-const essayCategories = [
-  { subject: "Constitutional Law", icon: "⚖️", count: 0, progress: 0 },
-  { subject: "Contracts", icon: "📜", count: 0, progress: 0 },
-  { subject: "Criminal Law", icon: "🔒", count: 0, progress: 0 },
-  { subject: "Evidence", icon: "🔍", count: 0, progress: 0 },
-  { subject: "Real Property", icon: "🏠", count: 0, progress: 0 },
-  { subject: "Torts", icon: "⚠️", count: 0, progress: 0 },
-  { subject: "Civil Procedure", icon: "📋", count: 0, progress: 0 },
-  { subject: "Family Law", icon: "👨‍👩‍👧", count: 0, progress: 0 },
-  { subject: "Trusts & Estates", icon: "📦", count: 0, progress: 0 },
-];
+// State
+const loading = ref(true);
+const prompts = ref<
+  Array<{
+    id: number;
+    exam_id: string;
+    exam_year: number;
+    exam_month: string;
+    question_number: number;
+    subject: string | null;
+    prompt_length?: number;
+    has_model_answer?: number;
+  }>
+>([]);
 
-const essayStats = computed(() => ({
-  completed: 0,
-  avgScore: "—",
-  bestSubject: "—",
-}));
+const subjects = ref<Array<{ subject: string; count: number }>>([]);
+const years = ref<Array<{ year: number; month: string; count: number }>>([]);
+const stats = ref<{
+  total_prompts: number;
+  user_essays: number;
+  avg_score: number | null;
+}>({ total_prompts: 0, user_essays: 0, avg_score: null });
 
-const selectCategory = (subject: string) => {
-  selectedCategory.value = subject;
+const recentEssays = ref<
+  Array<{
+    id: number;
+    subject: string | null;
+    submitted_at: string;
+    score?: number;
+    max_score?: number;
+  }>
+>([]);
+
+// Filters
+const selectedSubject = ref("");
+const selectedYear = ref("");
+
+// Computed
+const filteredPrompts = computed(() => {
+  return prompts.value.filter((p) => {
+    if (selectedSubject.value && p.subject !== selectedSubject.value)
+      return false;
+    if (selectedYear.value && p.exam_year !== Number(selectedYear.value))
+      return false;
+    return true;
+  });
+});
+
+// Methods
+const formatDate = (dateStr: string): string => {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
+
+// Fetch data on mount
+onMounted(async () => {
+  try {
+    // Get anonymous ID
+    let anonymousId = localStorage.getItem("anonymous_id");
+    if (!anonymousId) {
+      anonymousId = `anon_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+      localStorage.setItem("anonymous_id", anonymousId);
+    }
+
+    // Fetch all data in parallel
+    const [promptsRes, subjectsRes, yearsRes, statsRes, essaysRes] =
+      await Promise.all([
+        api.fetchEssayPrompts({ limit: 200 }),
+        api.fetchEssaySubjects(),
+        api.fetchEssayYears(),
+        api.fetchEssayStats({ anonymous_id: anonymousId }),
+        api.fetchUserEssays({ anonymous_id: anonymousId, limit: 5 }),
+      ]);
+
+    prompts.value = promptsRes.prompts;
+    subjects.value = subjectsRes;
+    years.value = yearsRes;
+    stats.value = statsRes;
+    recentEssays.value = essaysRes.essays;
+  } catch (err) {
+    console.error("Failed to load essay data:", err);
+  } finally {
+    loading.value = false;
+  }
+});
 </script>
 
 <style scoped>
@@ -149,7 +260,7 @@ const selectCategory = (subject: string) => {
 }
 
 .essays-intro {
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .essays-intro__title {
@@ -168,17 +279,64 @@ const selectCategory = (subject: string) => {
   line-height: 1.6;
 }
 
-/* Essay Categories Grid */
-.essay-categories {
+/* Header Filters */
+.header-filters {
+  display: flex;
+  gap: 8px;
+}
+
+.filter-select {
+  padding: 6px 12px;
+  background: rgba(27, 38, 59, 0.5);
+  border: 1px solid rgba(65, 90, 119, 0.3);
+  border-radius: 6px;
+  color: var(--lunar-white);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: var(--nebula-teal);
+}
+
+/* Loading State */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  gap: 16px;
+  color: var(--star-silver);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(0, 255, 200, 0.1);
+  border-top-color: var(--nebula-teal);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Essay Prompts Grid */
+.essay-prompts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 16px;
 }
 
-.essay-category {
+.essay-prompt-card {
   display: flex;
-  gap: 16px;
-  padding: 20px;
+  flex-direction: column;
+  padding: 16px;
   background: rgba(27, 38, 59, 0.4);
   border: 1px solid rgba(65, 90, 119, 0.3);
   border-radius: 12px;
@@ -186,54 +344,89 @@ const selectCategory = (subject: string) => {
   transition: all var(--transition-fast);
 }
 
-.essay-category:hover {
+.essay-prompt-card:hover {
   background: rgba(0, 255, 200, 0.05);
   border-color: var(--nebula-teal);
   transform: translateY(-2px);
 }
 
-.essay-category__icon {
-  font-size: 2rem;
-  flex-shrink: 0;
-}
-
-.essay-category__content {
-  flex: 1;
-}
-
-.essay-category__title {
-  font-family: var(--font-display);
-  font-size: 1rem;
-  color: var(--lunar-white);
-  margin-bottom: 4px;
-}
-
-.essay-category__count {
-  font-size: 0.8rem;
-  color: var(--star-silver);
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 12px;
 }
 
-.essay-category__progress {
-  height: 4px;
+.card-exam {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  color: var(--nebula-teal);
+}
+
+.card-question {
+  padding: 2px 8px;
   background: rgba(65, 90, 119, 0.3);
-  border-radius: 2px;
-  overflow: hidden;
-  margin-bottom: 4px;
-}
-
-.essay-category__progress-bar {
-  height: 100%;
-  background: var(--nebula-teal);
-  transition: width 0.3s ease;
-}
-
-.essay-category__progress-text {
-  font-size: 0.7rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
   color: var(--star-silver);
 }
 
-/* Essay Stats */
+.card-body {
+  flex: 1;
+  margin-bottom: 12px;
+}
+
+.card-subject {
+  display: inline-block;
+  padding: 4px 10px;
+  background: rgba(0, 255, 200, 0.1);
+  border-radius: 4px;
+  font-size: 0.8rem;
+  color: var(--nebula-teal);
+}
+
+.card-subject--unknown {
+  background: rgba(65, 90, 119, 0.3);
+  color: var(--star-silver);
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  color: var(--star-silver);
+}
+
+.card-badge {
+  color: var(--solar-gold);
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--star-silver);
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+}
+
+.empty-state h3 {
+  color: var(--lunar-white);
+  margin-bottom: 8px;
+}
+
+.empty-state code {
+  padding: 2px 6px;
+  background: rgba(65, 90, 119, 0.3);
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+/* Stats Panel */
 .essay-stats {
   margin-bottom: 24px;
 }
@@ -245,109 +438,89 @@ const selectCategory = (subject: string) => {
   margin-top: 12px;
 }
 
-/* Coming Soon */
-.coming-soon {
-  text-align: center;
-  padding: 32px 20px;
-  background: rgba(27, 38, 59, 0.3);
-  border-radius: 12px;
-  border: 1px dashed rgba(65, 90, 119, 0.3);
-}
-
-.coming-soon__icon {
-  font-size: 3rem;
-  margin-bottom: 12px;
-}
-
-.coming-soon__title {
-  font-family: var(--font-display);
-  font-size: 1rem;
-  color: var(--nebula-teal);
-  margin-bottom: 8px;
-}
-
-.coming-soon__desc {
-  font-size: 0.85rem;
-  color: var(--star-silver);
-  line-height: 1.5;
-}
-
-/* Modal Styles */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--z-modal);
-  backdrop-filter: blur(4px);
-}
-
-.modal {
-  width: 100%;
-  max-width: 480px;
-  background: var(--space-navy);
-  border: 1px solid rgba(65, 90, 119, 0.5);
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.modal__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  background: rgba(27, 38, 59, 0.5);
-  border-bottom: 1px solid rgba(65, 90, 119, 0.3);
-}
-
-.modal__header h3 {
-  font-size: 1rem;
-  color: var(--nebula-teal);
-}
-
-.modal__close {
-  background: none;
-  border: none;
-  color: var(--star-silver);
-  font-size: 1.5rem;
-  cursor: pointer;
-}
-
-.modal__body {
-  padding: 20px;
-}
-
-.modal__placeholder {
-  color: var(--star-silver);
-  margin-bottom: 16px;
-  line-height: 1.5;
-}
-
-.feature-list {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 20px 0;
-}
-
-.feature-list li {
-  padding: 8px 0;
-  padding-left: 24px;
-  position: relative;
-  color: var(--lunar-white);
+/* Section Title */
+.section-title {
   font-size: 0.9rem;
-}
-
-.feature-list li::before {
-  content: "✓";
-  position: absolute;
-  left: 0;
   color: var(--nebula-teal);
+  margin-bottom: 12px;
+  font-family: var(--font-display);
 }
 
-.btn--disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+/* Subject Breakdown */
+.subject-breakdown {
+  margin-bottom: 24px;
+}
+
+.subject-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.subject-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(27, 38, 59, 0.3);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.subject-item:hover {
+  background: rgba(0, 255, 200, 0.1);
+}
+
+.subject-name {
+  color: var(--lunar-white);
+  font-size: 0.85rem;
+}
+
+.subject-count {
+  color: var(--star-silver);
+  font-size: 0.8rem;
+}
+
+/* Recent Essays */
+.recent-essays {
+  border-top: 1px solid rgba(65, 90, 119, 0.3);
+  padding-top: 16px;
+}
+
+.recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.recent-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(27, 38, 59, 0.3);
+  border-radius: 6px;
+}
+
+.recent-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.recent-subject {
+  color: var(--lunar-white);
+  font-size: 0.85rem;
+}
+
+.recent-date {
+  color: var(--star-silver);
+  font-size: 0.75rem;
+}
+
+.recent-score {
+  font-family: var(--font-mono);
+  color: var(--nebula-teal);
+  font-size: 0.9rem;
 }
 </style>

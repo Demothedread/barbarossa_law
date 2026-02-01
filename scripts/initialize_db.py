@@ -163,6 +163,56 @@ def create_schema(conn):
     )
     ''')
     
+    # Create essay prompts table (for CBX essay questions)
+    print("Creating essay_prompts table...")
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS essay_prompts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        exam_id TEXT UNIQUE NOT NULL,
+        exam_year INTEGER NOT NULL,
+        exam_month TEXT NOT NULL,
+        question_number INTEGER NOT NULL,
+        subject TEXT,
+        prompt_text TEXT NOT NULL,
+        model_answer TEXT,
+        source_pdf TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    
+    # Create user essays table
+    print("Creating user_essays table...")
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS user_essays (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        anonymous_id TEXT,
+        prompt_id INTEGER,
+        essay_text TEXT NOT NULL,
+        word_count INTEGER,
+        submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (prompt_id) REFERENCES essay_prompts(id)
+    )
+    ''')
+    
+    # Create essay grades table
+    print("Creating essay_grades table...")
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS essay_grades (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        essay_id INTEGER,
+        score INTEGER NOT NULL,
+        max_score INTEGER DEFAULT 100,
+        rubric_breakdown TEXT,
+        overall_feedback TEXT,
+        line_feedback TEXT,
+        grader_model TEXT,
+        graded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (essay_id) REFERENCES user_essays(id)
+    )
+    ''')
+    
     conn.commit()
 
 def import_questions(conn):

@@ -387,6 +387,200 @@ export const useApi = () => {
     return response.json();
   };
 
+  // ==================== Essay API Functions ====================
+
+  interface EssayPrompt {
+    id: number;
+    exam_id: string;
+    exam_year: number;
+    exam_month: string;
+    question_number: number;
+    subject: string | null;
+    prompt_text?: string;
+    model_answer?: string | null;
+    source_pdf: string;
+    created_at: string;
+    prompt_length?: number;
+    has_model_answer?: number;
+  }
+
+  interface EssayGrade {
+    grade_id: number;
+    score: number;
+    max_score: number;
+    overall_feedback: string;
+    rubric_points: Array<{
+      criterion: string;
+      points_possible: number;
+      points_awarded: number;
+      justification: string;
+    }>;
+    line_feedback?: Array<{
+      line: number;
+      text: string;
+      score_delta: number;
+      feedback: string;
+    }>;
+    grader_model: string;
+  }
+
+  interface UserEssay {
+    id: number;
+    prompt_id: number;
+    essay_text: string;
+    word_count: number;
+    submitted_at: string;
+    grades?: EssayGrade[];
+  }
+
+  const fetchEssayPrompts = async (params?: {
+    subject?: string;
+    year?: number;
+    month?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<{ prompts: EssayPrompt[]; total: number }> => {
+    const queryParams = new URLSearchParams();
+    if (params?.subject) queryParams.append("subject", params.subject);
+    if (params?.year) queryParams.append("year", params.year.toString());
+    if (params?.month) queryParams.append("month", params.month);
+    if (params?.limit) queryParams.append("limit", params.limit.toString());
+    if (params?.offset) queryParams.append("offset", params.offset.toString());
+
+    const response = await fetch(
+      `${baseUrl}/essay-prompts?${queryParams.toString()}`,
+    );
+    if (!response.ok) {
+      throw new Error("Failed to fetch essay prompts");
+    }
+
+    return response.json();
+  };
+
+  const fetchEssayPrompt = async (
+    promptId: number,
+  ): Promise<{ prompt: EssayPrompt }> => {
+    const response = await fetch(`${baseUrl}/essay-prompts/${promptId}`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch essay prompt");
+    }
+
+    return response.json();
+  };
+
+  const fetchEssaySubjects = async (): Promise<
+    { subject: string; count: number }[]
+  > => {
+    const response = await fetch(`${baseUrl}/essay-prompts/subjects`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch essay subjects");
+    }
+
+    const data = await response.json();
+    return data.subjects;
+  };
+
+  const fetchEssayYears = async (): Promise<
+    { year: number; month: string; count: number }[]
+  > => {
+    const response = await fetch(`${baseUrl}/essay-prompts/years`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch essay years");
+    }
+
+    const data = await response.json();
+    return data.years;
+  };
+
+  const submitEssay = async (params: {
+    prompt_id: number;
+    essay_text: string;
+    user_id?: string;
+    anonymous_id?: string;
+    auto_grade?: boolean;
+  }): Promise<{
+    success: boolean;
+    essay_id: number;
+    word_count: number;
+    grade?: EssayGrade;
+    grade_error?: string;
+  }> => {
+    const response = await fetch(`${baseUrl}/essays`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(params),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to submit essay");
+    }
+
+    return response.json();
+  };
+
+  const gradeEssay = async (
+    essayId: number,
+  ): Promise<EssayGrade & { model_answer?: string }> => {
+    const response = await fetch(`${baseUrl}/essays/${essayId}/grade`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to grade essay");
+    }
+
+    return response.json();
+  };
+
+  const fetchUserEssays = async (params: {
+    user_id?: string;
+    anonymous_id?: string;
+    limit?: number;
+  }): Promise<{ essays: UserEssay[] }> => {
+    const queryParams = new URLSearchParams();
+    if (params.user_id) queryParams.append("user_id", params.user_id);
+    if (params.anonymous_id)
+      queryParams.append("anonymous_id", params.anonymous_id);
+    if (params.limit) queryParams.append("limit", params.limit.toString());
+
+    const response = await fetch(
+      `${baseUrl}/user-essays?${queryParams.toString()}`,
+    );
+    if (!response.ok) {
+      throw new Error("Failed to fetch user essays");
+    }
+
+    return response.json();
+  };
+
+  const fetchEssayStats = async (params?: {
+    user_id?: string;
+    anonymous_id?: string;
+  }): Promise<{
+    total_prompts: number;
+    total_subjects?: number;
+    user_essays: number;
+    graded_count?: number;
+    avg_score: number | null;
+    best_score?: number;
+    subjects?: { subject: string; count: number; avg_score: number | null }[];
+  }> => {
+    const queryParams = new URLSearchParams();
+    if (params?.user_id) queryParams.append("user_id", params.user_id);
+    if (params?.anonymous_id)
+      queryParams.append("anonymous_id", params.anonymous_id);
+
+    const response = await fetch(
+      `${baseUrl}/essay-stats?${queryParams.toString()}`,
+    );
+    if (!response.ok) {
+      throw new Error("Failed to fetch essay stats");
+    }
+
+    return response.json();
+  };
+
   return {
     fetchQuestions,
     updateQuestionUsage,
@@ -410,5 +604,14 @@ export const useApi = () => {
     storeExplanations,
     // Analytics
     getAdvancedAnalytics,
+    // Essays
+    fetchEssayPrompts,
+    fetchEssayPrompt,
+    fetchEssaySubjects,
+    fetchEssayYears,
+    submitEssay,
+    gradeEssay,
+    fetchUserEssays,
+    fetchEssayStats,
   };
 };

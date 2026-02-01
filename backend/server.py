@@ -38,13 +38,25 @@ CORS_ORIGINS = [
     'http://localhost:5001',
     'http://127.0.0.1:3000',
     'https://barbarossa-law.vercel.app',
-    'https://*.vercel.app',  # Allow all Vercel preview deployments
+    'https://barbarossa-prep.vercel.app',
 ]
 # Add any custom domain from environment
 if os.environ.get('FRONTEND_URL'):
     CORS_ORIGINS.append(os.environ.get('FRONTEND_URL'))
 
-CORS(app, origins=CORS_ORIGINS, supports_credentials=True)
+# Use regex for Vercel preview deployments (Flask-CORS doesn't support simple wildcards)
+import re
+CORS_ORIGINS_REGEX = re.compile(r'^https://[a-z0-9-]+\.vercel\.app$')
+
+def cors_origin_callback(origin):
+    """Check if origin is allowed for CORS."""
+    if origin in CORS_ORIGINS:
+        return True
+    if CORS_ORIGINS_REGEX and CORS_ORIGINS_REGEX.match(origin):
+        return True
+    return False
+
+CORS(app, origins=cors_origin_callback, supports_credentials=True)
 
 # Database configuration - use PostgreSQL in production, SQLite locally
 DATABASE_URL = os.environ.get('DATABASE_URL')
@@ -127,6 +139,25 @@ def convert_query(query):
         return query.replace('?', '%s')
     return query
 
+def get_row_value(row, key_or_index):
+    """Get value from row, handling both dict (PostgreSQL) and tuple/Row (SQLite)."""
+    if isinstance(row, dict):
+        # For dict, try the key directly or common aliases
+        if isinstance(key_or_index, int):
+            # Integer index - get by position from dict values
+            return list(row.values())[key_or_index]
+        return row.get(key_or_index)
+    else:
+        return row[key_or_index] if isinstance(key_or_index, int) else row[key_or_index]
+
+def get_scalar(row):
+    """Get the first value from a row (for single-column results like COUNT(*))."""
+    if row is None:
+        return None
+    if isinstance(row, dict):
+        return list(row.values())[0]
+    return row[0]
+
 def ensure_quiz_attempt_logs_table(cursor):
     """Ensure quiz attempt logs table exists. Schema migrations are handled by initialize_db.py."""
     cursor.execute("""
@@ -203,7 +234,12 @@ def get_subjects():
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute('SELECT DISTINCT subject FROM questions WHERE subject IS NOT NULL ORDER BY subject')
-        subjects = [row[0] for row in cursor.fetchall()]
+        rows = cursor.fetchall()
+        # Handle both RealDictCursor (PostgreSQL) and Row (SQLite)
+        if rows and isinstance(rows[0], dict):
+            subjects = [row['subject'] for row in rows]
+        else:
+            subjects = [row[0] for row in rows]
         conn.close()
         return jsonify({'subjects': subjects})
     except Exception as e:
@@ -355,7 +391,7 @@ def get_smart_questions():
                     cursor.execute(convert_query(
                         "SELECT COUNT(*) FROM question_usage WHERE anonymous_id = ?"
                     ), (anonymous_id,))
-                user_has_history = cursor.fetchone()[0] > 0
+                user_has_history = get_scalar(cursor.fetchone()) > 0
         except Exception:
             pass
         
@@ -1295,7 +1331,11 @@ def get_subtopics():
         else:
             cursor.execute("SELECT DISTINCT subtopic FROM questions WHERE subtopic IS NOT NULL")
         
-        subtopics = [row[0] for row in cursor.fetchall()]
+        rows = cursor.fetchall()
+        if rows and isinstance(rows[0], dict):
+            subtopics = [row['subtopic'] for row in rows]
+        else:
+            subtopics = [row[0] for row in rows]
         conn.close()
         
         return jsonify(subtopics)
@@ -1780,13 +1820,17 @@ def check_existing_explanations():
         
         # Check which questions have explanations
         placeholders = ','.join('?' * len(question_ids))
-        cursor.execute(f'''
+        cursor.execute(convert_query(f'''
         SELECT question_id FROM question_explanations 
-        WHERE question_id IN ({placeholders})
+        WHERE question_id IN ({','.join('?' * len(question_ids))})
         AND choice_a_explanation IS NOT NULL
-        ''', question_ids)
+        '''), question_ids)
         
-        existing_ids = [row[0] for row in cursor.fetchall()]
+        rows = cursor.fetchall()
+        if rows and isinstance(rows[0], dict):
+            existing_ids = [row['question_id'] for row in rows]
+        else:
+            existing_ids = [row[0] for row in rows]
         
         conn.close()
         
@@ -2255,6 +2299,559 @@ def register():
         return jsonify({'error': str(e)}), 400
     except Exception as e:
         return jsonify({'error': 'Registration failed'}), 500
+
+# ==================== Essay Endpoints ====================
+
+# Essay vector store ID for California Bar grading
+ESSAY_VECTOR_STORE_ID = os.environ.get('ESSAY_VECTOR_STORE_ID', 'vs_68884d7436748191984636f06588ef5b')
+
+@app.route('/api/essay-prompts', methods=['GET'])
+def get_essay_prompts():
+    """Get essay prompts with optional filters."""
+    try:
+        subject = request.args.get('subject', '')
+        year = request.args.get('year', '')
+        month = request.args.get('month', '')
+        limit = int(request.args.get('limit', 50))
+        offset = int(request.args.get('offset', 0))
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        placeholder = '%s' if USE_POSTGRES else '?'
+        
+        where_conditions = []
+        params = []
+        
+        if subject:
+            where_conditions.append(f'subject = {placeholder}')
+            params.append(subject)
+        
+        if year:
+            where_conditions.append(f'exam_year = {placeholder}')
+            params.append(int(year))
+        
+        if month:
+            where_conditions.append(f'exam_month = {placeholder}')
+            params.append(month)
+        
+        where_clause = f'WHERE {" AND ".join(where_conditions)}' if where_conditions else ''
+        
+        # Get total count
+        cursor.execute(f'SELECT COUNT(*) FROM essay_prompts {where_clause}', params)
+        total = get_scalar(cursor.fetchone())
+        
+        # Get prompts (without full text for list view)
+        query = f'''
+            SELECT id, exam_id, exam_year, exam_month, question_number, subject, 
+                   source_pdf, created_at,
+                   LENGTH(prompt_text) as prompt_length,
+                   CASE WHEN model_answer IS NOT NULL THEN 1 ELSE 0 END as has_model_answer
+            FROM essay_prompts 
+            {where_clause}
+            ORDER BY exam_year DESC, exam_month, question_number
+            LIMIT {placeholder} OFFSET {placeholder}
+        '''
+        cursor.execute(query, params + [limit, offset])
+        prompts = cursor.fetchall()
+        conn.close()
+        
+        return jsonify({
+            'prompts': [dict(row) for row in prompts],
+            'total': total,
+            'limit': limit,
+            'offset': offset
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/essay-prompts/<int:prompt_id>', methods=['GET'])
+def get_essay_prompt(prompt_id):
+    """Get a single essay prompt with full text."""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        placeholder = '%s' if USE_POSTGRES else '?'
+        
+        cursor.execute(f'''
+            SELECT * FROM essay_prompts WHERE id = {placeholder}
+        ''', (prompt_id,))
+        
+        prompt = cursor.fetchone()
+        conn.close()
+        
+        if not prompt:
+            return jsonify({'error': 'Essay prompt not found'}), 404
+        
+        return jsonify({'prompt': dict(prompt)})
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/essay-prompts/subjects', methods=['GET'])
+def get_essay_subjects():
+    """Get all available essay subjects with counts."""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT subject, COUNT(*) as count 
+            FROM essay_prompts 
+            WHERE subject IS NOT NULL 
+            GROUP BY subject 
+            ORDER BY count DESC
+        ''')
+        
+        rows = cursor.fetchall()
+        if rows and isinstance(rows[0], dict):
+            subjects = [{'subject': row['subject'], 'count': row['count']} for row in rows]
+        else:
+            subjects = [{'subject': row[0], 'count': row[1]} for row in rows]
+        conn.close()
+        
+        return jsonify({'subjects': subjects})
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/essay-prompts/years', methods=['GET'])
+def get_essay_years():
+    """Get all available exam years with counts."""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT exam_year, exam_month, COUNT(*) as count 
+            FROM essay_prompts 
+            GROUP BY exam_year, exam_month 
+            ORDER BY exam_year DESC, exam_month
+        ''')
+        
+        rows = cursor.fetchall()
+        if rows and isinstance(rows[0], dict):
+            years = [{'year': row['exam_year'], 'month': row['exam_month'], 'count': row['count']} for row in rows]
+        else:
+            years = [{'year': row[0], 'month': row[1], 'count': row[2]} for row in rows]
+        conn.close()
+        
+        return jsonify({'years': years})
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/essays', methods=['POST'])
+def submit_essay():
+    """Submit a user essay for storage (and optional grading)."""
+    try:
+        data = request.get_json()
+        prompt_id = data.get('prompt_id')
+        essay_text = data.get('essay_text', '').strip()
+        user_id = data.get('user_id')
+        anonymous_id = data.get('anonymous_id')
+        auto_grade = data.get('auto_grade', False)
+        
+        if not prompt_id or not essay_text:
+            return jsonify({'error': 'prompt_id and essay_text are required'}), 400
+        
+        word_count = len(essay_text.split())
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        placeholder = '%s' if USE_POSTGRES else '?'
+        
+        # Insert essay
+        if USE_POSTGRES:
+            cursor.execute(f'''
+                INSERT INTO user_essays (user_id, anonymous_id, prompt_id, essay_text, word_count)
+                VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+                RETURNING id
+            ''', (user_id, anonymous_id, prompt_id, essay_text, word_count))
+            essay_id = get_scalar(cursor.fetchone())
+        else:
+            cursor.execute(f'''
+                INSERT INTO user_essays (user_id, anonymous_id, prompt_id, essay_text, word_count)
+                VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+            ''', (user_id, anonymous_id, prompt_id, essay_text, word_count))
+            essay_id = cursor.lastrowid
+        
+        conn.commit()
+        conn.close()
+        
+        response = {
+            'success': True,
+            'essay_id': essay_id,
+            'word_count': word_count
+        }
+        
+        # Auto-grade if requested
+        if auto_grade and essay_grader_service:
+            try:
+                # Get the prompt text for grading
+                conn = get_db_connection()
+                cursor = conn.cursor()
+                cursor.execute(f'SELECT prompt_text FROM essay_prompts WHERE id = {placeholder}', (prompt_id,))
+                prompt_row = cursor.fetchone()
+                conn.close()
+                
+                if prompt_row:
+                    # Run async grading
+                    import asyncio
+                    prompt_text = prompt_row['prompt_text'] if isinstance(prompt_row, dict) else prompt_row[0]
+                    grade_result = asyncio.run(
+                        essay_grader_service.grade_essay(prompt_text, essay_text, max_points=100)
+                    )
+                    
+                    # Save grade to database
+                    conn = get_db_connection()
+                    cursor = conn.cursor()
+                    
+                    if USE_POSTGRES:
+                        cursor.execute(f'''
+                            INSERT INTO essay_grades 
+                            (essay_id, score, max_score, rubric_breakdown, overall_feedback, line_feedback, grader_model)
+                            VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+                            RETURNING id
+                        ''', (
+                            essay_id,
+                            grade_result.get('total_score', 0),
+                            grade_result.get('max_score', 100),
+                            json.dumps(grade_result.get('rubric_points', [])),
+                            grade_result.get('overall_feedback', ''),
+                            json.dumps(grade_result.get('line_feedback', [])),
+                            grade_result.get('grader_model', 'gpt-4o')
+                        ))
+                        grade_id = get_scalar(cursor.fetchone())
+                    else:
+                        cursor.execute(f'''
+                            INSERT INTO essay_grades 
+                            (essay_id, score, max_score, rubric_breakdown, overall_feedback, line_feedback, grader_model)
+                            VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+                        ''', (
+                            essay_id,
+                            grade_result.get('total_score', 0),
+                            grade_result.get('max_score', 100),
+                            json.dumps(grade_result.get('rubric_points', [])),
+                            grade_result.get('overall_feedback', ''),
+                            json.dumps(grade_result.get('line_feedback', [])),
+                            grade_result.get('grader_model', 'gpt-4o')
+                        ))
+                        grade_id = cursor.lastrowid
+                    
+                    conn.commit()
+                    conn.close()
+                    
+                    response['grade'] = {
+                        'grade_id': grade_id,
+                        'score': grade_result.get('total_score', 0),
+                        'max_score': grade_result.get('max_score', 100),
+                        'overall_feedback': grade_result.get('overall_feedback', ''),
+                        'rubric_points': grade_result.get('rubric_points', []),
+                        'grader_model': grade_result.get('grader_model', 'gpt-4o')
+                    }
+            except Exception as grade_error:
+                response['grade_error'] = str(grade_error)
+        
+        return jsonify(response)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/essays/<int:essay_id>/grade', methods=['POST'])
+def grade_essay(essay_id):
+    """Grade an existing essay using AI."""
+    if not essay_grader_service:
+        return jsonify({'error': 'Essay grading service not available'}), 503
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        placeholder = '%s' if USE_POSTGRES else '?'
+        
+        # Get essay and prompt
+        cursor.execute(f'''
+            SELECT ue.essay_text, ep.prompt_text, ep.model_answer
+            FROM user_essays ue
+            JOIN essay_prompts ep ON ue.prompt_id = ep.id
+            WHERE ue.id = {placeholder}
+        ''', (essay_id,))
+        
+        row = cursor.fetchone()
+        if not row:
+            conn.close()
+            return jsonify({'error': 'Essay not found'}), 404
+        
+        if isinstance(row, dict):
+            essay_text = row['essay_text']
+            prompt_text = row['prompt_text']
+            model_answer = row['model_answer']
+        else:
+            essay_text = row[0]
+            prompt_text = row[1]
+            model_answer = row[2]
+        conn.close()
+        
+        # Grade the essay
+        import asyncio
+        grade_result = asyncio.run(
+            essay_grader_service.grade_essay(prompt_text, essay_text, max_points=100)
+        )
+        
+        # Save grade to database
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        if USE_POSTGRES:
+            cursor.execute(f'''
+                INSERT INTO essay_grades 
+                (essay_id, score, max_score, rubric_breakdown, overall_feedback, line_feedback, grader_model)
+                VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+                RETURNING id
+            ''', (
+                essay_id,
+                grade_result.get('total_score', 0),
+                grade_result.get('max_score', 100),
+                json.dumps(grade_result.get('rubric_points', [])),
+                grade_result.get('overall_feedback', ''),
+                json.dumps(grade_result.get('line_feedback', [])),
+                grade_result.get('grader_model', 'gpt-4o')
+            ))
+            grade_id = get_scalar(cursor.fetchone())
+        else:
+            cursor.execute(f'''
+                INSERT INTO essay_grades 
+                (essay_id, score, max_score, rubric_breakdown, overall_feedback, line_feedback, grader_model)
+                VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+            ''', (
+                essay_id,
+                grade_result.get('total_score', 0),
+                grade_result.get('max_score', 100),
+                json.dumps(grade_result.get('rubric_points', [])),
+                grade_result.get('overall_feedback', ''),
+                json.dumps(grade_result.get('line_feedback', [])),
+                grade_result.get('grader_model', 'gpt-4o')
+            ))
+            grade_id = cursor.lastrowid
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'grade_id': grade_id,
+            'score': grade_result.get('total_score', 0),
+            'max_score': grade_result.get('max_score', 100),
+            'overall_feedback': grade_result.get('overall_feedback', ''),
+            'rubric_points': grade_result.get('rubric_points', []),
+            'line_feedback': grade_result.get('line_feedback', []),
+            'grader_model': grade_result.get('grader_model', 'gpt-4o'),
+            'model_answer': model_answer  # Include model answer for comparison
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/essays/<int:essay_id>', methods=['GET'])
+def get_essay(essay_id):
+    """Get a user's essay with grades."""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        placeholder = '%s' if USE_POSTGRES else '?'
+        
+        # Get essay details
+        cursor.execute(f'''
+            SELECT ue.*, ep.exam_id, ep.exam_year, ep.exam_month, ep.question_number, 
+                   ep.subject, ep.prompt_text, ep.model_answer
+            FROM user_essays ue
+            JOIN essay_prompts ep ON ue.prompt_id = ep.id
+            WHERE ue.id = {placeholder}
+        ''', (essay_id,))
+        
+        essay_row = cursor.fetchone()
+        if not essay_row:
+            conn.close()
+            return jsonify({'error': 'Essay not found'}), 404
+        
+        essay = dict(essay_row)
+        
+        # Get grades
+        cursor.execute(f'''
+            SELECT * FROM essay_grades WHERE essay_id = {placeholder} ORDER BY graded_at DESC
+        ''', (essay_id,))
+        
+        grades = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        
+        # Parse JSON fields in grades
+        for grade in grades:
+            if grade.get('rubric_breakdown'):
+                try:
+                    grade['rubric_breakdown'] = json.loads(grade['rubric_breakdown'])
+                except:
+                    pass
+            if grade.get('line_feedback'):
+                try:
+                    grade['line_feedback'] = json.loads(grade['line_feedback'])
+                except:
+                    pass
+        
+        essay['grades'] = grades
+        
+        return jsonify({'essay': essay})
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/user-essays', methods=['GET'])
+def get_user_essays():
+    """Get essays for a user."""
+    try:
+        user_id = request.args.get('user_id')
+        anonymous_id = request.args.get('anonymous_id')
+        limit = int(request.args.get('limit', 20))
+        
+        if not user_id and not anonymous_id:
+            return jsonify({'error': 'user_id or anonymous_id required'}), 400
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        placeholder = '%s' if USE_POSTGRES else '?'
+        
+        if user_id:
+            cursor.execute(f'''
+                SELECT ue.id, ue.prompt_id, ue.word_count, ue.submitted_at,
+                       ep.exam_id, ep.subject, ep.exam_year, ep.exam_month,
+                       eg.score, eg.max_score
+                FROM user_essays ue
+                JOIN essay_prompts ep ON ue.prompt_id = ep.id
+                LEFT JOIN essay_grades eg ON ue.id = eg.essay_id
+                WHERE ue.user_id = {placeholder}
+                ORDER BY ue.submitted_at DESC
+                LIMIT {placeholder}
+            ''', (user_id, limit))
+        else:
+            cursor.execute(f'''
+                SELECT ue.id, ue.prompt_id, ue.word_count, ue.submitted_at,
+                       ep.exam_id, ep.subject, ep.exam_year, ep.exam_month,
+                       eg.score, eg.max_score
+                FROM user_essays ue
+                JOIN essay_prompts ep ON ue.prompt_id = ep.id
+                LEFT JOIN essay_grades eg ON ue.id = eg.essay_id
+                WHERE ue.anonymous_id = {placeholder}
+                ORDER BY ue.submitted_at DESC
+                LIMIT {placeholder}
+            ''', (anonymous_id, limit))
+        
+        essays = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        
+        return jsonify({'essays': essays})
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/essay-stats', methods=['GET'])
+def get_essay_stats():
+    """Get essay statistics for a user."""
+    try:
+        user_id = request.args.get('user_id')
+        anonymous_id = request.args.get('anonymous_id')
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        placeholder = '%s' if USE_POSTGRES else '?'
+        
+        # Base filter
+        if user_id:
+            user_filter = f'ue.user_id = {placeholder}'
+            user_param = user_id
+        elif anonymous_id:
+            user_filter = f'ue.anonymous_id = {placeholder}'
+            user_param = anonymous_id
+        else:
+            # Return global stats
+            cursor.execute('SELECT COUNT(*) FROM essay_prompts')
+            total_prompts = get_scalar(cursor.fetchone())
+            
+            cursor.execute('SELECT COUNT(DISTINCT subject) FROM essay_prompts WHERE subject IS NOT NULL')
+            total_subjects = get_scalar(cursor.fetchone())
+            
+            conn.close()
+            return jsonify({
+                'total_prompts': total_prompts,
+                'total_subjects': total_subjects,
+                'user_essays': 0,
+                'avg_score': None
+            })
+        
+        # User-specific stats
+        cursor.execute(f'''
+            SELECT COUNT(*) FROM user_essays ue WHERE {user_filter}
+        ''', (user_param,))
+        user_essays = get_scalar(cursor.fetchone())
+        
+        cursor.execute(f'''
+            SELECT AVG(eg.score), MAX(eg.score), COUNT(eg.id)
+            FROM user_essays ue
+            JOIN essay_grades eg ON ue.id = eg.essay_id
+            WHERE {user_filter}
+        ''', (user_param,))
+        
+        stats_row = cursor.fetchone()
+        if isinstance(stats_row, dict):
+            avg_score = stats_row.get('avg')
+            best_score = stats_row.get('max')
+            graded_count = stats_row.get('count')
+        else:
+            avg_score = stats_row[0]
+            best_score = stats_row[1]
+            graded_count = stats_row[2]
+        
+        # Subject breakdown
+        cursor.execute(f'''
+            SELECT ep.subject, COUNT(*) as count, AVG(eg.score) as avg_score
+            FROM user_essays ue
+            JOIN essay_prompts ep ON ue.prompt_id = ep.id
+            LEFT JOIN essay_grades eg ON ue.id = eg.essay_id
+            WHERE {user_filter} AND ep.subject IS NOT NULL
+            GROUP BY ep.subject
+            ORDER BY count DESC
+        ''', (user_param,))
+        
+        rows = cursor.fetchall()
+        if rows and isinstance(rows[0], dict):
+            subjects = [{'subject': row['subject'], 'count': row['count'], 'avg_score': row['avg_score']} for row in rows]
+        else:
+            subjects = [{'subject': row[0], 'count': row[1], 'avg_score': row[2]} for row in rows]
+        
+        # Total prompts available
+        cursor.execute('SELECT COUNT(*) FROM essay_prompts')
+        total_prompts = get_scalar(cursor.fetchone())
+        
+        conn.close()
+        
+        return jsonify({
+            'total_prompts': total_prompts,
+            'user_essays': user_essays,
+            'graded_count': graded_count,
+            'avg_score': round(avg_score, 1) if avg_score else None,
+            'best_score': best_score,
+            'subjects': subjects
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 
 @app.route('/api/auth/login', methods=['POST'])
 def login():
