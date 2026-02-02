@@ -5,47 +5,40 @@
       <!-- Welcome Panel -->
       <div class="panel panel--wide">
         <div class="panel__header">
-          <h2 class="panel__title">The Cheap Bar Review</h2>
+          <h2 class="panel__title">
+            {{ copyStore.content.global.tagline.text }}
+          </h2>
         </div>
         <div class="panel__body clubhouse-hero">
           <div class="clubhouse-hero__content">
-            <h1 class="clubhouse-hero__title">Barbarossa Bar Prep</h1>
-            <p class="clubhouse-hero__tagline">Because $4,000 is for suckers</p>
-            <p class="clubhouse-hero__desc">
-              Welcome to Barbarossa, where the only thing that matters is the
-              bar. you know its important to us because the name is in our
-              title. twice. thats the most times it can be in a word. go ahead
-              and try. bet you anything you wont find it unless you go with
-              Barbarian or Barbary Pirates.
+            <h1 class="clubhouse-hero__title">{{ heroCopy.title.text }}</h1>
+            <p class="clubhouse-hero__tagline">{{ heroCopy.tagline.text }}</p>
+            <p
+              v-for="(para, idx) in heroCopy.description"
+              :key="idx"
+              class="clubhouse-hero__desc"
+            >
+              {{ para.text }}
             </p>
             <p class="clubhouse-hero__desc">
-              <strong>Fun Fact!</strong> Barbary comes from Barbarian. BARBARIAN
-              CAME FROM BARBAROSSA — the redheaded ones.
+              <strong>{{ heroCopy.funFact.text }}</strong>
             </p>
             <p class="clubhouse-hero__desc">
-              barbarbar-barbarbarannnnnne? like the beatles song? well thats
-              more bars than barbarossa. a lot more. well we just ruined what
-              was a very good name. I can't change it now. I spent all my money
-              on the site name already. can i even buy barbara anne?
+              {{ heroCopy.barbaraAnne.text }}
               <button
                 class="btn btn--secondary btn--small beach-boys-btn"
                 @click="toggleBeachBoys"
               >
-                🏖️
-                {{
-                  beachBoysTheme.isActive.value
-                    ? "Back to Normal"
-                    : "Wouldn't It Be Nice?"
-                }}
+                {{ beachBoysButtonText }}
               </button>
             </p>
-            <p class="clubhouse-hero__tagline">winning</p>
+            <p class="clubhouse-hero__tagline">{{ heroCopy.winning.text }}</p>
             <div class="clubhouse-hero__actions">
               <NuxtLink to="/quiz/setup" class="btn btn--primary">
-                Start Practicing
+                {{ heroCopy.ctaPrimary.text }}
               </NuxtLink>
               <button class="btn btn--secondary" @click="showQuickStart = true">
-                Quick Start
+                {{ heroCopy.ctaSecondary.text }}
               </button>
             </div>
           </div>
@@ -133,17 +126,29 @@
 
 <script setup lang="ts">
 import { useBeachBoysTheme } from "~/composables/useBeachBoysTheme";
+import { useCopyStore } from "~/stores/copy";
 import { useQuizStore } from "~/stores/quiz";
 
 const router = useRouter();
 const quizStore = useQuizStore();
 const beachBoysTheme = useBeachBoysTheme();
+const copyStore = useCopyStore();
+
+// Get copy from store
+const heroCopy = computed(() => copyStore.content.home.hero);
 
 const showQuickStart = ref(false);
 
 const toggleBeachBoys = () => {
   beachBoysTheme.toggle();
 };
+
+// Beach boys button text from copy store
+const beachBoysButtonText = computed(() =>
+  beachBoysTheme.isActive.value
+    ? heroCopy.value.beachBoysButtonActive.text
+    : heroCopy.value.beachBoysButton.text,
+);
 
 const memberStats = computed(() => {
   const history = quizStore.quizHistory;

@@ -35,6 +35,8 @@ export interface SiteCopy {
       description: CopyEntry[];
       funFact: CopyEntry;
       barbaraAnne: CopyEntry;
+      beachBoysButton: CopyEntry;
+      beachBoysButtonActive: CopyEntry;
       winning: CopyEntry;
       ctaPrimary: CopyEntry;
       ctaSecondary: CopyEntry;
@@ -176,56 +178,35 @@ export const useCopyStore = defineStore("copy", {
           tagline: copy("Because $4,000 is for suckers", "tagline"),
           description: [
             copy(
-            'Welcome to Barbarossa — where the only thing that truly matters is the Bar.' \n
-             'You know this because it’s literally in our name.'  
-             'Twice.'
-             'Which, incoincidentally, is the maximum number of times “bar” can legally appear inside a single word without violating a well known law of linguistics and several state statutes.' 
-              'Go ahead and Try to think of a word with more.'
-              'You won’t. You cant.'
-              'Because they don’t exist.'
+              "Welcome to Barbarossa — where the only thing that truly matters is the Bar. You know this because it's literally in our name. Twice. Which, incoincidentally, is the maximum number of times \"bar\" can legally appear inside a single word without violating a well known law of linguistics and several state statutes. Go ahead and try to think of a word with more. You won't. You can't. Because they don't exist.",
             ),
             copy(
-              'Did you stumble into Barbarian? Or the Barbary Pirates? you're 'ha just borrowing from the same ancestral realm...'
-
-              "Fun little etymology fact to impress your brother's father-in-law:"
-              "The word Barber comes from Barbary Pirates \n
-               The Barbary in there comes from Barbarian. \n
-               Barbarian comes from Barbarossa. \n
-               Barbarossa means the ones with red-beards."
-
-              "Which is to say, historically speaking, you’re not just studying for the Bar."
-              "You’re about to enter an ancient tradition of arguing about rules they did not invent, with words they don't understand, towards outcomes they do not agree with, on behalf of those they can hardly stand while likely opposing the very few they actually can. But I digress."
-                \n
-               "Could we have gone with something like \n
-                bar-bar-bar bar-ba bar-anne?"
-                "Sure. The Beatles did. We could. \n
-                It's catchy. It's got lot more bars. \n
-                Objectively almost 2x the bars. \n
-                Wait, Peter, we should. Damn it. Its a better name."
+              "Did you stumble into Barbarian? Or the Barbary Pirates? You're just borrowing from the same ancestral realm...",
             ),
             copy(
-                                  "Hey Peter, It's me. Listen, when you come from your break let's take another gander at the name, starting to cool on barbarossa. the brain balls are yearning for more bars. Can you pick up some cheerios? love you. kiss kiss."  
+              'Fun little etymology fact to impress your brother\'s father-in-law: The word Barber comes from Barbary Pirates. The Barbary in there comes from Barbarian. Barbarian comes from Barbarossa. Barbarossa means "the ones with red-beards."',
             ),
             copy(
-             "But here’s the problem: \n
-             I already spent all my money on this name."
-              "The domain is bought. \n
-              So unless someone is willing to Venmo me for barbara-anne-dot-com, we’re sticking with Barbarossa, arr" 
-
-              "Which is just perfect. \n
-              I mean..."
+              "Which is to say, historically speaking, you're not just studying for the Bar. You're about to enter an ancient tradition of arguing about rules they did not invent, with words they don't understand, towards outcomes they do not agree with, on behalf of those they can hardly stand while likely opposing the very few they actually can. But I digress.",
             ),
             copy(
-              "Because when you strip it all down: \n
-              Barbarossa isn’t just a name. \n
-              It’s a lifestyle. \n
-              It’s a warning label. \n
-              It’s an architectural commitment to the concept of “one more round.”
-
-              "Welcome to Barbarossa. \n
-              The bar with the bar in the name. \n
-              Twice."
+              "Could we have gone with something like bar-bar-bar bar-ba bar-anne? Sure. The Beatles did. We could. It's catchy. It's got lot more bars. Objectively almost 2x the bars. Wait, Peter, we should. Damn it. It's a better name.",
             ),
+            copy(
+              "Hey Peter, It's me. Listen, when you come from your break let's take another gander at the name, starting to cool on barbarossa. The brain balls are yearning for more bars. Can you pick up some cheerios? Love you. Kiss kiss.",
+            ),
+            copy(
+              "But here's the problem: I already spent all my money on this name. The domain is bought. So unless someone is willing to Venmo me for barbara-anne-dot-com, we're sticking with Barbarossa, arr.",
+            ),
+          ],
+          funFact: copy(
+            "Fun Fact! Barbary comes from Barbarian. BARBARIAN CAME FROM BARBAROSSA — the redheaded ones.",
+          ),
+          barbaraAnne: copy(
+            "barbarbar-barbarbarannnnnne? like the beatles song? well thats more bars than barbarossa. a lot more. well we just ruined what was a very good name. I can't change it now. I spent all my money on the site name already. can i even buy barbara anne?",
+          ),
+          beachBoysButton: copy("🏖️ Wouldn't It Be Nice?", "button"),
+          beachBoysButtonActive: copy("🌌 Back to the Stars", "button"),
           winning: copy("winning", "tagline"),
           ctaPrimary: copy("Start Practicing", "button"),
           ctaSecondary: copy("Quick Start", "button"),

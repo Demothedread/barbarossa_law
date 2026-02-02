@@ -1,5 +1,27 @@
 <template>
+  <!-- Alternative Game Modes -->
+  <QuizShowMode
+    v-if="quizMode === 'quizshow'"
+    :questions="quizStore.currentQuestions"
+    @complete="handleModeComplete"
+    @restart="handleRestart"
+  />
+  <BaseballMode
+    v-else-if="quizMode === 'baseball'"
+    :questions="quizStore.currentQuestions"
+    @complete="handleModeComplete"
+    @restart="handleRestart"
+  />
+  <GolfMode
+    v-else-if="quizMode === 'golf'"
+    :questions="quizStore.currentQuestions"
+    @complete="handleModeComplete"
+    @restart="handleRestart"
+  />
+
+  <!-- Classic Mode (default) -->
   <div
+    v-else
     class="warp-zone"
     :class="[modeClass, { 'warp-zone--active': isWarping }]"
   >
@@ -192,6 +214,21 @@ const isWarping = ref(false);
 const isEntering = ref(true);
 
 let timerInterval: ReturnType<typeof setInterval> | null = null;
+
+// Get quiz mode from store
+const quizMode = computed(() => quizStore.settings.mode);
+
+// Handler for alternative mode completion
+const handleModeComplete = (result: any) => {
+  // Store the result and navigate to results page
+  const quizResult = quizStore.completeQuizWithResult(result);
+  router.push({ path: "/quiz/results", query: { id: quizResult.id } });
+};
+
+// Handler for restart
+const handleRestart = () => {
+  router.push("/quiz/setup");
+};
 
 // Computed
 const currentQuestion = computed(() => quizStore.currentQuestion);

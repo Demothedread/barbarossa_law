@@ -195,6 +195,63 @@ export const useQuizStore = defineStore("quiz", {
       }
     },
 
+    // Complete quiz with result from alternative game modes
+    completeQuizWithResult(modeResult: {
+      score: number;
+      total: number;
+      answers: {
+        questionId: string;
+        selected: string | null;
+        correct: boolean;
+      }[];
+      [key: string]: any; // Allow additional mode-specific data
+    }) {
+      const dailyTracker = useDailyTrackerStore();
+
+      const result: QuizResult = {
+        id: crypto.randomUUID(),
+        date: new Date().toISOString(),
+        subject: this.settings.subject,
+        score: modeResult.score,
+        total: modeResult.total,
+        timeSpent: this.startTime ? Date.now() - this.startTime : 0,
+        answers: modeResult.answers.map((a) => ({
+          questionId: a.questionId,
+          selected: a.selected || "",
+          correct: a.correct,
+        })),
+      };
+
+      // Record each question answered in the daily tracker
+      for (const answer of modeResult.answers) {
+        const question = this.currentQuestions.find(
+          (q) => q.id === answer.questionId,
+        );
+        if (question) {
+          const subject =
+            question.subject || this.settings.subject || "General";
+          const subtopic = question.subtopic || undefined;
+          dailyTracker.recordQuestionAnswered(
+            subject,
+            subtopic,
+            answer.correct,
+          );
+        }
+      }
+
+      // Track question usage for smart selection
+      this.trackQuestionUsage(
+        modeResult.answers.map((a) => ({
+          questionId: a.questionId,
+          selected: a.selected || "",
+          correct: a.correct,
+        })),
+      );
+
+      this.quizHistory.unshift(result);
+      return result;
+    },
+
     updateSettings(settings: Partial<QuizState["settings"]>) {
       this.settings = { ...this.settings, ...settings };
     },
