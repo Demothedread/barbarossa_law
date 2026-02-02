@@ -8,14 +8,26 @@
 
     <!-- View Toggle -->
     <div class="view-toggle">
-      <button
-        v-for="view in ['calendar', 'tasks']"
-        :key="view"
-        @click="currentView = view"
-        :class="['toggle-btn', { active: currentView === view }]"
-      >
-        {{ view === "calendar" ? "🗓️ Calendar" : "✓ Task List" }}
-      </button>
+      <div class="view-group">
+        <span class="view-label">View:</span>
+        <button
+          v-for="view in ['week', '3week', 'day']"
+          :key="view"
+          @click="calendarView = view"
+          :class="['toggle-btn', { active: calendarView === view }]"
+        >
+          {{ view === 'week' ? '📅 Week' : view === '3week' ? '🗓️ 3 Weeks' : '📋 Day' }}
+        </button>
+      </div>
+      <div class="view-group nav-group" v-if="calendarView !== '3week'">
+        <button @click="navigateView(-1)" class="nav-btn" :disabled="!canNavigateBack">
+          ← Prev
+        </button>
+        <span class="current-period">{{ currentPeriodLabel }}</span>
+        <button @click="navigateView(1)" class="nav-btn" :disabled="!canNavigateForward">
+          Next →
+        </button>
+      </div>
       <button
         v-if="isAuthenticated"
         @click="showEditMode = !showEditMode"
@@ -29,7 +41,54 @@
     <div class="main-layout">
       <!-- Calendar Grid -->
       <div class="calendar-section">
-        <div class="calendar-grid">
+        <!-- Daily View -->
+        <div v-if="calendarView === 'day'" class="daily-view">
+          <div v-if="selectedDayData" class="day-detail">
+            <div class="day-detail-header" :style="{ '--accent': getSubjectColor(selectedDayData.primary) }">
+              <div class="day-detail-date">
+                <span class="day-num">Day {{ selectedDayData.dayNumber }}</span>
+                <span class="full-date">{{ formatDateFull(selectedDayData.date) }}</span>
+                <span v-if="isToday(selectedDayData.date)" class="today-badge-lg">TODAY</span>
+              </div>
+              <div class="day-detail-subject">
+                <span class="bullet-lg" :style="{ color: getSubjectColor(selectedDayData.primary) }">
+                  {{ getBulletShape(selectedDayData.studyType) }}
+                </span>
+                <span class="subject-lg">{{ selectedDayData.primary }}</span>
+              </div>
+              <div class="day-detail-type">{{ formatStudyType(selectedDayData.studyType) }}</div>
+              <div v-if="selectedDayData.secondary" class="day-detail-secondary">
+                Secondary: {{ selectedDayData.secondary }}
+              </div>
+            </div>
+            <div class="day-tasks-full">
+              <h4>Tasks for Day {{ selectedDayData.dayNumber }}</h4>
+              <div class="task-list-full">
+                <div
+                  v-for="task in getTasksForDay(selectedDayData.dayNumber)"
+                  :key="task.id"
+                  @click="toggleTaskState(task)"
+                  :class="['task-block-full', task.state]"
+                  :style="{ '--task-color': getSubjectColor(task.subject) }"
+                >
+                  <div class="task-bullet-full">
+                    {{ task.state === "done" ? "✓" : getBulletShape(task.studyType) }}
+                  </div>
+                  <div class="task-content-full">
+                    <div class="task-title-full">{{ task.title }}</div>
+                    <div class="task-meta-full">
+                      <span class="task-subject-full">{{ task.subject }}</span>
+                      <span v-if="task.duration" class="task-duration-full">{{ task.duration }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Week / 3-Week View -->
+        <div v-else class="calendar-grid" :class="{ 'week-view': calendarView === 'week' }">
           <!-- Day headers -->
           <div
             v-for="dayName in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']"
@@ -40,7 +99,7 @@
           </div>
 
           <!-- Calendar cells -->
-          <template v-for="(day, idx) in calendarDays" :key="idx">
+          <template v-for="(day, idx) in visibleCalendarDays" :key="idx">
             <!-- Empty cells for padding before Feb 2 (Monday) -->
             <div v-if="day.empty" class="calendar-cell empty"></div>
 
@@ -86,8 +145,6 @@
           </template>
         </div>
       </div>
-
-      <!-- Task Sidebar -->
       <div class="task-sidebar">
         <div class="sidebar-panel">
           <h3 class="panel-title">
@@ -291,6 +348,8 @@ const {
 
 // State
 const currentView = ref("calendar");
+const calendarView = ref("week"); // 'week', '3week', 'day'
+const currentWeekStart = ref(0); // 0 = first week (days 1-7), 1 = second week, etc.
 const selectedDay = ref(1);
 const todayNumber = ref(1);
 const showEditMode = ref(false);
@@ -453,6 +512,87 @@ const calendarDays = computed(() => {
   return days;
 });
 
+// Visible calendar days based on current view
+const visibleCalendarDays = computed(() => {
+  if (calendarView.value === '3week') {
+    return calendarDays.value;
+  }
+  
+  if (calendarView.value === 'week') {
+    // Get days for current week (7 days at a time)
+    const startIdx = currentWeekStart.value * 7;
+    const endIdx = Math.min(startIdx + 7, calendarDays.value.length);
+    return calendarDays.value.slice(startIdx, endIdx);
+  }
+  
+  // Day view returns empty - handled separately in template
+  return [];
+});
+
+// Selected day data for daily view
+const selectedDayData = computed(() => {
+  return calendarDays.value.find(d => d.dayNumber === selectedDay.value && !d.isTestDay);
+});
+
+// Navigation helpers
+const canNavigateBack = computed(() => {
+  if (calendarView.value === 'week') {
+    return currentWeekStart.value > 0;
+  }
+  if (calendarView.value === 'day') {
+    return selectedDay.value > 1;
+  }
+  return false;
+});
+
+const canNavigateForward = computed(() => {
+  if (calendarView.value === 'week') {
+    return (currentWeekStart.value + 1) * 7 < calendarDays.value.length;
+  }
+  if (calendarView.value === 'day') {
+    return selectedDay.value < 21;
+  }
+  return false;
+});
+
+const currentPeriodLabel = computed(() => {
+  if (calendarView.value === 'week') {
+    const weekNum = currentWeekStart.value + 1;
+    const startDay = currentWeekStart.value * 7 + 1;
+    const endDay = Math.min(startDay + 6, 21);
+    const startDate = new Date(courseStartDate);
+    startDate.setDate(startDate.getDate() + startDay - 1);
+    const endDate = new Date(courseStartDate);
+    endDate.setDate(endDate.getDate() + endDay - 1);
+    return `Week ${weekNum}: ${formatDateShort(startDate)} - ${formatDateShort(endDate)}`;
+  }
+  if (calendarView.value === 'day') {
+    const date = new Date(courseStartDate);
+    date.setDate(date.getDate() + selectedDay.value - 1);
+    return `Day ${selectedDay.value}: ${formatDateFull(date)}`;
+  }
+  return '';
+});
+
+function navigateView(direction) {
+  if (calendarView.value === 'week') {
+    const newWeek = currentWeekStart.value + direction;
+    if (newWeek >= 0 && newWeek * 7 < calendarDays.value.length) {
+      currentWeekStart.value = newWeek;
+    }
+  } else if (calendarView.value === 'day') {
+    const newDay = selectedDay.value + direction;
+    if (newDay >= 1 && newDay <= 21) {
+      selectedDay.value = newDay;
+      todayNumber.value = newDay;
+    }
+  }
+}
+
+function getTasksForDay(dayNum) {
+  return tasks.value.filter(t => t.day === dayNum);
+}
+
 // Initialize tasks from schedule
 onMounted(() => {
   loadSchedule();
@@ -469,10 +609,13 @@ function updateTodayFromDate() {
   if (diffDays >= 0 && diffDays < 21) {
     todayNumber.value = diffDays + 1;
     selectedDay.value = diffDays + 1;
+    // Set current week to show today's week
+    currentWeekStart.value = Math.floor(diffDays / 7);
   } else {
     // Default to day 1 if outside course range
     todayNumber.value = 1;
     selectedDay.value = 1;
+    currentWeekStart.value = 0;
   }
 }
 
@@ -736,7 +879,59 @@ function deleteTask_(taskId) {
   display: flex;
   gap: 0.75rem;
   margin-bottom: 1.5rem;
-  justify-content: center;
+  justify-content: flex-start;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.view-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.view-label {
+  font-size: 0.8rem;
+  color: var(--star-silver, #778da9);
+  margin-right: 0.25rem;
+}
+
+.nav-group {
+  margin-left: 1rem;
+  padding-left: 1rem;
+  border-left: 1px solid rgba(65, 90, 119, 0.3);
+}
+
+.nav-btn {
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: rgba(27, 38, 59, 0.6);
+  border: 1px solid rgba(65, 90, 119, 0.4);
+  color: var(--star-silver, #778da9);
+}
+
+.nav-btn:hover:not(:disabled) {
+  background: rgba(65, 90, 119, 0.4);
+  border-color: var(--nebula-teal, #00ffc8);
+  color: var(--lunar-white, #e0e1dd);
+}
+
+.nav-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.current-period {
+  font-size: 0.85rem;
+  color: var(--lunar-white, #e0e1dd);
+  font-weight: 600;
+  padding: 0 0.5rem;
+  min-width: 180px;
+  text-align: center;
 }
 
 .toggle-btn {
@@ -799,6 +994,186 @@ function deleteTask_(taskId) {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 0.5rem;
+}
+
+.calendar-grid.week-view {
+  /* Larger cells for week view */
+}
+
+.calendar-grid.week-view .calendar-cell {
+  min-height: 100px;
+}
+
+/* Daily View */
+.daily-view {
+  min-height: 400px;
+}
+
+.day-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.day-detail-header {
+  background: rgba(13, 27, 42, 0.6);
+  border: 1px solid rgba(65, 90, 119, 0.3);
+  border-radius: 12px;
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.day-detail-header::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--accent, #00ffc8);
+}
+
+.day-detail-date {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.day-num {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--lunar-white, #e0e1dd);
+}
+
+.full-date {
+  font-size: 1.1rem;
+  color: var(--star-silver, #778da9);
+}
+
+.today-badge-lg {
+  font-size: 0.75rem;
+  background: var(--nebula-teal, #00ffc8);
+  color: var(--space-navy, #0d1b2a);
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  font-weight: 700;
+}
+
+.day-detail-subject {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.bullet-lg {
+  font-size: 1.5rem;
+}
+
+.subject-lg {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--lunar-white, #e0e1dd);
+}
+
+.day-detail-type {
+  font-size: 0.9rem;
+  color: var(--nebula-teal, #00ffc8);
+  margin-bottom: 0.5rem;
+}
+
+.day-detail-secondary {
+  font-size: 0.85rem;
+  color: var(--star-silver, #778da9);
+}
+
+.day-tasks-full h4 {
+  font-size: 1rem;
+  color: var(--lunar-white, #e0e1dd);
+  margin-bottom: 1rem;
+}
+
+.task-list-full {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.task-block-full {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: rgba(13, 27, 42, 0.6);
+  border: 1px solid rgba(65, 90, 119, 0.2);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.task-block-full::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--task-color, #00ffc8);
+}
+
+.task-block-full:hover {
+  background: rgba(65, 90, 119, 0.3);
+}
+
+.task-block-full.done {
+  opacity: 0.6;
+  background: rgba(0, 200, 100, 0.1);
+}
+
+.task-block-full.done .task-title-full {
+  text-decoration: line-through;
+}
+
+.task-block-full.inProgress {
+  background: rgba(255, 215, 0, 0.1);
+  border-color: rgba(255, 215, 0, 0.3);
+}
+
+.task-bullet-full {
+  font-size: 1.25rem;
+  color: var(--task-color, #00ffc8);
+  line-height: 1;
+}
+
+.task-block-full.done .task-bullet-full {
+  color: var(--nebula-teal, #00ffc8);
+}
+
+.task-content-full {
+  flex: 1;
+}
+
+.task-title-full {
+  font-size: 0.95rem;
+  color: var(--lunar-white, #e0e1dd);
+  margin-bottom: 0.25rem;
+}
+
+.task-meta-full {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.8rem;
+}
+
+.task-subject-full {
+  color: var(--task-color, #00ffc8);
+}
+
+.task-duration-full {
+  color: var(--nebula-blue, #415a77);
 }
 
 .day-header {

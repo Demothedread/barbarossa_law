@@ -67,6 +67,7 @@ const navLinks = [
   { path: "/", label: "Home" },
   { path: "/quiz/setup", label: "Practice" },
   { path: "/essays", label: "Essays" },
+  { path: "/calendar", label: "Calendar" },
   { path: "/study", label: "Study" },
   { path: "/statistics", label: "Statistics" },
   { path: "/about", label: "About" },
