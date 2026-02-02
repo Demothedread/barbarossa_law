@@ -41,6 +41,16 @@ if not SQLITE_PATH.exists():
     sys.exit(0)  # Exit successfully - this is OK for fresh deployments
 
 
+def get_pg_table_columns(pg_cursor, table_name):
+    """Get list of column names for a PostgreSQL table."""
+    pg_cursor.execute('''
+        SELECT column_name FROM information_schema.columns 
+        WHERE table_name = %s
+        ORDER BY ordinal_position
+    ''', (table_name,))
+    return [row[0] for row in pg_cursor.fetchall()]
+
+
 def migrate_questions(sqlite_conn, pg_conn):
     """Migrate questions table using upsert (idempotent)."""
     print("\nMigrating questions...")
@@ -210,7 +220,7 @@ def migrate_quiz_history(sqlite_conn, pg_conn):
 
 
 def migrate_users(sqlite_conn, pg_conn):
-    """Migrate users table."""
+    """Migrate users table with dynamic column detection."""
     print("\nMigrating users...")
     
     sqlite_cursor = sqlite_conn.cursor()
@@ -227,20 +237,36 @@ def migrate_users(sqlite_conn, pg_conn):
         print("  No users found in SQLite")
         return
     
-    columns = [desc[0] for desc in sqlite_cursor.description]
+    sqlite_columns = [desc[0] for desc in sqlite_cursor.description]
+    pg_columns = get_pg_table_columns(pg_cursor, 'users')
+    
+    # Core columns that must exist
+    core_columns = ['username', 'email', 'password_hash']
+    # Optional columns that may or may not exist in PostgreSQL
+    optional_columns = ['preferred_mode', 'preferences_json', 'last_login']
+    
+    # Build list of columns to insert (only those that exist in both SQLite and PostgreSQL)
+    insert_columns = core_columns.copy()
+    for col in optional_columns:
+        if col in pg_columns:
+            insert_columns.append(col)
+    
+    print(f"  Using columns: {insert_columns}")
     
     users = []
     for row in rows:
-        row_dict = dict(zip(columns, row))
-        users.append((
-            row_dict.get('username'),
-            row_dict.get('email'),
-            row_dict.get('password_hash'),
-            row_dict.get('preferred_mode', 'classic'),
-        ))
+        row_dict = dict(zip(sqlite_columns, row))
+        user_data = []
+        for col in insert_columns:
+            if col == 'preferred_mode':
+                user_data.append(row_dict.get(col, 'classic'))
+            else:
+                user_data.append(row_dict.get(col))
+        users.append(tuple(user_data))
     
-    insert_sql = '''
-    INSERT INTO users (username, email, password_hash, preferred_mode)
+    columns_str = ', '.join(insert_columns)
+    insert_sql = f'''
+    INSERT INTO users ({columns_str})
     VALUES %s
     ON CONFLICT (username) DO NOTHING
     '''
