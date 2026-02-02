@@ -16,15 +16,29 @@
           @click="calendarView = view"
           :class="['toggle-btn', { active: calendarView === view }]"
         >
-          {{ view === 'week' ? '📅 Week' : view === '3week' ? '🗓️ 3 Weeks' : '📋 Day' }}
+          {{
+            view === "week"
+              ? "📅 Week"
+              : view === "3week"
+                ? "🗓️ 3 Weeks"
+                : "📋 Day"
+          }}
         </button>
       </div>
       <div class="view-group nav-group" v-if="calendarView !== '3week'">
-        <button @click="navigateView(-1)" class="nav-btn" :disabled="!canNavigateBack">
+        <button
+          @click="navigateView(-1)"
+          class="nav-btn"
+          :disabled="!canNavigateBack"
+        >
           ← Prev
         </button>
         <span class="current-period">{{ currentPeriodLabel }}</span>
-        <button @click="navigateView(1)" class="nav-btn" :disabled="!canNavigateForward">
+        <button
+          @click="navigateView(1)"
+          class="nav-btn"
+          :disabled="!canNavigateForward"
+        >
           Next →
         </button>
       </div>
@@ -44,20 +58,37 @@
         <!-- Daily View -->
         <div v-if="calendarView === 'day'" class="daily-view">
           <div v-if="selectedDayData" class="day-detail">
-            <div class="day-detail-header" :style="{ '--accent': getSubjectColor(selectedDayData.primary) }">
+            <div
+              class="day-detail-header"
+              :style="{ '--accent': getSubjectColor(selectedDayData.primary) }"
+            >
               <div class="day-detail-date">
                 <span class="day-num">Day {{ selectedDayData.dayNumber }}</span>
-                <span class="full-date">{{ formatDateFull(selectedDayData.date) }}</span>
-                <span v-if="isToday(selectedDayData.date)" class="today-badge-lg">TODAY</span>
+                <span class="full-date">{{
+                  formatDateFull(selectedDayData.date)
+                }}</span>
+                <span
+                  v-if="isToday(selectedDayData.date)"
+                  class="today-badge-lg"
+                  >TODAY</span
+                >
               </div>
               <div class="day-detail-subject">
-                <span class="bullet-lg" :style="{ color: getSubjectColor(selectedDayData.primary) }">
+                <span
+                  class="bullet-lg"
+                  :style="{ color: getSubjectColor(selectedDayData.primary) }"
+                >
                   {{ getBulletShape(selectedDayData.studyType) }}
                 </span>
                 <span class="subject-lg">{{ selectedDayData.primary }}</span>
               </div>
-              <div class="day-detail-type">{{ formatStudyType(selectedDayData.studyType) }}</div>
-              <div v-if="selectedDayData.secondary" class="day-detail-secondary">
+              <div class="day-detail-type">
+                {{ formatStudyType(selectedDayData.studyType) }}
+              </div>
+              <div
+                v-if="selectedDayData.secondary"
+                class="day-detail-secondary"
+              >
                 Secondary: {{ selectedDayData.secondary }}
               </div>
             </div>
@@ -72,13 +103,19 @@
                   :style="{ '--task-color': getSubjectColor(task.subject) }"
                 >
                   <div class="task-bullet-full">
-                    {{ task.state === "done" ? "✓" : getBulletShape(task.studyType) }}
+                    {{
+                      task.state === "done"
+                        ? "✓"
+                        : getBulletShape(task.studyType)
+                    }}
                   </div>
                   <div class="task-content-full">
                     <div class="task-title-full">{{ task.title }}</div>
                     <div class="task-meta-full">
                       <span class="task-subject-full">{{ task.subject }}</span>
-                      <span v-if="task.duration" class="task-duration-full">{{ task.duration }}</span>
+                      <span v-if="task.duration" class="task-duration-full">{{
+                        task.duration
+                      }}</span>
                     </div>
                   </div>
                 </div>
@@ -88,7 +125,11 @@
         </div>
 
         <!-- Week / 3-Week View -->
-        <div v-else class="calendar-grid" :class="{ 'week-view': calendarView === 'week' }">
+        <div
+          v-else
+          class="calendar-grid"
+          :class="{ 'week-view': calendarView === 'week' }"
+        >
           <!-- Day headers -->
           <div
             v-for="dayName in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']"
@@ -163,24 +204,23 @@
             <button @click="addNewTask" class="add-btn">+</button>
           </div>
 
-          <!-- Today's Tasks (with proportional heights) -->
+          <!-- Combined Task List: Today's + Accumulated Unfinished -->
           <div class="task-section">
-            <h4 class="section-label">Today's Tasks</h4>
+            <h4 class="section-label">📋 Today's Agenda</h4>
             <div class="task-list">
+              <!-- Today's Tasks First -->
               <div
                 v-for="task in todayTasks"
                 :key="task.id"
-                @click="toggleTaskState(task)"
-                :class="['task-block', task.state]"
+                @click="cycleTaskState(task)"
+                :class="['task-block', 'today-task', task.state]"
                 :style="{
                   '--task-color': getSubjectColor(task.subject),
                   '--task-height': getTaskHeight(task.duration),
                 }"
               >
-                <div class="task-bullet">
-                  {{
-                    task.state === "done" ? "✓" : getBulletShape(task.studyType)
-                  }}
+                <div class="task-bullet" :class="task.studyType">
+                  {{ getBulletShape(task.studyType) }}
                 </div>
                 <div class="task-content">
                   <div class="task-title">{{ task.title }}</div>
@@ -206,34 +246,41 @@
                   </button>
                 </div>
               </div>
-            </div>
-          </div>
 
-          <!-- Overdue Tasks -->
-          <div v-if="overdueTasks.length > 0" class="task-section overdue">
-            <h4 class="section-label overdue-label">⚠ Unfinished Tasks</h4>
-            <div class="task-list">
+              <!-- Accumulated Unfinished Tasks (older days, faded style) -->
               <div
-                v-for="task in overdueTasks"
+                v-for="task in accumulatedUnfinishedTasks"
                 :key="task.id"
-                @click="toggleTaskState(task)"
-                :class="['task-block overdue-task', task.state]"
+                @click="cycleTaskState(task)"
+                :class="['task-block', 'past-task', task.state]"
                 :style="{
                   '--task-color': getSubjectColor(task.subject),
                   '--task-height': getTaskHeight(task.duration),
                 }"
               >
-                <div class="task-bullet">
-                  {{
-                    task.state === "done" ? "✓" : getBulletShape(task.studyType)
-                  }}
+                <div class="task-bullet" :class="task.studyType">
+                  {{ getBulletShape(task.studyType) }}
                 </div>
                 <div class="task-content">
                   <div class="task-title">{{ task.title }}</div>
                   <div class="task-meta">
-                    <span class="overdue-day">Day {{ task.day }}</span>
+                    <span class="past-day-label">Day {{ task.day }}</span>
                     <span class="task-subject">{{ task.subject }}</span>
                   </div>
+                </div>
+                <div
+                  v-if="showEditMode && isAuthenticated"
+                  class="task-actions"
+                >
+                  <button @click.stop="editTask(task)" class="action-btn edit">
+                    ✎
+                  </button>
+                  <button
+                    @click.stop="deleteTask_(task.id)"
+                    class="action-btn delete"
+                  >
+                    ×
+                  </button>
                 </div>
               </div>
             </div>
@@ -362,19 +409,60 @@ const editingTaskId = ref(null);
 // Course dates: Feb 2-23, 2026 (study) + Feb 24-25, 2026 (test)
 const courseStartDate = new Date(2026, 1, 2); // Feb 2, 2026
 
-// Subject definitions with glassmorphic-friendly colors
-const subjects = ref([
-  { name: "Evidence", color: "#00ffc8" }, // Nebula Teal
-  { name: "Civil Procedure", color: "#ffd700" }, // Solar Gold
-  { name: "Contracts", color: "#b266ff" }, // Cosmic Purple
-  { name: "Constitutional Law", color: "#ff66b2" }, // Aurora Pink
-  { name: "Torts", color: "#00d4ff" }, // Bright Cyan
-  { name: "Criminal Law & Procedure", color: "#ff6b35" }, // Plasma Orange
-  { name: "Real Property", color: "#66b2ff" }, // Sky Blue
-  { name: "Wills & Trusts", color: "#9966ff" }, // Violet
-  { name: "Community Property", color: "#ffb366" }, // Warm Gold
-  { name: "Professional Responsibility", color: "#66ffb2" }, // Mint Green
-]);
+// Theme detection - check for beach/low-contrast mode
+const isBeachTheme = ref(false);
+
+// Watch for theme changes
+onMounted(() => {
+  loadSchedule();
+  initializeScheduleTasks();
+  updateTodayFromDate();
+
+  // Check initial theme
+  isBeachTheme.value = document.body.classList.contains("low-contrast");
+
+  // Watch for theme changes
+  const observer = new MutationObserver(() => {
+    isBeachTheme.value = document.body.classList.contains("low-contrast");
+  });
+  observer.observe(document.body, {
+    attributes: true,
+    attributeFilter: ["class"],
+  });
+});
+
+// Subject definitions - Intergalactic theme (default)
+const intergalacticColors = {
+  Evidence: "#00ffc8", // Nebula Teal
+  "Civil Procedure": "#ffd700", // Solar Gold
+  Contracts: "#b266ff", // Cosmic Purple
+  "Constitutional Law": "#ff66b2", // Aurora Pink
+  Torts: "#00d4ff", // Bright Cyan
+  "Criminal Law & Procedure": "#ff6b35", // Plasma Orange
+  "Real Property": "#66b2ff", // Sky Blue
+  "Wills & Trusts": "#9966ff", // Violet
+  "Community Property": "#ffb366", // Warm Gold
+  "Professional Responsibility": "#66ffb2", // Mint Green
+};
+
+// Beach Boys theme colors (pale, warm, beachy)
+const beachColors = {
+  Evidence: "#7fdbda", // Seafoam
+  "Civil Procedure": "#f4e4ba", // Sand
+  Contracts: "#e8b4b8", // Coral Pink
+  "Constitutional Law": "#b8d4e3", // Sky Blue
+  Torts: "#f5c89a", // Pale Orange
+  "Criminal Law & Procedure": "#d4a574", // Driftwood
+  "Real Property": "#a8d8ea", // Ocean Blue
+  "Wills & Trusts": "#ffcab0", // Peach
+  "Community Property": "#fff1c9", // Butter Yellow
+  "Professional Responsibility": "#c9e4de", // Mint Seafoam
+};
+
+const subjects = computed(() => {
+  const colors = isBeachTheme.value ? beachColors : intergalacticColors;
+  return Object.entries(colors).map(([name, color]) => ({ name, color }));
+});
 
 // 21-Day Schedule with actual dates
 const scheduleData = ref([
@@ -514,49 +602,51 @@ const calendarDays = computed(() => {
 
 // Visible calendar days based on current view
 const visibleCalendarDays = computed(() => {
-  if (calendarView.value === '3week') {
+  if (calendarView.value === "3week") {
     return calendarDays.value;
   }
-  
-  if (calendarView.value === 'week') {
+
+  if (calendarView.value === "week") {
     // Get days for current week (7 days at a time)
     const startIdx = currentWeekStart.value * 7;
     const endIdx = Math.min(startIdx + 7, calendarDays.value.length);
     return calendarDays.value.slice(startIdx, endIdx);
   }
-  
+
   // Day view returns empty - handled separately in template
   return [];
 });
 
 // Selected day data for daily view
 const selectedDayData = computed(() => {
-  return calendarDays.value.find(d => d.dayNumber === selectedDay.value && !d.isTestDay);
+  return calendarDays.value.find(
+    (d) => d.dayNumber === selectedDay.value && !d.isTestDay,
+  );
 });
 
 // Navigation helpers
 const canNavigateBack = computed(() => {
-  if (calendarView.value === 'week') {
+  if (calendarView.value === "week") {
     return currentWeekStart.value > 0;
   }
-  if (calendarView.value === 'day') {
+  if (calendarView.value === "day") {
     return selectedDay.value > 1;
   }
   return false;
 });
 
 const canNavigateForward = computed(() => {
-  if (calendarView.value === 'week') {
+  if (calendarView.value === "week") {
     return (currentWeekStart.value + 1) * 7 < calendarDays.value.length;
   }
-  if (calendarView.value === 'day') {
+  if (calendarView.value === "day") {
     return selectedDay.value < 21;
   }
   return false;
 });
 
 const currentPeriodLabel = computed(() => {
-  if (calendarView.value === 'week') {
+  if (calendarView.value === "week") {
     const weekNum = currentWeekStart.value + 1;
     const startDay = currentWeekStart.value * 7 + 1;
     const endDay = Math.min(startDay + 6, 21);
@@ -566,21 +656,21 @@ const currentPeriodLabel = computed(() => {
     endDate.setDate(endDate.getDate() + endDay - 1);
     return `Week ${weekNum}: ${formatDateShort(startDate)} - ${formatDateShort(endDate)}`;
   }
-  if (calendarView.value === 'day') {
+  if (calendarView.value === "day") {
     const date = new Date(courseStartDate);
     date.setDate(date.getDate() + selectedDay.value - 1);
     return `Day ${selectedDay.value}: ${formatDateFull(date)}`;
   }
-  return '';
+  return "";
 });
 
 function navigateView(direction) {
-  if (calendarView.value === 'week') {
+  if (calendarView.value === "week") {
     const newWeek = currentWeekStart.value + direction;
     if (newWeek >= 0 && newWeek * 7 < calendarDays.value.length) {
       currentWeekStart.value = newWeek;
     }
-  } else if (calendarView.value === 'day') {
+  } else if (calendarView.value === "day") {
     const newDay = selectedDay.value + direction;
     if (newDay >= 1 && newDay <= 21) {
       selectedDay.value = newDay;
@@ -590,16 +680,8 @@ function navigateView(direction) {
 }
 
 function getTasksForDay(dayNum) {
-  return tasks.value.filter(t => t.day === dayNum);
+  return tasks.value.filter((t) => t.day === dayNum);
 }
-
-// Initialize tasks from schedule
-onMounted(() => {
-  loadSchedule();
-  initializeScheduleTasks();
-  // Set today based on actual date comparison
-  updateTodayFromDate();
-});
 
 function updateTodayFromDate() {
   const today = new Date();
@@ -710,7 +792,16 @@ function getTaskHeight(duration) {
 
 // Computed properties
 const todayTasks = computed(() => {
-  return tasks.value.filter((t) => t.day === todayNumber.value);
+  return tasks.value.filter(
+    (t) => t.day === todayNumber.value && t.state !== "done",
+  );
+});
+
+// Accumulated unfinished tasks from previous days (sorted by day descending - most recent first)
+const accumulatedUnfinishedTasks = computed(() => {
+  return tasks.value
+    .filter((t) => t.day < todayNumber.value && t.state !== "done")
+    .sort((a, b) => b.day - a.day); // Most recent day first
 });
 
 const overdueTasks = computed(() => {
@@ -741,8 +832,8 @@ const pendingCount = computed(() => {
 
 // Helper functions
 function getSubjectColor(subjectName) {
-  const subject = subjects.value.find((s) => s.name === subjectName);
-  return subject?.color || "#00ffc8";
+  const colors = isBeachTheme.value ? beachColors : intergalacticColors;
+  return colors[subjectName] || (isBeachTheme.value ? "#7fdbda" : "#00ffc8");
 }
 
 function getBulletShape(studyType) {
@@ -774,6 +865,25 @@ function formatStudyType(studyType) {
 function selectDay(dayNum) {
   selectedDay.value = dayNum;
   todayNumber.value = dayNum;
+}
+
+// Cycle through task states: pending → inProgress (orange) → done (red, removed)
+function cycleTaskState(task) {
+  const idx = tasks.value.findIndex((t) => t.id === task.id);
+  if (idx === -1) return;
+
+  const currentState = tasks.value[idx].state;
+
+  if (currentState === "pending") {
+    // First click: start task (orange)
+    tasks.value[idx].state = "inProgress";
+  } else if (currentState === "inProgress") {
+    // Second click: complete task (red, will be filtered out)
+    tasks.value[idx].state = "done";
+  }
+  // Done tasks are filtered out, so no third state needed
+
+  saveSchedule();
 }
 
 function toggleTaskState(task) {
@@ -1439,38 +1549,102 @@ function deleteTask_(taskId) {
   background: rgba(65, 90, 119, 0.3);
 }
 
+/* Today's tasks - full color styling */
+.task-block.today-task {
+  background: rgba(13, 27, 42, 0.6);
+}
+
+.task-block.today-task .task-title {
+  color: var(--lunar-white, #e0e1dd);
+}
+
+/* Past/accumulated tasks - faded gray, no background fill */
+.task-block.past-task {
+  background: transparent;
+  border-color: rgba(65, 90, 119, 0.15);
+}
+
+.task-block.past-task::before {
+  opacity: 0.4;
+}
+
+.task-block.past-task .task-title {
+  color: rgba(119, 141, 169, 0.7);
+}
+
+.task-block.past-task .task-bullet {
+  opacity: 0.5;
+}
+
+.task-block.past-task .task-subject {
+  opacity: 0.6;
+}
+
+.past-day-label {
+  color: rgba(119, 141, 169, 0.6);
+  font-size: 0.6rem;
+  font-style: italic;
+}
+
+/* Task State: In Progress - Orange */
+.task-block.inProgress {
+  background: rgba(255, 165, 0, 0.1);
+  border-color: rgba(255, 165, 0, 0.4);
+}
+
+.task-block.inProgress .task-title {
+  color: #ff9500;
+  font-weight: 600;
+}
+
+.task-block.inProgress .task-bullet {
+  color: #ff9500;
+}
+
+.task-block.inProgress::before {
+  background: #ff9500;
+}
+
+/* Task State: Done - Red with strikethrough (will be filtered out) */
 .task-block.done {
   opacity: 0.5;
-  background: rgba(0, 200, 100, 0.1);
+  background: rgba(255, 59, 48, 0.1);
+  border-color: rgba(255, 59, 48, 0.3);
 }
 
 .task-block.done .task-title {
   text-decoration: line-through;
-  color: var(--star-silver, #778da9);
+  color: #ff3b30;
 }
 
-.task-block.inProgress {
-  background: rgba(255, 215, 0, 0.1);
-  border-color: rgba(255, 215, 0, 0.3);
+.task-block.done .task-bullet {
+  color: #ff3b30;
 }
 
-.task-block.overdue-task {
-  border-color: rgba(255, 107, 53, 0.4);
+.task-block.done::before {
+  background: #ff3b30;
 }
 
+/* Bullet shapes by study type */
 .task-bullet {
   font-size: 1rem;
   color: var(--task-color, #00ffc8);
   line-height: 1;
   margin-top: 0.1rem;
+  min-width: 1rem;
+  text-align: center;
 }
 
-.task-block.done .task-bullet {
-  color: var(--nebula-teal, #00ffc8);
+.task-bullet.mbe {
+  /* Circle for MBE/multiple choice */
 }
 
-.task-block.inProgress .task-bullet {
-  color: var(--solar-gold, #ffd700);
+.task-bullet.essay {
+  /* Square for Essay */
+}
+
+.task-bullet.review {
+  /* Diamond for Review */
 }
 
 .task-content {
@@ -1729,5 +1903,127 @@ function deleteTask_(taskId) {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(65, 90, 119, 0.7);
+}
+
+/* ============================================
+   Beach Boys Theme (Low Contrast Mode)
+   ============================================ */
+:global(body.low-contrast) .schedule-crash-course {
+  --surface-bg: rgba(255, 248, 240, 0.9);
+  --text-primary: #5a4a3a;
+  --text-secondary: #8b7355;
+  --accent-primary: #7fdbda;
+  --accent-secondary: #f5c89a;
+}
+
+:global(body.low-contrast) .schedule-header h1 {
+  color: #5a4a3a;
+}
+
+:global(body.low-contrast) .schedule-header .subtitle {
+  color: #d4a574;
+}
+
+:global(body.low-contrast) .toggle-btn {
+  background: rgba(255, 248, 240, 0.8);
+  border-color: rgba(212, 165, 116, 0.4);
+  color: #8b7355;
+}
+
+:global(body.low-contrast) .toggle-btn.active {
+  background: rgba(127, 219, 218, 0.2);
+  border-color: #7fdbda;
+  color: #5a8a89;
+}
+
+:global(body.low-contrast) .calendar-section,
+:global(body.low-contrast) .sidebar-panel {
+  background: rgba(255, 248, 240, 0.7);
+  border-color: rgba(212, 165, 116, 0.3);
+}
+
+:global(body.low-contrast) .calendar-cell {
+  background: rgba(255, 252, 247, 0.8);
+  border-color: rgba(212, 165, 116, 0.2);
+}
+
+:global(body.low-contrast) .calendar-cell:hover {
+  background: rgba(127, 219, 218, 0.15);
+  border-color: #7fdbda;
+}
+
+:global(body.low-contrast) .calendar-cell.selected {
+  border-color: #7fdbda;
+  box-shadow: 0 0 15px rgba(127, 219, 218, 0.3);
+}
+
+:global(body.low-contrast) .day-header {
+  color: #8b7355;
+}
+
+:global(body.low-contrast) .cell-day-number,
+:global(body.low-contrast) .panel-title {
+  color: #5a4a3a;
+}
+
+:global(body.low-contrast) .cell-date,
+:global(body.low-contrast) .cell-type {
+  color: #8b7355;
+}
+
+:global(body.low-contrast) .today-badge,
+:global(body.low-contrast) .today-badge-lg {
+  background: #7fdbda;
+  color: #2a3a3a;
+}
+
+:global(body.low-contrast) .task-block.today-task {
+  background: rgba(255, 252, 247, 0.8);
+}
+
+:global(body.low-contrast) .task-block.today-task .task-title {
+  color: #5a4a3a;
+}
+
+:global(body.low-contrast) .task-block.past-task .task-title {
+  color: rgba(139, 115, 85, 0.6);
+}
+
+:global(body.low-contrast) .task-block.inProgress {
+  background: rgba(245, 200, 154, 0.2);
+  border-color: rgba(245, 200, 154, 0.5);
+}
+
+:global(body.low-contrast) .task-block.inProgress .task-title {
+  color: #d4a574;
+}
+
+:global(body.low-contrast) .task-block.done .task-title {
+  color: #e8b4b8;
+}
+
+:global(body.low-contrast) .section-label {
+  color: #8b7355;
+}
+
+:global(body.low-contrast) .stat-value.done {
+  color: #7fdbda;
+}
+
+:global(body.low-contrast) .stat-value.progress {
+  color: #f5c89a;
+}
+
+:global(body.low-contrast) .test-day {
+  background: linear-gradient(
+    135deg,
+    rgba(232, 180, 184, 0.3),
+    rgba(245, 200, 154, 0.2)
+  );
+  border-color: rgba(232, 180, 184, 0.5);
+}
+
+:global(body.low-contrast) .test-label {
+  color: #d4a574;
 }
 </style>
