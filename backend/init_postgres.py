@@ -276,6 +276,43 @@ def create_schema(conn):
     
     conn.commit()
     print("✓ Schema created successfully!")
+    
+    # Run schema migrations for existing tables
+    run_schema_migrations(conn)
+
+
+def run_schema_migrations(conn):
+    """Add missing columns to existing tables (for incremental updates)."""
+    cursor = conn.cursor()
+    print("\nRunning schema migrations...")
+    
+    # Define migrations: (table, column, column_definition)
+    migrations = [
+        ('users', 'preferred_mode', "VARCHAR(20) DEFAULT 'classic'"),
+        ('users', 'preferences_json', 'TEXT'),
+        ('users', 'last_login', 'TIMESTAMP'),
+    ]
+    
+    for table, column, definition in migrations:
+        try:
+            # Check if column exists
+            cursor.execute('''
+                SELECT column_name FROM information_schema.columns 
+                WHERE table_name = %s AND column_name = %s
+            ''', (table, column))
+            
+            if cursor.fetchone() is None:
+                print(f"  Adding column {table}.{column}...")
+                cursor.execute(f'ALTER TABLE {table} ADD COLUMN {column} {definition}')
+                conn.commit()
+                print(f"  ✓ Added {table}.{column}")
+            else:
+                print(f"  ✓ Column {table}.{column} already exists")
+        except Exception as e:
+            print(f"  WARNING: Could not add {table}.{column}: {e}")
+            conn.rollback()
+    
+    print("✓ Schema migrations complete!")
 
 
 def import_questions_from_csv(conn):
