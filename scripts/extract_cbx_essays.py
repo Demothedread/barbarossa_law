@@ -252,9 +252,21 @@ def extract_model_answers(answers_dir: Path) -> Dict[str, Dict[int, str]]:
         if not text:
             continue
         
-        # Extract answers - look for "Answer to Question X" or "Selected Answer" patterns
-        answer_pattern = r'(?:Answer(?:ed)?\s+(?:to\s+)?Question|Selected Answer(?:\s+to)?(?:\s+Question)?)\s*(\d+)'
-        matches = list(re.finditer(answer_pattern, text, re.IGNORECASE))
+        # Extract answers - look for various patterns:
+        # - "QUESTION 1: SELECTED ANSWER A" (newer format)
+        # - "Answer to Question X" or "Selected Answer to Question X" (older format)
+        # - "SELECTED ANSWER A" after question number
+        answer_patterns = [
+            r'QUESTION\s*(\d+)\s*[:\-]\s*SELECTED\s+ANSWER',  # QUESTION 1: SELECTED ANSWER A
+            r'(?:Answer(?:ed)?\s+(?:to\s+)?Question|Selected Answer(?:\s+to)?(?:\s+Question)?)\s*(\d+)',  # Answer to Question 1
+        ]
+        
+        matches = []
+        for pattern in answer_patterns:
+            found = list(re.finditer(pattern, text, re.IGNORECASE))
+            if found:
+                matches = found
+                break
         
         if matches:
             answers_for_exam = {}

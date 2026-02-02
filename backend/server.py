@@ -46,6 +46,7 @@ if os.environ.get('FRONTEND_URL'):
 
 # Use regex for Vercel preview deployments (Flask-CORS doesn't support simple wildcards)
 import re
+
 CORS_ORIGINS_REGEX = re.compile(r'^https://[a-z0-9-]+\.vercel\.app$')
 
 def cors_origin_callback(origin):

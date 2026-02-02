@@ -129,7 +129,7 @@ def create_user(username: str, email: str, password: str, db_path: Path) -> dict
         
         # Return user info without password
         cursor.execute('''
-            SELECT u.id, u.username, u.email, u.created_at, u.preferred_mode,
+            SELECT u.id, u.username, u.email, u.created_at,
                    up.audio_enabled, up.background_music_enabled, up.volume_level,
                    up.preferred_subjects, up.theme_preference
             FROM users u
