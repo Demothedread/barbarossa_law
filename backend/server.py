@@ -2364,8 +2364,9 @@ def register():
         
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
-    except Exception:
-        return jsonify({'error': 'Registration failed'}), 500
+    except Exception as e:
+        print(f"Registration error: {type(e).__name__}: {e}")
+        return jsonify({'error': 'Registration failed', 'detail': str(e)}), 500
 
 # ==================== Essay Endpoints ====================
 

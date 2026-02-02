@@ -4,15 +4,16 @@ Authentication utilities for Law Quizzer
 Handles JWT tokens, password hashing, and user management
 """
 
-import bcrypt
-import jwt
+import os
 import sqlite3
 from datetime import datetime, timedelta
 from functools import wraps
 from pathlib import Path
-from flask import request, jsonify, current_app, g
-import os
 from typing import Optional
+
+import bcrypt
+import jwt
+from flask import current_app, g, jsonify, request
 
 # PostgreSQL support
 DATABASE_URL = os.environ.get('DATABASE_URL')
@@ -157,11 +158,19 @@ def create_user(username: str, email: str, password: str, db_path: Path) -> dict
             user_id = cursor.lastrowid
         
         # Create default preferences
-        cursor.execute(convert_query('''
-            INSERT INTO user_preferences (user_id, audio_enabled, background_music_enabled, 
-                                        volume_level, theme_preference)
-            VALUES (?, 1, 1, 0.7, 'classic')
-        '''), (user_id,))
+        # Use True/False for PostgreSQL BOOLEAN, 1/0 for SQLite
+        if USE_POSTGRES:
+            cursor.execute('''
+                INSERT INTO user_preferences (user_id, audio_enabled, background_music_enabled, 
+                                            volume_level, theme_preference)
+                VALUES (%s, TRUE, TRUE, 0.7, 'classic')
+            ''', (user_id,))
+        else:
+            cursor.execute('''
+                INSERT INTO user_preferences (user_id, audio_enabled, background_music_enabled, 
+                                            volume_level, theme_preference)
+                VALUES (?, 1, 1, 0.7, 'classic')
+            ''', (user_id,))
         
         conn.commit()
         
@@ -246,6 +255,7 @@ def update_user_preferences(user_id: int, preferences: dict, db_path: Path) -> b
         
         if USE_POSTGRES:
             # PostgreSQL uses ON CONFLICT for upsert
+            # Note: booleans in PostgreSQL need True/False, not 1/0
             cursor.execute('''
                 INSERT INTO user_preferences 
                 (user_id, audio_enabled, background_music_enabled, volume_level, 
@@ -259,8 +269,8 @@ def update_user_preferences(user_id: int, preferences: dict, db_path: Path) -> b
                     theme_preference = EXCLUDED.theme_preference
             ''', (
                 user_id,
-                preferences.get('audio_enabled', 1),
-                preferences.get('background_music_enabled', 1),
+                bool(preferences.get('audio_enabled', True)),
+                bool(preferences.get('background_music_enabled', True)),
                 preferences.get('volume_level', 0.7),
                 preferences.get('preferred_subjects', ''),
                 preferences.get('theme_preference', 'classic')
