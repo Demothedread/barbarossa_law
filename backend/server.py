@@ -59,9 +59,10 @@ def is_allowed_origin(origin: str) -> bool:
         return True
     return bool(CORS_ORIGINS_REGEX.match(origin))
 
-# Configure CORS with callback function for dynamic origin checking
+# Configure CORS with static origins and regex pattern for Vercel preview deployments
+# Flask-CORS accepts regex patterns directly in the origins list
 CORS(app, 
-     resources={r"/api/*": {"origins": is_allowed_origin}}, 
+     resources={r"/api/*": {"origins": CORS_ORIGINS + [CORS_ORIGINS_REGEX]}}, 
      supports_credentials=True,
      allow_headers=['Content-Type', 'Authorization', 'X-Requested-With'],
      methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'])
