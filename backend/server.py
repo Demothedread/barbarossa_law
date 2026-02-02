@@ -33,68 +33,15 @@ from vector_store_service_v2 import VectorStoreServiceV2
 
 app = Flask(__name__)
 
-# CORS configuration - allow frontend origins
-CORS_ORIGINS: List[str] = [
-    'http://localhost:3000',
-    'http://localhost:5001',
-    'http://127.0.0.1:3000',
-    'http://127.0.0.1:5001',
-    'https://barbarossa-law.vercel.app',
-    'https://barbarossa-prep.vercel.app',
-]
-
-# Add any custom domain from environment
-frontend_url = os.environ.get('FRONTEND_URL')
-if frontend_url and frontend_url not in CORS_ORIGINS:
-    CORS_ORIGINS.append(frontend_url)
-
-# Add Vercel preview deployment pattern (matches any *.vercel.app subdomain)
-CORS_ORIGINS_REGEX = re.compile(r'^https://[a-z0-9-]+(-[a-z0-9]+)*\.vercel\.app$')
-
-def is_allowed_origin(origin: str) -> bool:
-    """Check if origin is allowed (static list or Vercel preview pattern)."""
-    if not origin:
-        return False
-    if origin in CORS_ORIGINS:
-        return True
-    return bool(CORS_ORIGINS_REGEX.match(origin))
-
-# Configure CORS with static origins and regex pattern for Vercel preview deployments
-# Flask-CORS accepts regex patterns directly in the origins list
+# CORS configuration
+# In production: Vercel frontend proxies /api/* requests to Render backend
+# The proxy means requests may not have Origin headers, so we allow all origins
+# at Flask-CORS level. Security is handled by Vercel's proxy configuration.
 CORS(app, 
-     resources={r"/api/*": {"origins": CORS_ORIGINS + [CORS_ORIGINS_REGEX]}}, 
+     resources={r"/api/*": {"origins": "*"}}, 
      supports_credentials=True,
      allow_headers=['Content-Type', 'Authorization', 'X-Requested-With'],
      methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'])
-
-# Handle preflight OPTIONS requests explicitly
-@app.before_request
-def handle_preflight():
-    """Handle CORS preflight requests."""
-    if request.method == 'OPTIONS':
-        origin = request.headers.get('Origin', '')
-        if is_allowed_origin(origin):
-            response = app.make_default_options_response()
-            response.headers['Access-Control-Allow-Origin'] = origin
-            response.headers['Access-Control-Allow-Credentials'] = 'true'
-            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS, PATCH'
-            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With'
-            response.headers['Access-Control-Max-Age'] = '86400'  # Cache preflight for 24 hours
-            return response
-
-# Add after_request handler to ensure CORS headers on all responses
-@app.after_request
-def add_cors_headers(response):
-    """Ensure CORS headers are present for all allowed origins."""
-    origin = request.headers.get('Origin', '')
-    if is_allowed_origin(origin):
-        # Only set if not already set by Flask-CORS
-        if 'Access-Control-Allow-Origin' not in response.headers:
-            response.headers['Access-Control-Allow-Origin'] = origin
-            response.headers['Access-Control-Allow-Credentials'] = 'true'
-            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS, PATCH'
-            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With'
-    return response
 
 # Database configuration - use PostgreSQL in production, SQLite locally
 DATABASE_URL = os.environ.get('DATABASE_URL')
