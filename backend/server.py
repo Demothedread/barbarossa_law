@@ -8,9 +8,11 @@ import asyncio
 import json
 import os
 import random
+import re
 import sqlite3
 from datetime import datetime
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
 # Load environment variables
 try:
@@ -27,55 +29,95 @@ from auth import (authenticate_user, create_user, generate_jwt_token,
 from essay_grader import EssayGraderService
 from flask import Flask, g, jsonify, request
 from flask_cors import CORS
-from vector_store_service_v2 import (VectorStoreServiceV2,
-                                     extract_questions_from_vector_store_v2)
+from vector_store_service_v2 import VectorStoreServiceV2
 
 app = Flask(__name__)
 
 # CORS configuration - allow frontend origins
-CORS_ORIGINS = [
+CORS_ORIGINS: List[str] = [
     'http://localhost:3000',
     'http://localhost:5001',
     'http://127.0.0.1:3000',
+    'http://127.0.0.1:5001',
     'https://barbarossa-law.vercel.app',
     'https://barbarossa-prep.vercel.app',
 ]
+
 # Add any custom domain from environment
-if os.environ.get('FRONTEND_URL'):
-    CORS_ORIGINS.append(os.environ.get('FRONTEND_URL'))
+frontend_url = os.environ.get('FRONTEND_URL')
+if frontend_url and frontend_url not in CORS_ORIGINS:
+    CORS_ORIGINS.append(frontend_url)
 
-# Use regex for Vercel preview deployments (Flask-CORS doesn't support simple wildcards)
-import re
+# Add Vercel preview deployment pattern (matches any *.vercel.app subdomain)
+CORS_ORIGINS_REGEX = re.compile(r'^https://[a-z0-9-]+(-[a-z0-9]+)*\.vercel\.app$')
 
-CORS_ORIGINS_REGEX = re.compile(r'^https://[a-z0-9-]+\.vercel\.app$')
-
-def cors_origin_callback(origin):
-    """Check if origin is allowed for CORS."""
+def is_allowed_origin(origin: str) -> bool:
+    """Check if origin is allowed (static list or Vercel preview pattern)."""
+    if not origin:
+        return False
     if origin in CORS_ORIGINS:
         return True
-    if CORS_ORIGINS_REGEX and CORS_ORIGINS_REGEX.match(origin):
-        return True
-    return False
+    return bool(CORS_ORIGINS_REGEX.match(origin))
 
-CORS(app, origins=cors_origin_callback, supports_credentials=True)
+# Configure CORS with callback function for dynamic origin checking
+CORS(app, 
+     resources={r"/api/*": {"origins": is_allowed_origin}}, 
+     supports_credentials=True,
+     allow_headers=['Content-Type', 'Authorization', 'X-Requested-With'],
+     methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'])
+
+# Handle preflight OPTIONS requests explicitly
+@app.before_request
+def handle_preflight():
+    """Handle CORS preflight requests."""
+    if request.method == 'OPTIONS':
+        origin = request.headers.get('Origin', '')
+        if is_allowed_origin(origin):
+            response = app.make_default_options_response()
+            response.headers['Access-Control-Allow-Origin'] = origin
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS, PATCH'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With'
+            response.headers['Access-Control-Max-Age'] = '86400'  # Cache preflight for 24 hours
+            return response
+
+# Add after_request handler to ensure CORS headers on all responses
+@app.after_request
+def add_cors_headers(response):
+    """Ensure CORS headers are present for all allowed origins."""
+    origin = request.headers.get('Origin', '')
+    if is_allowed_origin(origin):
+        # Only set if not already set by Flask-CORS
+        if 'Access-Control-Allow-Origin' not in response.headers:
+            response.headers['Access-Control-Allow-Origin'] = origin
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS, PATCH'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With'
+    return response
 
 # Database configuration - use PostgreSQL in production, SQLite locally
 DATABASE_URL = os.environ.get('DATABASE_URL')
 USE_POSTGRES = bool(DATABASE_URL)
 
+# DB_PATH is either a connection string (PostgreSQL) or Path object (SQLite)
+DB_PATH: Union[str, Path]
 if USE_POSTGRES:
-    # Production: Use PostgreSQL via DATABASE_URL
-    DB_PATH = DATABASE_URL  # Connection string for PostgreSQL
-    print(f"Using PostgreSQL database")
+    DB_PATH = DATABASE_URL  # type: ignore[assignment]  # Connection string for PostgreSQL
+    print("Using PostgreSQL database")
 else:
-    # Development: Use local SQLite
     DB_PATH = Path(__file__).parent.parent / 'law_quiz.db'
     print(f"Using SQLite database at {DB_PATH}")
 
 # Initialized services
-ai_service = None
-essay_grader_service = None
-vector_store_service = None
+ai_service: Optional[AIExplainService] = None
+essay_grader_service: Optional[EssayGraderService] = None
+vector_store_service: Optional[VectorStoreServiceV2] = None
+
+def get_db_path_as_path() -> Path:
+    """Get DB_PATH as a Path object (for SQLite operations)."""
+    if isinstance(DB_PATH, Path):
+        return DB_PATH
+    return Path(DB_PATH)
 
 def initialize_services():
     """Initialize optional services and check configuration."""
@@ -83,7 +125,7 @@ def initialize_services():
 
     if USE_POSTGRES:
         print("PostgreSQL database configured via DATABASE_URL")
-    elif not DB_PATH.exists():
+    elif isinstance(DB_PATH, Path) and not DB_PATH.exists():
         print(
             f"WARNING: Database not found at {DB_PATH}. Run scripts/initialize_db.py to create it."
         )
@@ -93,15 +135,16 @@ def initialize_services():
     if os.environ.get("OPENAI_API_KEY"):
         # Only run SQLite-specific table creation in local dev mode
         # In production (PostgreSQL), init_postgres.py handles schema creation
-        if not USE_POSTGRES:
+        if not USE_POSTGRES and isinstance(DB_PATH, Path):
             ensure_explanations_table(DB_PATH)
             migrate_explanations_table(DB_PATH)
         
         # Initialize services with appropriate db_path
-        ai_service = AIExplainService(DB_PATH, use_postgres=USE_POSTGRES)
-        essay_grader_service = EssayGraderService(db_path=DB_PATH, use_postgres=USE_POSTGRES)
+        db_path_for_services = get_db_path_as_path() if not USE_POSTGRES else Path(".")
+        ai_service = AIExplainService(db_path_for_services, use_postgres=USE_POSTGRES)
+        essay_grader_service = EssayGraderService(db_path=db_path_for_services if not USE_POSTGRES else None, use_postgres=USE_POSTGRES)
         try:
-            vector_store_service = VectorStoreServiceV2(DB_PATH, use_postgres=USE_POSTGRES)
+            vector_store_service = VectorStoreServiceV2(db_path_for_services, use_postgres=USE_POSTGRES)
             print("Vector store service v2 initialized successfully.")
         except Exception as e:
             print(f"WARNING: Could not initialize vector store service: {e}")
@@ -114,16 +157,17 @@ def initialize_services():
 from db_adapter import DatabaseAdapter
 
 # Create database adapter instance
-db_adapter = DatabaseAdapter(DB_PATH if not USE_POSTGRES else None)
+db_adapter = DatabaseAdapter(DB_PATH if not USE_POSTGRES else None)  # type: ignore[arg-type]
 
 initialize_services()
 
 def get_db_connection():
     """Get database connection with proper setup"""
     if USE_POSTGRES:
-        import psycopg2
-        from psycopg2.extras import RealDictCursor
-        conn = psycopg2.connect(DB_PATH, cursor_factory=RealDictCursor)
+        import psycopg2  # type: ignore[import-not-found]
+        from psycopg2.extras import \
+            RealDictCursor  # type: ignore[import-not-found]
+        conn = psycopg2.connect(str(DB_PATH), cursor_factory=RealDictCursor)
         return conn
     else:
         conn = sqlite3.connect(str(DB_PATH))
@@ -134,13 +178,25 @@ def get_placeholder():
     """Return the correct SQL placeholder based on database type."""
     return '%s' if USE_POSTGRES else '?'
 
-def convert_query(query):
+def convert_query(query: str) -> str:
     """Convert SQLite-style query (?) to PostgreSQL (%s) if needed."""
     if USE_POSTGRES:
         return query.replace('?', '%s')
     return query
 
-def get_row_value(row, key_or_index):
+def row_to_dict(row: Any) -> Dict[str, Any]:
+    """Convert a database row to a dictionary, handling both PostgreSQL and SQLite rows."""
+    if row is None:
+        return {}
+    if isinstance(row, dict):
+        return row
+    # sqlite3.Row supports dict() conversion
+    if hasattr(row, 'keys'):
+        return dict(row)
+    # Fallback: return as-is (shouldn't happen in practice)
+    return {'value': row}
+
+def get_row_value(row: Any, key_or_index: Union[str, int]) -> Any:
     """Get value from row, handling both dict (PostgreSQL) and tuple/Row (SQLite)."""
     if isinstance(row, dict):
         # For dict, try the key directly or common aliases
@@ -148,10 +204,16 @@ def get_row_value(row, key_or_index):
             # Integer index - get by position from dict values
             return list(row.values())[key_or_index]
         return row.get(key_or_index)
-    else:
-        return row[key_or_index] if isinstance(key_or_index, int) else row[key_or_index]
+    # Convert sqlite3.Row to dict for key access
+    if hasattr(row, 'keys'):
+        d = dict(row)
+        if isinstance(key_or_index, int):
+            return list(d.values())[key_or_index]
+        return d.get(key_or_index)
+    # Fallback to index access
+    return row[key_or_index] if isinstance(key_or_index, int) else None
 
-def get_scalar(row):
+def get_scalar(row: Any) -> Any:
     """Get the first value from a row (for single-column results like COUNT(*))."""
     if row is None:
         return None
@@ -178,7 +240,7 @@ def ensure_quiz_attempt_logs_table(cursor):
     )
     """)
 
-def normalize_quiz_attempt_payload(data):
+def normalize_quiz_attempt_payload(data: Any) -> tuple[Optional[Dict[str, Any]], List[str]]:
     """Validate and normalize quiz attempt payload."""
     if not isinstance(data, dict):
         return None, ["Payload must be a JSON object."]
@@ -194,7 +256,7 @@ def normalize_quiz_attempt_payload(data):
     is_correct = data.get("is_correct")
     elapsed_seconds = data.get("elapsed_seconds", data.get("time_spent_seconds"))
 
-    errors = []
+    errors: List[str] = []
     if not question_id:
         errors.append("question_id is required.")
     if not selected_answer:
@@ -236,11 +298,8 @@ def get_subjects():
         cursor = conn.cursor()
         cursor.execute('SELECT DISTINCT subject FROM questions WHERE subject IS NOT NULL ORDER BY subject')
         rows = cursor.fetchall()
-        # Handle both RealDictCursor (PostgreSQL) and Row (SQLite)
-        if rows and isinstance(rows[0], dict):
-            subjects = [row['subject'] for row in rows]
-        else:
-            subjects = [row[0] for row in rows]
+        # Convert all rows to dicts for consistent access
+        subjects = [row_to_dict(row)['subject'] for row in rows]
         conn.close()
         return jsonify({'subjects': subjects})
     except Exception as e:
@@ -262,8 +321,8 @@ def get_questions():
         placeholder = '%s' if USE_POSTGRES else '?'
         
         # Build query based on filters
-        where_conditions = []
-        params = []
+        where_conditions: List[str] = []
+        params: List[Any] = []
         
         if subject:
             where_conditions.append(f'subject = {placeholder}')
@@ -349,8 +408,8 @@ def get_smart_questions():
         placeholder = '%s' if USE_POSTGRES else '?'
         
         # Build base query
-        where_conditions = []
-        params = []
+        where_conditions: List[str] = []
+        params: List[Any] = []
         
         if subject:
             where_conditions.append(f'q.subject = {placeholder}')
@@ -392,7 +451,8 @@ def get_smart_questions():
                     cursor.execute(convert_query(
                         "SELECT COUNT(*) FROM question_usage WHERE anonymous_id = ?"
                     ), (anonymous_id,))
-                user_has_history = get_scalar(cursor.fetchone()) > 0
+                count_result = get_scalar(cursor.fetchone())
+                user_has_history = (count_result or 0) > 0
         except Exception:
             pass
         
@@ -619,11 +679,12 @@ async def get_second_best_analysis(question_id):
             ), (question_id,))
             cached = cursor.fetchone()
             if cached:
+                cached_dict = dict(cached)
                 return jsonify({
                     'question_id': question_id,
-                    'second_best_choice': dict(cached)['second_best_choice'],
-                    'analysis': dict(cached)['analysis_text'],
-                    'confidence': dict(cached).get('confidence_score', 0.8),
+                    'second_best_choice': cached_dict['second_best_choice'],
+                    'analysis': cached_dict['analysis_text'],
+                    'confidence': cached_dict.get('confidence_score', 0.8),
                     'cached': True
                 })
         except Exception:
@@ -670,7 +731,12 @@ Respond in JSON format:
             response_format={"type": "json_object"}
         )
         
-        result = json.loads(response.choices[0].message.content)
+        content = response.choices[0].message.content
+        if content is None:
+            conn.close()
+            return jsonify({'error': 'AI returned empty response'}), 500
+        
+        result = json.loads(content)
         
         # Cache the result
         try:
@@ -740,6 +806,9 @@ def log_quiz_attempt():
         normalized, errors = normalize_quiz_attempt_payload(data)
         if errors:
             return jsonify({'error': 'Invalid attempt data', 'details': errors}), 400
+        
+        if normalized is None:
+            return jsonify({'error': 'Failed to normalize payload'}), 400
 
         conn = get_db_connection()
         try:
@@ -784,11 +853,35 @@ def health_check():
     return jsonify({'status': 'healthy', 'timestamp': datetime.now().isoformat()})
 
 
+@app.route('/', methods=['GET'])
+def root():
+    """Root endpoint - redirect or info page"""
+    return jsonify({
+        'name': 'Barbarossa Bar Prep API',
+        'version': '1.0.0',
+        'docs': '/api/health',
+        'status': 'running',
+        'endpoints': {
+            'health': '/api/health',
+            'subjects': '/api/subjects',
+            'questions': '/api/questions',
+            'essays': '/api/essay-prompts'
+        }
+    })
+
+
 @app.route('/api/config', methods=['GET'])
 def config_check():
     """Return basic configuration status"""
+    db_exists = False
+    if isinstance(DB_PATH, Path):
+        db_exists = DB_PATH.exists()
+    else:
+        # PostgreSQL - assume exists if configured
+        db_exists = USE_POSTGRES
+    
     return jsonify({
-        'database_exists': DB_PATH.exists(),
+        'database_exists': db_exists,
         'openai_configured': bool(os.environ.get('OPENAI_API_KEY')),
     })
 
@@ -987,7 +1080,7 @@ def get_quiz_history():
             return jsonify({'history': [], 'stats': {}, 'analytics': {}})
         
         # Build query based on filters
-        query_params = [user_id]
+        query_params: List[Any] = [user_id]
         where_clauses = ["user_id = ?"]
         
         if subject:
@@ -1012,7 +1105,7 @@ def get_quiz_history():
         stats = calculate_comprehensive_stats(history)
         
         # Calculate advanced analytics
-        analytics = calculate_advanced_analytics(history, cursor, user_id)
+        analytics = calculate_advanced_analytics(history)
         
         conn.close()
         
@@ -1025,7 +1118,7 @@ def get_quiz_history():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-def calculate_comprehensive_stats(history):
+def calculate_comprehensive_stats(history: List[Dict[str, Any]]) -> Dict[str, Any]:
     """Calculate comprehensive statistics from quiz history"""
     if not history:
         return {
@@ -1040,7 +1133,7 @@ def calculate_comprehensive_stats(history):
             'recent_performance': []
         }
     
-    stats = {
+    stats: Dict[str, Any] = {
         'total_quizzes': len(history),
         'total_questions': sum(item['total'] for item in history),
         'total_correct': sum(item['correct'] for item in history),
@@ -1142,7 +1235,7 @@ def calculate_comprehensive_stats(history):
     
     return stats
 
-def calculate_advanced_analytics(history, cursor, user_id):
+def calculate_advanced_analytics(history: List[Dict[str, Any]]) -> Dict[str, Any]:
     """Calculate advanced analytics including streaks, learning curves, and improvement metrics"""
     if not history:
         return {
@@ -1155,7 +1248,7 @@ def calculate_advanced_analytics(history, cursor, user_id):
             'goal_progress': 0
         }
     
-    analytics = {
+    analytics: Dict[str, Any] = {
         'current_streak': 0,
         'longest_streak': 0,
         'learning_curve': [],
@@ -1207,10 +1300,10 @@ def calculate_advanced_analytics(history, cursor, user_id):
         analytics['learning_curve'] = learning_points[-20:]  # Last 20 data points
     
     # Identify weak areas (subjects/subtopics with <65% accuracy)
-    weak_areas = []
+    weak_areas: List[Dict[str, Any]] = []
     
     # Group by subject to find weak subjects
-    subject_performance = {}
+    subject_performance: Dict[str, Dict[str, int]] = {}
     for quiz in history:
         subject = quiz.get('subject', 'Unknown')
         if subject not in subject_performance:
@@ -1231,7 +1324,7 @@ def calculate_advanced_analytics(history, cursor, user_id):
                 })
     
     # Group by subtopic to find weak subtopics
-    subtopic_performance = {}
+    subtopic_performance: Dict[str, Dict[str, Any]] = {}
     for quiz in history:
         subtopic = quiz.get('subtopic')
         if subtopic:
@@ -1333,10 +1426,7 @@ def get_subtopics():
             cursor.execute("SELECT DISTINCT subtopic FROM questions WHERE subtopic IS NOT NULL")
         
         rows = cursor.fetchall()
-        if rows and isinstance(rows[0], dict):
-            subtopics = [row['subtopic'] for row in rows]
-        else:
-            subtopics = [row[0] for row in rows]
+        subtopics = [row_to_dict(row)['subtopic'] for row in rows]
         conn.close()
         
         return jsonify(subtopics)
@@ -1386,7 +1476,16 @@ def get_subtopic_stats():
         
         subtopic_stats = []
         for row in cursor.fetchall():
-            subtopic, subject_name, total_questions, correct_answers, avg_accuracy, avg_time, quiz_count = row
+            row_dict = dict(row) if isinstance(row, dict) else {
+                'subtopic': row[0], 'subject': row[1], 'total_questions': row[2],
+                'correct_answers': row[3], 'avg_accuracy': row[4], 'avg_time': row[5], 'quiz_count': row[6]
+            }
+            subtopic = row_dict['subtopic']
+            subject_name = row_dict['subject']
+            total_questions = row_dict['total_questions']
+            correct_answers = row_dict['correct_answers']
+            avg_time = row_dict['avg_time']
+            quiz_count = row_dict['quiz_count']
             
             # Calculate actual accuracy percentage
             accuracy_percent = (correct_answers / max(total_questions, 1)) * 100 if total_questions > 0 else 0
@@ -1433,13 +1532,14 @@ def get_advanced_analytics():
             WHERE user_id = %s AND created_at >= NOW() - INTERVAL '%s days'
             ORDER BY created_at ASC
             """
+            cursor.execute(query, (user_id, days))
         else:
-            query = """
+            query = f"""
             SELECT * FROM quiz_history
-            WHERE user_id = ? AND created_at >= datetime('now', '-{} days')
+            WHERE user_id = ? AND created_at >= datetime('now', '-{days} days')
             ORDER BY created_at ASC
-            """.format(days)
-        cursor.execute(query, (user_id,) if not USE_POSTGRES else (user_id, days))
+            """
+            cursor.execute(query, (user_id,))
         recent_history = [dict(row) for row in cursor.fetchall()]
         
         # Get all-time history for comparison
@@ -1477,7 +1577,7 @@ def export_statistics():
         history = [dict(row) for row in cursor.fetchall()]
         
         stats = calculate_comprehensive_stats(history)
-        analytics = calculate_advanced_analytics(history, cursor, user_id)
+        analytics = calculate_advanced_analytics(history)
         
         export_data = {
             'user_id': user_id,
@@ -1543,7 +1643,7 @@ def export_statistics():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-def calculate_performance_metrics(history):
+def calculate_performance_metrics(history: List[Dict[str, Any]]) -> Dict[str, Any]:
     """Calculate performance metrics for a given history period"""
     if not history:
         return {'accuracy': 0, 'total_questions': 0, 'avg_time': 0, 'quiz_count': 0}
@@ -1560,7 +1660,7 @@ def calculate_performance_metrics(history):
         'study_time_hours': total_time / 3600
     }
 
-def calculate_learning_velocity(history):
+def calculate_learning_velocity(history: List[Dict[str, Any]]) -> Dict[str, Any]:
     """Calculate how quickly the user is improving"""
     if len(history) < 4:
         return {'trend': 'insufficient_data', 'rate': 0}
@@ -1597,15 +1697,14 @@ def calculate_learning_velocity(history):
     
     return {'trend': 'insufficient_data', 'rate': 0}
 
-def calculate_study_patterns(history):
+def calculate_study_patterns(history: List[Dict[str, Any]]) -> Dict[str, Any]:
     """Analyze study patterns and habits"""
     if not history:
         return {}
     
-    import json
-    from datetime import datetime
+    from datetime import datetime as dt
     
-    patterns = {
+    patterns: Dict[str, Any] = {
         'sessions_per_week': 0,
         'avg_session_length': 0,
         'preferred_times': [],
@@ -1614,8 +1713,8 @@ def calculate_study_patterns(history):
     
     # Calculate sessions per week (approximate)
     if history:
-        date_range = (datetime.fromisoformat(history[-1]['created_at']) -
-                     datetime.fromisoformat(history[0]['created_at'])).days
+        date_range = (dt.fromisoformat(history[-1]['created_at']) -
+                     dt.fromisoformat(history[0]['created_at'])).days
         weeks = max(date_range / 7, 1)
         patterns['sessions_per_week'] = len(history) / weeks
     
@@ -1625,7 +1724,7 @@ def calculate_study_patterns(history):
     
     return patterns
 
-def calculate_predictions(history):
+def calculate_predictions(history: List[Dict[str, Any]]) -> Dict[str, Any]:
     """Generate predictions about future performance"""
     if len(history) < 5:
         return {'confidence': 'low', 'predictions': []}
@@ -1658,15 +1757,15 @@ def calculate_predictions(history):
     
     return {'confidence': 'low', 'predictions': []}
 
-def generate_study_recommendations(history):
+def generate_study_recommendations(history: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """Generate personalized study recommendations"""
     if not history:
         return []
     
-    recommendations = []
+    recommendations: List[Dict[str, Any]] = []
     
     # Calculate subject performance
-    subject_performance = {}
+    subject_performance: Dict[str, Dict[str, int]] = {}
     for quiz in history:
         subject = quiz.get('subject', 'Unknown')
         if subject not in subject_performance:
@@ -1695,9 +1794,9 @@ def generate_study_recommendations(history):
     
     # Check study frequency
     if len(history) > 0:
-        from datetime import datetime, timedelta
-        last_quiz = datetime.fromisoformat(history[0]['created_at'])
-        days_since = (datetime.now() - last_quiz).days
+        from datetime import datetime as dt
+        last_quiz = dt.fromisoformat(history[0]['created_at'])
+        days_since = (dt.now() - last_quiz).days
         
         if days_since > 7:
             recommendations.append({
@@ -1818,20 +1917,18 @@ def check_existing_explanations():
         
         conn = get_db_connection()
         cursor = conn.cursor()
+        placeholder = '%s' if USE_POSTGRES else '?'
         
         # Check which questions have explanations
-        placeholders = ','.join('?' * len(question_ids))
-        cursor.execute(convert_query(f'''
+        placeholders_str = ','.join([placeholder] * len(question_ids))
+        cursor.execute(f'''
         SELECT question_id FROM question_explanations 
-        WHERE question_id IN ({','.join('?' * len(question_ids))})
+        WHERE question_id IN ({placeholders_str})
         AND choice_a_explanation IS NOT NULL
-        '''), question_ids)
+        ''', question_ids)
         
         rows = cursor.fetchall()
-        if rows and isinstance(rows[0], dict):
-            existing_ids = [row['question_id'] for row in rows]
-        else:
-            existing_ids = [row[0] for row in rows]
+        existing_ids = [row_to_dict(row)['question_id'] for row in rows]
         
         conn.close()
         
@@ -1934,8 +2031,9 @@ def update_daily_progress():
         existing = cursor.fetchone()
         
         if existing:
-            current_question_ids = json.loads(existing['question_ids_json'] or '[]')
-            current_reviewed_ids = json.loads(existing['reviewed_ids_json'] or '[]')
+            existing_dict = dict(existing)
+            current_question_ids = json.loads(existing_dict.get('question_ids_json') or '[]')
+            current_reviewed_ids = json.loads(existing_dict.get('reviewed_ids_json') or '[]')
         else:
             current_question_ids = []
             current_reviewed_ids = []
@@ -2115,13 +2213,21 @@ def save_explanation_feedback():
         stats = cursor.fetchone()
         conn.close()
         
+        if stats:
+            stats_dict = dict(stats) if isinstance(stats, dict) else {'up_count': stats[0], 'down_count': stats[1]}
+            return jsonify({
+                'success': True,
+                'message': 'Feedback saved',
+                'stats': {
+                    'up_count': stats_dict.get('up_count') or 0,
+                    'down_count': stats_dict.get('down_count') or 0
+                }
+            })
+        
         return jsonify({
             'success': True,
             'message': 'Feedback saved',
-            'stats': {
-                'up_count': stats['up_count'] or 0,
-                'down_count': stats['down_count'] or 0
-            }
+            'stats': {'up_count': 0, 'down_count': 0}
         })
         
     except Exception as e:
@@ -2156,12 +2262,22 @@ def get_explanation_feedback(question_id):
         stats = cursor.fetchone()
         conn.close()
         
-        return jsonify({
-            'user_feedback': user_feedback['thumbs_up'] if user_feedback else None,
-            'stats': {
-                'up_count': stats['up_count'] or 0 if stats else 0,
-                'down_count': stats['down_count'] or 0 if stats else 0
+        user_feedback_value = None
+        if user_feedback:
+            user_feedback_dict = dict(user_feedback) if isinstance(user_feedback, dict) else {'thumbs_up': user_feedback[0]}
+            user_feedback_value = user_feedback_dict.get('thumbs_up')
+        
+        stats_result = {'up_count': 0, 'down_count': 0}
+        if stats:
+            stats_dict = dict(stats) if isinstance(stats, dict) else {'up_count': stats[0], 'down_count': stats[1]}
+            stats_result = {
+                'up_count': stats_dict.get('up_count') or 0,
+                'down_count': stats_dict.get('down_count') or 0
             }
+        
+        return jsonify({
+            'user_feedback': user_feedback_value,
+            'stats': stats_result
         })
         
     except Exception as e:
@@ -2205,8 +2321,9 @@ def track_question_review():
         existing = cursor.fetchone()
         
         if existing:
-            reviewed_ids = json.loads(existing['reviewed_ids_json'] or '[]')
-            question_ids = json.loads(existing['question_ids_json'] or '[]')
+            existing_dict = dict(existing)
+            reviewed_ids = json.loads(existing_dict.get('reviewed_ids_json') or '[]')
+            question_ids = json.loads(existing_dict.get('question_ids_json') or '[]')
         else:
             reviewed_ids = []
             question_ids = []
@@ -2284,7 +2401,8 @@ def register():
             return jsonify({'error': 'Password must be at least 6 characters long'}), 400
         
         # Create user
-        user = create_user(username, email, password, DB_PATH)
+        db_path_for_auth = get_db_path_as_path() if not USE_POSTGRES else Path(".")
+        user = create_user(username, email, password, db_path_for_auth)
         
         # Generate JWT token
         token = generate_jwt_token(user['id'], user['username'])
@@ -2298,7 +2416,7 @@ def register():
         
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
-    except Exception as e:
+    except Exception:
         return jsonify({'error': 'Registration failed'}), 500
 
 # ==================== Essay Endpoints ====================
@@ -2320,8 +2438,8 @@ def get_essay_prompts():
         cursor = conn.cursor()
         placeholder = '%s' if USE_POSTGRES else '?'
         
-        where_conditions = []
-        params = []
+        where_conditions: List[str] = []
+        params: List[Any] = []
         
         if subject:
             where_conditions.append(f'subject = {placeholder}')
@@ -2407,10 +2525,7 @@ def get_essay_subjects():
         ''')
         
         rows = cursor.fetchall()
-        if rows and isinstance(rows[0], dict):
-            subjects = [{'subject': row['subject'], 'count': row['count']} for row in rows]
-        else:
-            subjects = [{'subject': row[0], 'count': row[1]} for row in rows]
+        subjects = [{'subject': row_to_dict(r)['subject'], 'count': row_to_dict(r)['count']} for r in rows]
         conn.close()
         
         return jsonify({'subjects': subjects})
@@ -2434,10 +2549,7 @@ def get_essay_years():
         ''')
         
         rows = cursor.fetchall()
-        if rows and isinstance(rows[0], dict):
-            years = [{'year': row['exam_year'], 'month': row['exam_month'], 'count': row['count']} for row in rows]
-        else:
-            years = [{'year': row[0], 'month': row[1], 'count': row[2]} for row in rows]
+        years = [{'year': row_to_dict(r)['exam_year'], 'month': row_to_dict(r)['exam_month'], 'count': row_to_dict(r)['count']} for r in rows]
         conn.close()
         
         return jsonify({'years': years})
@@ -2446,509 +2558,11 @@ def get_essay_years():
         return jsonify({'error': str(e)}), 500
 
 
-@app.route('/api/essays', methods=['POST'])
-def submit_essay():
-    """Submit a user essay for storage (and optional grading)."""
-    try:
-        data = request.get_json()
-        prompt_id = data.get('prompt_id')
-        essay_text = data.get('essay_text', '').strip()
-        user_id = data.get('user_id')
-        anonymous_id = data.get('anonymous_id')
-        auto_grade = data.get('auto_grade', False)
-        
-        if not prompt_id or not essay_text:
-            return jsonify({'error': 'prompt_id and essay_text are required'}), 400
-        
-        word_count = len(essay_text.split())
-        
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        placeholder = '%s' if USE_POSTGRES else '?'
-        
-        # Insert essay
-        if USE_POSTGRES:
-            cursor.execute(f'''
-                INSERT INTO user_essays (user_id, anonymous_id, prompt_id, essay_text, word_count)
-                VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
-                RETURNING id
-            ''', (user_id, anonymous_id, prompt_id, essay_text, word_count))
-            essay_id = get_scalar(cursor.fetchone())
-        else:
-            cursor.execute(f'''
-                INSERT INTO user_essays (user_id, anonymous_id, prompt_id, essay_text, word_count)
-                VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
-            ''', (user_id, anonymous_id, prompt_id, essay_text, word_count))
-            essay_id = cursor.lastrowid
-        
-        conn.commit()
-        conn.close()
-        
-        response = {
-            'success': True,
-            'essay_id': essay_id,
-            'word_count': word_count
-        }
-        
-        # Auto-grade if requested
-        if auto_grade and essay_grader_service:
-            try:
-                # Get the prompt text for grading
-                conn = get_db_connection()
-                cursor = conn.cursor()
-                cursor.execute(f'SELECT prompt_text FROM essay_prompts WHERE id = {placeholder}', (prompt_id,))
-                prompt_row = cursor.fetchone()
-                conn.close()
-                
-                if prompt_row:
-                    # Run async grading
-                    import asyncio
-                    prompt_text = prompt_row['prompt_text'] if isinstance(prompt_row, dict) else prompt_row[0]
-                    grade_result = asyncio.run(
-                        essay_grader_service.grade_essay(prompt_text, essay_text, max_points=100)
-                    )
-                    
-                    # Save grade to database
-                    conn = get_db_connection()
-                    cursor = conn.cursor()
-                    
-                    if USE_POSTGRES:
-                        cursor.execute(f'''
-                            INSERT INTO essay_grades 
-                            (essay_id, score, max_score, rubric_breakdown, overall_feedback, line_feedback, grader_model)
-                            VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
-                            RETURNING id
-                        ''', (
-                            essay_id,
-                            grade_result.get('total_score', 0),
-                            grade_result.get('max_score', 100),
-                            json.dumps(grade_result.get('rubric_points', [])),
-                            grade_result.get('overall_feedback', ''),
-                            json.dumps(grade_result.get('line_feedback', [])),
-                            grade_result.get('grader_model', 'gpt-4o')
-                        ))
-                        grade_id = get_scalar(cursor.fetchone())
-                    else:
-                        cursor.execute(f'''
-                            INSERT INTO essay_grades 
-                            (essay_id, score, max_score, rubric_breakdown, overall_feedback, line_feedback, grader_model)
-                            VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
-                        ''', (
-                            essay_id,
-                            grade_result.get('total_score', 0),
-                            grade_result.get('max_score', 100),
-                            json.dumps(grade_result.get('rubric_points', [])),
-                            grade_result.get('overall_feedback', ''),
-                            json.dumps(grade_result.get('line_feedback', [])),
-                            grade_result.get('grader_model', 'gpt-4o')
-                        ))
-                        grade_id = cursor.lastrowid
-                    
-                    conn.commit()
-                    conn.close()
-                    
-                    response['grade'] = {
-                        'grade_id': grade_id,
-                        'score': grade_result.get('total_score', 0),
-                        'max_score': grade_result.get('max_score', 100),
-                        'overall_feedback': grade_result.get('overall_feedback', ''),
-                        'rubric_points': grade_result.get('rubric_points', []),
-                        'grader_model': grade_result.get('grader_model', 'gpt-4o')
-                    }
-            except Exception as grade_error:
-                response['grade_error'] = str(grade_error)
-        
-        return jsonify(response)
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-@app.route('/api/essays/<int:essay_id>/grade', methods=['POST'])
-def grade_essay(essay_id):
-    """Grade an existing essay using AI."""
-    if not essay_grader_service:
-        return jsonify({'error': 'Essay grading service not available'}), 503
-    
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        placeholder = '%s' if USE_POSTGRES else '?'
-        
-        # Get essay and prompt
-        cursor.execute(f'''
-            SELECT ue.essay_text, ep.prompt_text, ep.model_answer
-            FROM user_essays ue
-            JOIN essay_prompts ep ON ue.prompt_id = ep.id
-            WHERE ue.id = {placeholder}
-        ''', (essay_id,))
-        
-        row = cursor.fetchone()
-        if not row:
-            conn.close()
-            return jsonify({'error': 'Essay not found'}), 404
-        
-        if isinstance(row, dict):
-            essay_text = row['essay_text']
-            prompt_text = row['prompt_text']
-            model_answer = row['model_answer']
-        else:
-            essay_text = row[0]
-            prompt_text = row[1]
-            model_answer = row[2]
-        conn.close()
-        
-        # Grade the essay
-        import asyncio
-        grade_result = asyncio.run(
-            essay_grader_service.grade_essay(prompt_text, essay_text, max_points=100)
-        )
-        
-        # Save grade to database
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
-        if USE_POSTGRES:
-            cursor.execute(f'''
-                INSERT INTO essay_grades 
-                (essay_id, score, max_score, rubric_breakdown, overall_feedback, line_feedback, grader_model)
-                VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
-                RETURNING id
-            ''', (
-                essay_id,
-                grade_result.get('total_score', 0),
-                grade_result.get('max_score', 100),
-                json.dumps(grade_result.get('rubric_points', [])),
-                grade_result.get('overall_feedback', ''),
-                json.dumps(grade_result.get('line_feedback', [])),
-                grade_result.get('grader_model', 'gpt-4o')
-            ))
-            grade_id = get_scalar(cursor.fetchone())
-        else:
-            cursor.execute(f'''
-                INSERT INTO essay_grades 
-                (essay_id, score, max_score, rubric_breakdown, overall_feedback, line_feedback, grader_model)
-                VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
-            ''', (
-                essay_id,
-                grade_result.get('total_score', 0),
-                grade_result.get('max_score', 100),
-                json.dumps(grade_result.get('rubric_points', [])),
-                grade_result.get('overall_feedback', ''),
-                json.dumps(grade_result.get('line_feedback', [])),
-                grade_result.get('grader_model', 'gpt-4o')
-            ))
-            grade_id = cursor.lastrowid
-        
-        conn.commit()
-        conn.close()
-        
-        return jsonify({
-            'success': True,
-            'grade_id': grade_id,
-            'score': grade_result.get('total_score', 0),
-            'max_score': grade_result.get('max_score', 100),
-            'overall_feedback': grade_result.get('overall_feedback', ''),
-            'rubric_points': grade_result.get('rubric_points', []),
-            'line_feedback': grade_result.get('line_feedback', []),
-            'grader_model': grade_result.get('grader_model', 'gpt-4o'),
-            'model_answer': model_answer  # Include model answer for comparison
-        })
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-@app.route('/api/essays/<int:essay_id>', methods=['GET'])
-def get_essay(essay_id):
-    """Get a user's essay with grades."""
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        placeholder = '%s' if USE_POSTGRES else '?'
-        
-        # Get essay details
-        cursor.execute(f'''
-            SELECT ue.*, ep.exam_id, ep.exam_year, ep.exam_month, ep.question_number, 
-                   ep.subject, ep.prompt_text, ep.model_answer
-            FROM user_essays ue
-            JOIN essay_prompts ep ON ue.prompt_id = ep.id
-            WHERE ue.id = {placeholder}
-        ''', (essay_id,))
-        
-        essay_row = cursor.fetchone()
-        if not essay_row:
-            conn.close()
-            return jsonify({'error': 'Essay not found'}), 404
-        
-        essay = dict(essay_row)
-        
-        # Get grades
-        cursor.execute(f'''
-            SELECT * FROM essay_grades WHERE essay_id = {placeholder} ORDER BY graded_at DESC
-        ''', (essay_id,))
-        
-        grades = [dict(row) for row in cursor.fetchall()]
-        conn.close()
-        
-        # Parse JSON fields in grades
-        for grade in grades:
-            if grade.get('rubric_breakdown'):
-                try:
-                    grade['rubric_breakdown'] = json.loads(grade['rubric_breakdown'])
-                except:
-                    pass
-            if grade.get('line_feedback'):
-                try:
-                    grade['line_feedback'] = json.loads(grade['line_feedback'])
-                except:
-                    pass
-        
-        essay['grades'] = grades
-        
-        return jsonify({'essay': essay})
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-@app.route('/api/user-essays', methods=['GET'])
-def get_user_essays():
-    """Get essays for a user."""
-    try:
-        user_id = request.args.get('user_id')
-        anonymous_id = request.args.get('anonymous_id')
-        limit = int(request.args.get('limit', 20))
-        
-        if not user_id and not anonymous_id:
-            return jsonify({'error': 'user_id or anonymous_id required'}), 400
-        
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        placeholder = '%s' if USE_POSTGRES else '?'
-        
-        if user_id:
-            cursor.execute(f'''
-                SELECT ue.id, ue.prompt_id, ue.word_count, ue.submitted_at,
-                       ep.exam_id, ep.subject, ep.exam_year, ep.exam_month,
-                       eg.score, eg.max_score
-                FROM user_essays ue
-                JOIN essay_prompts ep ON ue.prompt_id = ep.id
-                LEFT JOIN essay_grades eg ON ue.id = eg.essay_id
-                WHERE ue.user_id = {placeholder}
-                ORDER BY ue.submitted_at DESC
-                LIMIT {placeholder}
-            ''', (user_id, limit))
-        else:
-            cursor.execute(f'''
-                SELECT ue.id, ue.prompt_id, ue.word_count, ue.submitted_at,
-                       ep.exam_id, ep.subject, ep.exam_year, ep.exam_month,
-                       eg.score, eg.max_score
-                FROM user_essays ue
-                JOIN essay_prompts ep ON ue.prompt_id = ep.id
-                LEFT JOIN essay_grades eg ON ue.id = eg.essay_id
-                WHERE ue.anonymous_id = {placeholder}
-                ORDER BY ue.submitted_at DESC
-                LIMIT {placeholder}
-            ''', (anonymous_id, limit))
-        
-        essays = [dict(row) for row in cursor.fetchall()]
-        conn.close()
-        
-        return jsonify({'essays': essays})
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-@app.route('/api/essay-stats', methods=['GET'])
-def get_essay_stats():
-    """Get essay statistics for a user."""
-    try:
-        user_id = request.args.get('user_id')
-        anonymous_id = request.args.get('anonymous_id')
-        
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        placeholder = '%s' if USE_POSTGRES else '?'
-        
-        # Base filter
-        if user_id:
-            user_filter = f'ue.user_id = {placeholder}'
-            user_param = user_id
-        elif anonymous_id:
-            user_filter = f'ue.anonymous_id = {placeholder}'
-            user_param = anonymous_id
-        else:
-            # Return global stats
-            cursor.execute('SELECT COUNT(*) FROM essay_prompts')
-            total_prompts = get_scalar(cursor.fetchone())
-            
-            cursor.execute('SELECT COUNT(DISTINCT subject) FROM essay_prompts WHERE subject IS NOT NULL')
-            total_subjects = get_scalar(cursor.fetchone())
-            
-            conn.close()
-            return jsonify({
-                'total_prompts': total_prompts,
-                'total_subjects': total_subjects,
-                'user_essays': 0,
-                'avg_score': None
-            })
-        
-        # User-specific stats
-        cursor.execute(f'''
-            SELECT COUNT(*) FROM user_essays ue WHERE {user_filter}
-        ''', (user_param,))
-        user_essays = get_scalar(cursor.fetchone())
-        
-        cursor.execute(f'''
-            SELECT AVG(eg.score), MAX(eg.score), COUNT(eg.id)
-            FROM user_essays ue
-            JOIN essay_grades eg ON ue.id = eg.essay_id
-            WHERE {user_filter}
-        ''', (user_param,))
-        
-        stats_row = cursor.fetchone()
-        if isinstance(stats_row, dict):
-            avg_score = stats_row.get('avg')
-            best_score = stats_row.get('max')
-            graded_count = stats_row.get('count')
-        else:
-            avg_score = stats_row[0]
-            best_score = stats_row[1]
-            graded_count = stats_row[2]
-        
-        # Subject breakdown
-        cursor.execute(f'''
-            SELECT ep.subject, COUNT(*) as count, AVG(eg.score) as avg_score
-            FROM user_essays ue
-            JOIN essay_prompts ep ON ue.prompt_id = ep.id
-            LEFT JOIN essay_grades eg ON ue.id = eg.essay_id
-            WHERE {user_filter} AND ep.subject IS NOT NULL
-            GROUP BY ep.subject
-            ORDER BY count DESC
-        ''', (user_param,))
-        
-        rows = cursor.fetchall()
-        if rows and isinstance(rows[0], dict):
-            subjects = [{'subject': row['subject'], 'count': row['count'], 'avg_score': row['avg_score']} for row in rows]
-        else:
-            subjects = [{'subject': row[0], 'count': row[1], 'avg_score': row[2]} for row in rows]
-        
-        # Total prompts available
-        cursor.execute('SELECT COUNT(*) FROM essay_prompts')
-        total_prompts = get_scalar(cursor.fetchone())
-        
-        conn.close()
-        
-        return jsonify({
-            'total_prompts': total_prompts,
-            'user_essays': user_essays,
-            'graded_count': graded_count,
-            'avg_score': round(avg_score, 1) if avg_score else None,
-            'best_score': best_score,
-            'subjects': subjects
-        })
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-@app.route('/api/auth/login', methods=['POST'])
-def login():
-    """Login user"""
-    try:
-        data = request.get_json()
-        username = data.get('username', '').strip()
-        password = data.get('password', '')
-        
-        if not username or not password:
-            return jsonify({'error': 'Username and password are required'}), 400
-        
-        # Authenticate user
-        user = authenticate_user(username, password, DB_PATH)
-        
-        # Generate JWT token
-        token = generate_jwt_token(user['id'], user['username'])
-        
-        return jsonify({
-            'success': True,
-            'message': 'Login successful',
-            'user': user,
-            'token': token
-        })
-        
-    except ValueError as e:
-        return jsonify({'error': str(e)}), 401
-    except Exception as e:
-        return jsonify({'error': 'Login failed'}), 500
-
-@app.route('/api/auth/logout', methods=['POST'])
-@require_auth
-def logout():
-    """Logout user (client-side token removal)"""
-    return jsonify({
-        'success': True,
-        'message': 'Logout successful'
-    })
-
-@app.route('/api/auth/me', methods=['GET'])
-@require_auth
-def get_current_user():
-    """Get current user information"""
-    try:
-        auth_header = request.headers.get('Authorization')
-        if not auth_header:
-            return jsonify({'error': 'No authorization header'}), 401
-            
-        token = auth_header.split(' ')[1] if ' ' in auth_header else auth_header
-        user = get_user_from_token(token, DB_PATH)
-        
-        return jsonify({
-            'success': True,
-            'user': user
-        })
-        
-    except Exception as e:
-        return jsonify({'error': 'Failed to get user information'}), 500
-
-@app.route('/api/auth/preferences', methods=['PUT'])
-@require_auth
-def update_preferences():
-    """Update user preferences"""
-    try:
-        data = request.get_json()
-        user_id = g.user_id
-        
-        success = update_user_preferences(user_id, data, DB_PATH)
-        
-        if success:
-            return jsonify({
-                'success': True,
-                'message': 'Preferences updated successfully'
-            })
-        else:
-            return jsonify({'error': 'Failed to update preferences'}), 500
-            
-    except Exception as e:
-        return jsonify({'error': 'Failed to update preferences'}), 500
-
-
+# Local development server
 if __name__ == '__main__':
-    print("Starting Law Quizzer Backend API Server...")
-    print(f"Database path: {DB_PATH}")
-    print(f"OpenAI API Key configured: {'Yes' if os.environ.get('OPENAI_API_KEY') else 'No'}")
-    print(f"Vector store service available: {'Yes' if vector_store_service else 'No'}")
-    print(f"AI explanations available: {'Yes' if ai_service else 'No'}")
-    print(f"Essay grading available: {'Yes' if essay_grader_service else 'No'}")
-    print("\nServer will be available at: http://localhost:5001/api")
-    print("Health check endpoint: http://localhost:5001/api/health")
-    print("\nPress Ctrl+C to stop the server\n")
-    
-    # Run the Flask development server
-    app.run(
-        host='0.0.0.0',  # Allow connections from any IP
-        port=5001,       # Port 5001 as specified in the frontend
-        debug=True,      # Enable debug mode for development
-        use_reloader=False  # Disable reloader to avoid issues with async functions
-    )
+    port = int(os.environ.get('PORT', 5001))
+    debug = os.environ.get('FLASK_ENV') != 'production'
+    print(f"Starting Barbarossa API server on port {port}...")
+    print(f"Database: {'PostgreSQL' if USE_POSTGRES else 'SQLite'}")
+    print(f"CORS origins: {CORS_ORIGINS}")
+    app.run(host='0.0.0.0', port=port, debug=debug)
