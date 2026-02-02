@@ -195,6 +195,10 @@ def migrate_quiz_history(sqlite_conn, pg_conn):
     history = []
     for row in rows:
         row_dict = dict(zip(columns, row))
+        # Convert integer to boolean for negative_time (SQLite stores as 0/1, PostgreSQL expects boolean)
+        negative_time = row_dict.get('negative_time')
+        if negative_time is not None:
+            negative_time = bool(negative_time)
         history.append((
             row_dict.get('user_id'),
             row_dict.get('subject'),
@@ -203,7 +207,7 @@ def migrate_quiz_history(sqlite_conn, pg_conn):
             row_dict.get('duration_seconds'),
             row_dict.get('questions_json'),
             row_dict.get('answers_json'),
-            row_dict.get('negative_time'),
+            negative_time,
             row_dict.get('created_at'),
         ))
     
