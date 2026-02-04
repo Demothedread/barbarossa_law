@@ -42,7 +42,7 @@ interface QuizState {
     subject: string;
     questionType: "mix" | "mbe" | "generated";
     questionCount: number;
-    mode: "classic" | "quizshow" | "baseball" | "golf";
+    mode: "classic" | "quizshow" | "baseball" | "golf" | "football";
   };
 }
 

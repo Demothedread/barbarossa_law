@@ -169,6 +169,55 @@ def get_scalar(row: Any) -> Any:
         return list(row.values())[0]
     return row[0]
 
+
+def normalize_question_for_api(row: Any) -> Dict[str, Any]:
+    """
+    Normalize a question row for API response.
+    - Maps 'idx' to 'id' for frontend compatibility
+    - Ensures prompt is null/empty string handled properly
+    - Adds choices array
+    - Marks generated questions
+    """
+    question_dict = row_to_dict(row) if not isinstance(row, dict) else dict(row)
+    
+    # Map idx to id for frontend compatibility
+    if 'idx' in question_dict:
+        question_dict['id'] = question_dict['idx']
+    
+    # Ensure prompt is properly handled (empty string or null → omit or empty)
+    prompt = question_dict.get('prompt', '')
+    if prompt is None or (isinstance(prompt, str) and prompt.strip() == ''):
+        question_dict['prompt'] = None
+    else:
+        question_dict['prompt'] = prompt.strip()
+    
+    # Ensure question text exists and is trimmed
+    question_text = question_dict.get('question', '')
+    if question_text:
+        question_dict['question'] = question_text.strip()
+    
+    # Add choices array for convenience
+    question_dict['choices'] = [
+        question_dict.get('choice_a', ''),
+        question_dict.get('choice_b', ''),
+        question_dict.get('choice_c', ''),
+        question_dict.get('choice_d', ''),
+    ]
+    
+    # Ensure gold_passage/explanation is available
+    if not question_dict.get('gold_passage'):
+        question_dict['gold_passage'] = None
+    
+    # Mark if this is a generated question for UI display
+    idx = question_dict.get('idx', '')
+    question_dict['is_generated'] = (
+        (isinstance(idx, str) and idx.startswith('vs_')) or 
+        question_dict.get('generated', 0) == 1
+    )
+    
+    return question_dict
+
+
 def ensure_quiz_attempt_logs_table(cursor):
     """Ensure quiz attempt logs table exists. Schema migrations are handled by initialize_db.py."""
     cursor.execute("""
@@ -302,28 +351,8 @@ def get_questions():
         if not all_questions:
             return jsonify({'questions': [], 'available': 0})
         
-        # Convert to list of dicts and add choices array
-        questions_list = []
-        for row in all_questions:
-            question_dict = dict(row)
-            question_dict['choices'] = [
-                question_dict['choice_a'],
-                question_dict['choice_b'], 
-                question_dict['choice_c'],
-                question_dict['choice_d']
-            ]
-            
-            # Ensure gold_passage is available for the review screen
-            if 'gold_passage' not in question_dict or not question_dict['gold_passage']:
-                question_dict['gold_passage'] = "No explanation available for this question."
-            
-            # Mark if this is a generated question for UI display
-            question_dict['is_generated'] = (
-                question_dict['idx'].startswith('vs_') or 
-                question_dict.get('generated', 0) == 1
-            )
-                
-            questions_list.append(question_dict)
+        # Convert to normalized format using helper
+        questions_list = [normalize_question_for_api(row) for row in all_questions]
         
         # Randomly sample n questions
         selected_questions = random.sample(questions_list, min(n, len(questions_list)))
@@ -449,23 +478,8 @@ def get_smart_questions():
         if not all_candidates:
             return jsonify({'questions': [], 'available': 0, 'smart_selection': False})
         
-        # Convert to list of dicts
-        questions_list = []
-        for row in all_candidates:
-            question_dict = dict(row)
-            question_dict['choices'] = [
-                question_dict['choice_a'],
-                question_dict['choice_b'], 
-                question_dict['choice_c'],
-                question_dict['choice_d']
-            ]
-            if 'gold_passage' not in question_dict or not question_dict['gold_passage']:
-                question_dict['gold_passage'] = "No explanation available for this question."
-            question_dict['is_generated'] = (
-                question_dict['idx'].startswith('vs_') or 
-                question_dict.get('generated', 0) == 1
-            )
-            questions_list.append(question_dict)
+        # Convert to normalized format using helper
+        questions_list = [normalize_question_for_api(row) for row in all_candidates]
         
         # Select n questions (prioritizing order from smart selection)
         selected = questions_list[:n] if len(questions_list) >= n else questions_list
@@ -1357,6 +1371,285 @@ def get_vector_store_status():
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+# =============================================================================
+# MBE QUESTION GENERATION ENDPOINTS
+# Advanced question generation with dual vector stores, deduplication, and voting
+# =============================================================================
+
+# Lazy import to avoid circular dependencies
+_mbe_generator = None
+
+def get_mbe_generator():
+    """Get or create the MBE question generator instance."""
+    global _mbe_generator
+    if _mbe_generator is None:
+        from mbe_question_generator import MBEQuestionGenerator
+        db_path = get_db_path_as_path() if not USE_POSTGRES else Path(".")
+        _mbe_generator = MBEQuestionGenerator(db_path, use_postgres=USE_POSTGRES)
+    return _mbe_generator
+
+
+@app.route('/api/generate-mbe-questions', methods=['POST'])
+async def generate_mbe_questions_endpoint():
+    """
+    Generate MBE questions using the advanced dual-vector-store system.
+    
+    Request body:
+    {
+        "subject": "Contracts",  // Required
+        "subtopic": "Formation of contracts",  // Optional - uses probability weighting if omitted
+        "count": 5,  // Optional, default 5, max 20
+        "user_id": "user123"  // Optional, for tracking
+    }
+    
+    Response:
+    {
+        "success": true,
+        "batch_id": "gen_abc123",
+        "requested": 5,
+        "generated": 5,
+        "saved": 5,
+        "fallback_used": false,
+        "source": "mbe_extraction" | "outline_based" | "hybrid",
+        "questions": [...]
+    }
+    """
+    try:
+        if not os.environ.get("OPENAI_API_KEY"):
+            return jsonify({
+                'error': 'MBE question generation requires OPENAI_API_KEY'
+            }), 500
+        
+        data = request.get_json() or {}
+        
+        # Validate required fields
+        subject = data.get('subject')
+        if not subject:
+            return jsonify({'error': 'subject is required'}), 400
+        
+        # Optional fields with defaults
+        subtopic = data.get('subtopic')
+        count = min(data.get('count', 5), 20)  # Cap at 20
+        user_id = data.get('user_id')
+        
+        if count < 1:
+            return jsonify({'error': 'count must be at least 1'}), 400
+        
+        # Generate questions
+        generator = get_mbe_generator()
+        result = await generator.generate_questions(
+            subject=subject,
+            subtopic=subtopic,
+            count=count,
+            user_id=user_id
+        )
+        
+        return jsonify({
+            'success': True,
+            **result
+        })
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/questions/<question_id>/vote', methods=['POST'])
+async def vote_on_question(question_id: str):
+    """
+    Vote on an AI-generated question quality.
+    
+    'up' vote = approve as model question (high quality, keep forever)
+    'down' vote = reject (exclude from regular rotation)
+    
+    Request body:
+    {
+        "vote": "up" | "down",
+        "user_id": "user123",  // Optional
+        "anonymous_id": "anon123"  // Optional
+    }
+    """
+    try:
+        data = request.get_json() or {}
+        
+        vote = data.get('vote')
+        if vote not in ('up', 'down'):
+            return jsonify({'error': 'vote must be "up" or "down"'}), 400
+        
+        user_id = data.get('user_id')
+        anonymous_id = data.get('anonymous_id')
+        
+        if not user_id and not anonymous_id:
+            return jsonify({'error': 'Either user_id or anonymous_id is required'}), 400
+        
+        generator = get_mbe_generator()
+        result = await generator.vote_question(
+            question_id=question_id,
+            vote=vote,
+            user_id=user_id,
+            anonymous_id=anonymous_id
+        )
+        
+        if 'error' in result:
+            return jsonify(result), 400
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/questions/<question_id>/approve', methods=['POST'])
+async def approve_question(question_id: str):
+    """
+    Shortcut to approve a question as a model question.
+    Equivalent to voting 'up'.
+    """
+    try:
+        data = request.get_json() or {}
+        user_id = data.get('user_id')
+        anonymous_id = data.get('anonymous_id')
+        
+        if not user_id and not anonymous_id:
+            return jsonify({'error': 'Either user_id or anonymous_id is required'}), 400
+        
+        generator = get_mbe_generator()
+        result = await generator.vote_question(
+            question_id=question_id,
+            vote='up',
+            user_id=user_id,
+            anonymous_id=anonymous_id
+        )
+        
+        if 'error' in result:
+            return jsonify(result), 400
+        
+        return jsonify({
+            'success': True,
+            'question_id': question_id,
+            'status': 'approved',
+            **result
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/generation-stats', methods=['GET'])
+def get_generation_stats():
+    """
+    Get statistics about AI question generation.
+    
+    Returns counts of generated questions by source, subject,
+    model vs non-model, and recent generation batches.
+    """
+    try:
+        generator = get_mbe_generator()
+        stats = generator.get_generation_stats()
+        return jsonify(stats)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/subtopic-weights', methods=['GET'])
+def get_subtopic_weights():
+    """
+    Get probability weights for subtopics based on MBE distribution.
+    
+    Query params:
+    - subject: Required subject to get weights for
+    """
+    try:
+        subject = request.args.get('subject')
+        if not subject:
+            return jsonify({'error': 'subject parameter is required'}), 400
+        
+        generator = get_mbe_generator()
+        weights = generator._get_subtopic_weights(subject)
+        
+        return jsonify({
+            'subject': subject,
+            'weights': weights
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/questions/<question_id>/vote-status', methods=['GET'])
+def get_question_vote_status(question_id: str):
+    """
+    Get the vote status for a specific question.
+    
+    Query params:
+    - user_id: Optional user ID to check their specific vote
+    - anonymous_id: Optional anonymous ID to check their specific vote
+    """
+    try:
+        user_id = request.args.get('user_id')
+        anonymous_id = request.args.get('anonymous_id')
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Get aggregate vote counts
+        cursor.execute(convert_query("""
+            SELECT vote, COUNT(*) as count 
+            FROM question_votes 
+            WHERE question_id = ? 
+            GROUP BY vote
+        """), (question_id,))
+        
+        vote_counts = {"up": 0, "down": 0}
+        for row in cursor.fetchall():
+            row_dict = row_to_dict(row)
+            vote_counts[row_dict['vote']] = row_dict['count']
+        
+        # Get question approval status
+        cursor.execute(convert_query("""
+            SELECT is_model_question, approval_status, generated
+            FROM questions WHERE idx = ?
+        """), (question_id,))
+        
+        question_row = cursor.fetchone()
+        question_info = row_to_dict(question_row) if question_row else {}
+        
+        # Get user's specific vote if requested
+        user_vote = None
+        if user_id or anonymous_id:
+            if user_id:
+                cursor.execute(convert_query("""
+                    SELECT vote FROM question_votes 
+                    WHERE question_id = ? AND user_id = ?
+                """), (question_id, user_id))
+            else:
+                cursor.execute(convert_query("""
+                    SELECT vote FROM question_votes 
+                    WHERE question_id = ? AND anonymous_id = ?
+                """), (question_id, anonymous_id))
+            
+            vote_row = cursor.fetchone()
+            if vote_row:
+                user_vote = row_to_dict(vote_row).get('vote')
+        
+        conn.close()
+        
+        return jsonify({
+            'question_id': question_id,
+            'is_generated': bool(question_info.get('generated', 0)),
+            'is_model_question': bool(question_info.get('is_model_question', 0)),
+            'approval_status': question_info.get('approval_status'),
+            'vote_counts': vote_counts,
+            'user_vote': user_vote
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 
 @app.route('/api/subtopics', methods=['GET'])
 def get_subtopics():

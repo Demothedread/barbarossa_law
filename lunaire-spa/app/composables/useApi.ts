@@ -581,6 +581,195 @@ export const useApi = () => {
     return response.json();
   };
 
+  // ==========================================================================
+  // MBE QUESTION GENERATION
+  // ==========================================================================
+
+  interface GenerationResult {
+    success: boolean;
+    batch_id: string;
+    requested: number;
+    generated: number;
+    saved: number;
+    fallback_used: boolean;
+    source: "mbe_extraction" | "outline_based" | "hybrid";
+    questions: Question[];
+    errors?: string[];
+  }
+
+  interface VoteResult {
+    success: boolean;
+    question_id: string;
+    vote: "up" | "down";
+    counts: {
+      up: number;
+      down: number;
+    };
+  }
+
+  interface GenerationStats {
+    total_generated: number;
+    model_questions: number;
+    pending_review: number;
+    rejected: number;
+    by_source: Record<string, number>;
+    by_subject: Record<string, number>;
+    recent_batches: Array<{
+      batch_id: string;
+      subject: string;
+      subtopic: string | null;
+      requested: number;
+      generated: number;
+      fallback_used: boolean;
+      source: string;
+      created_at: string;
+    }>;
+  }
+
+  interface QuestionVoteStatus {
+    question_id: string;
+    is_generated: boolean;
+    is_model_question: boolean;
+    approval_status: "approved" | "rejected" | null;
+    vote_counts: {
+      up: number;
+      down: number;
+    };
+    user_vote: "up" | "down" | null;
+  }
+
+  /**
+   * Generate MBE questions using the advanced dual-vector-store system.
+   * Includes deduplication and fallback to outline-based generation.
+   */
+  const generateMBEQuestions = async (
+    subject: string,
+    options?: {
+      subtopic?: string;
+      count?: number;
+      user_id?: string;
+    },
+  ): Promise<GenerationResult> => {
+    const response = await fetch(`${baseUrl}/generate-mbe-questions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        subject,
+        subtopic: options?.subtopic,
+        count: options?.count ?? 5,
+        user_id: options?.user_id,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Failed to generate questions");
+    }
+
+    return response.json();
+  };
+
+  /**
+   * Vote on an AI-generated question quality.
+   * 'up' = approve as model question
+   * 'down' = reject/exclude
+   */
+  const voteOnQuestion = async (
+    questionId: string,
+    vote: "up" | "down",
+    userId?: string,
+    anonymousId?: string,
+  ): Promise<VoteResult> => {
+    const response = await fetch(`${baseUrl}/questions/${questionId}/vote`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        vote,
+        user_id: userId,
+        anonymous_id: anonymousId,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Failed to vote");
+    }
+
+    return response.json();
+  };
+
+  /**
+   * Approve a question as a model question (shortcut for up vote).
+   */
+  const approveQuestion = async (
+    questionId: string,
+    userId?: string,
+    anonymousId?: string,
+  ): Promise<VoteResult & { status: string }> => {
+    const response = await fetch(`${baseUrl}/questions/${questionId}/approve`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: userId,
+        anonymous_id: anonymousId,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Failed to approve question");
+    }
+
+    return response.json();
+  };
+
+  /**
+   * Get generation statistics.
+   */
+  const getGenerationStats = async (): Promise<GenerationStats> => {
+    const response = await fetch(`${baseUrl}/generation-stats`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch generation stats");
+    }
+    return response.json();
+  };
+
+  /**
+   * Get subtopic probability weights for a subject.
+   */
+  const getSubtopicWeights = async (
+    subject: string,
+  ): Promise<{ subject: string; weights: Record<string, number> }> => {
+    const response = await fetch(
+      `${baseUrl}/subtopic-weights?subject=${encodeURIComponent(subject)}`,
+    );
+    if (!response.ok) {
+      throw new Error("Failed to fetch subtopic weights");
+    }
+    return response.json();
+  };
+
+  /**
+   * Get vote status for a specific question.
+   */
+  const getQuestionVoteStatus = async (
+    questionId: string,
+    userId?: string,
+    anonymousId?: string,
+  ): Promise<QuestionVoteStatus> => {
+    const params = new URLSearchParams();
+    if (userId) params.append("user_id", userId);
+    if (anonymousId) params.append("anonymous_id", anonymousId);
+
+    const response = await fetch(
+      `${baseUrl}/questions/${questionId}/vote-status?${params.toString()}`,
+    );
+    if (!response.ok) {
+      throw new Error("Failed to fetch vote status");
+    }
+    return response.json();
+  };
+
   return {
     fetchQuestions,
     updateQuestionUsage,
@@ -613,5 +802,12 @@ export const useApi = () => {
     gradeEssay,
     fetchUserEssays,
     fetchEssayStats,
+    // MBE Question Generation
+    generateMBEQuestions,
+    voteOnQuestion,
+    approveQuestion,
+    getGenerationStats,
+    getSubtopicWeights,
+    getQuestionVoteStatus,
   };
 };

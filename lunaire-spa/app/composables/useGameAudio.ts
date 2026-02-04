@@ -25,51 +25,51 @@ export type ThemeType = "classic" | "quizshow" | "baseball" | "golf";
 // Audio paths for different themes
 const themeSounds: Record<ThemeType, Partial<Record<SoundType, string>>> = {
   classic: {
-    click: "/audio/theme/classic/click.mp3",
-    correct: "/audio/theme/classic/correct.mp3",
-    wrong: "/audio/theme/classic/wrong.mp3",
-    intro: "/audio/theme/classic/intro.mp3",
-    transition: "/audio/theme/classic/transition.mp3",
-    timer: "/audio/theme/classic/timer.mp3",
-    timerWarning: "/audio/theme/classic/timer-answer.mp3",
-    winner: "/audio/theme/classic/winner.wav",
-    loser: "/audio/theme/classic/loser.mp3",
-    calculating: "/audio/theme/classic/calculating.wav",
+    click: "~/assets/audio/theme/classic/click.mp3",
+    correct: "~/assets/audio/theme/classic/correct.mp3",
+    wrong: "~/assets/audio/theme/classic/wrong.mp3",
+    intro: "~/assets/audio/theme/classic/intro.mp3",
+    transition: "~/assets/audio/theme/classic/transition.mp3",
+    timer: "~/assets/audio/theme/classic/timer.mp3",
+    timerWarning: "~/assets/audio/theme/classic/timer-answer.mp3",
+    winner: "~/assets/audio/theme/classic/winner.wav",
+    loser: "~/assets/audio/theme/classic/loser.mp3",
+    calculating: "~/assets/audio/theme/classic/calculating.wav",
   },
   quizshow: {
-    click: "/audio/theme/quiz-show/click.wav",
-    correct: "/audio/theme/quiz-show/correct.mp3",
-    wrong: "/audio/theme/quiz-show/wrong.mp3",
-    intro: "/audio/theme/quiz-show/intro.mp3",
-    transition: "/audio/theme/quiz-show/transition.mp3",
-    timerWarning: "/audio/theme/quiz-show/timer.wav",
+    click: "~/assets/audio/theme/quiz-show/click.wav",
+    correct: "~/assets/audio/theme/quiz-show/correct.mp3",
+    wrong: "~/assets/audio/theme/quiz-show/wrong.mp3",
+    intro: "~/assets/audio/theme/quiz-show/intro.mp3",
+    transition: "~/assets/audio/theme/quiz-show/transition.mp3",
+    timerWarning: "~/assets/audio/theme/quiz-show/timer.wav",
   },
   baseball: {
-    click: "/audio/theme/baseball/click.wav",
-    correct: "/audio/theme/baseball/correct.mp3",
-    wrong: "/audio/theme/baseball/wrong.mp3",
-    intro: "/audio/theme/baseball/intro.mp3",
-    transition: "/audio/theme/baseball/transition.wav",
+    click: "~/assets/audio/theme/baseball/click.wav",
+    correct: "~/assets/audio/theme/baseball/correct.mp3",
+    wrong: "~/assets/audio/theme/baseball/wrong.mp3",
+    intro: "~/assets/audio/theme/baseball/intro.mp3",
+    transition: "~/assets/audio/theme/baseball/transition.wav",
   },
   golf: {
-    click: "/audio/theme/classic/click.mp3",
-    correct: "/audio/theme/classic/correct.mp3",
-    wrong: "/audio/theme/classic/wrong.mp3",
-    intro: "/audio/theme/classic/intro.mp3",
-    transition: "/audio/theme/classic/transition.mp3",
+    click: "~/assets/audio/theme/classic/click.mp3",
+    correct: "~/assets/audio/theme/classic/correct.mp3",
+    wrong: "~/assets/audio/theme/classic/wrong.mp3",
+    intro: "~/assets/audio/theme/classic/intro.mp3",
+    transition: "~/assets/audio/theme/classic/transition.mp3",
   },
 };
 
 // Fun winner/loser sounds
 const winnerSounds = [
-  "/audio/winner/Excellente.wav",
-  "/audio/winner/johncena.mp3",
+  "~/assets/audio/winner/Excellente.wav",
+  "~/assets/audio/winner/johncena.mp3",
 ];
 
 const loserSounds = [
-  "/audio/loser/sad.wav",
-  "/audio/loser/noo.wav",
-  "/audio/loser/MyDernNoodleDontWorksoGood.wav",
+  "~/assets/audio/loser/sad.wav",
+  "~/assets/audio/loser/noo.wav",
+  "~/assets/audio/loser/MyDernNoodleDontWorksoGood.wav",
 ];
 
 export function useGameAudio() {

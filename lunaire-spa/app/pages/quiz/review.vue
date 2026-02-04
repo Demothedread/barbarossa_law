@@ -58,6 +58,14 @@
             <span class="question-status">
               {{ q.correct ? "Correct" : "Incorrect" }}
             </span>
+            <!-- Vote buttons for AI-generated questions -->
+            <QuestionVoteButtons
+              :question-id="q.question.id"
+              :is-generated="isGeneratedQuestion(q.question)"
+              :user-id="authStore.user?.id?.toString()"
+              :anonymous-id="getAnonymousId()"
+              @voted="handleQuestionVoted"
+            />
           </div>
 
           <div class="review-card__body">
@@ -226,6 +234,7 @@
 
 <script setup lang="ts">
 import { useTheme } from "~/composables/useTheme";
+import { useAuthStore } from "~/stores/auth";
 import { useDailyTrackerStore } from "~/stores/dailyTracker";
 import { useQuizStore, type Question } from "~/stores/quiz";
 
@@ -233,6 +242,7 @@ const route = useRoute();
 const router = useRouter();
 const quizStore = useQuizStore();
 const dailyTracker = useDailyTrackerStore();
+const authStore = useAuthStore();
 const api = useApi();
 const { modeClass } = useTheme();
 
@@ -395,6 +405,30 @@ const submitFeedback = async (questionId: string, thumbsUp: boolean) => {
     feedbackLoading.value.delete(questionId);
     feedbackLoading.value = new Set(feedbackLoading.value);
   }
+};
+
+// Helper function to check if a question is AI-generated
+const isGeneratedQuestion = (q: Question): boolean => {
+  return (
+    q.id?.startsWith("ai_") || q.id?.startsWith("vs_") || Boolean(q.generated)
+  );
+};
+
+// Get anonymous ID for vote tracking when user not logged in
+const getAnonymousId = (): string => {
+  const storageKey = "law_quiz_anon_id";
+  let anonId = localStorage.getItem(storageKey);
+  if (!anonId) {
+    anonId = "anon_" + Math.random().toString(36).substring(2, 15);
+    localStorage.setItem(storageKey, anonId);
+  }
+  return anonId;
+};
+
+// Handle vote event from QuestionVoteButtons component
+const handleQuestionVoted = (vote: "up" | "down") => {
+  console.log("Question voted:", vote);
+  // Could add toast notification or other UI feedback here
 };
 
 // Redirect if no result

@@ -172,9 +172,9 @@ const loading = ref(false);
 const selectedSubject = ref("all");
 const selectedType = ref<"mix" | "mbe" | "generated">("mix");
 const selectedCount = ref(9);
-const selectedMode = ref<"classic" | "quizshow" | "baseball" | "golf">(
-  "classic",
-);
+const selectedMode = ref<
+  "classic" | "quizshow" | "baseball" | "golf" | "football"
+>("classic");
 
 const subjects = [
   { value: "all", label: "All Subjects" },
@@ -236,6 +236,12 @@ const modes = [
     name: "Golf",
     desc: "Lunar country club theme",
     icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 18v-6"/><path d="M12 12l6-4-6-6v10"/><ellipse cx="12" cy="20" rx="4" ry="2"/></svg>`,
+  },
+  {
+    value: "football",
+    name: "Football",
+    desc: "Overtime bar review battle",
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="12" rx="10" ry="6" transform="rotate(45 12 12)"/><path d="M7 7l10 10"/><path d="M9 12h6"/><path d="M12 9v6"/></svg>`,
   },
 ];
 

@@ -18,6 +18,12 @@
     @complete="handleModeComplete"
     @restart="handleRestart"
   />
+  <FootballMode
+    v-else-if="quizMode === 'football'"
+    :questions="quizStore.currentQuestions"
+    @complete="handleModeComplete"
+    @restart="handleRestart"
+  />
 
   <!-- Classic Mode (default) -->
   <div

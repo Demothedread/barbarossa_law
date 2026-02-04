@@ -50,6 +50,20 @@ def create_schema(conn):
         print("Adding 'generated' column to questions table...")
         cursor.execute('ALTER TABLE questions ADD COLUMN generated INTEGER DEFAULT 0')
     
+    # Add new columns for MBE question generation system
+    question_columns_to_add = [
+        ('is_model_question', 'INTEGER DEFAULT 0'),  # 1 = approved model question
+        ('approval_status', 'TEXT'),  # 'approved', 'rejected', NULL
+        ('generation_source', 'TEXT'),  # 'mbe_extraction', 'outline_based', 'hybrid'
+        ('generation_batch_id', 'TEXT'),  # Links to question_generation_log
+        ('similarity_hash', 'TEXT'),  # For deduplication checking
+    ]
+    
+    for column_name, column_type in question_columns_to_add:
+        if column_name not in columns:
+            print(f"Adding '{column_name}' column to questions table...")
+            cursor.execute(f'ALTER TABLE questions ADD COLUMN {column_name} {column_type}')
+    
     # Create AI explanations table with separate columns for each choice
     print("Creating question_explanations table...")
     cursor.execute('''
@@ -210,6 +224,55 @@ def create_schema(conn):
         grader_model TEXT,
         graded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (essay_id) REFERENCES user_essays(id)
+    )
+    ''')
+    
+    # Create question generation log table for MBE generation tracking
+    print("Creating question_generation_log table...")
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS question_generation_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        batch_id TEXT UNIQUE NOT NULL,
+        user_id TEXT,
+        subject TEXT,
+        subtopic TEXT,
+        requested_count INTEGER,
+        generated_count INTEGER,
+        rejected_duplicates INTEGER DEFAULT 0,
+        fallback_used INTEGER DEFAULT 0,
+        source_used TEXT,
+        error_message TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    
+    # Create question votes table for user feedback on AI-generated questions
+    print("Creating question_votes table...")
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS question_votes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        question_id TEXT NOT NULL,
+        user_id TEXT,
+        anonymous_id TEXT,
+        vote TEXT NOT NULL CHECK(vote IN ('up', 'down')),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(question_id, user_id),
+        UNIQUE(question_id, anonymous_id),
+        FOREIGN KEY (question_id) REFERENCES questions(idx)
+    )
+    ''')
+    
+    # Create subtopic probability table for weighted generation
+    print("Creating subtopic_probabilities table...")
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS subtopic_probabilities (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        subject TEXT NOT NULL,
+        subtopic TEXT NOT NULL,
+        mbe_count INTEGER DEFAULT 0,
+        probability_weight REAL DEFAULT 1.0,
+        last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(subject, subtopic)
     )
     ''')
     
