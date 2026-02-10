@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "name": "barbarossa-law",
+  "name": "monobloc",
   "version": 2,
   "buildCommand": "npm run generate",
   "outputDirectory": ".output/public",

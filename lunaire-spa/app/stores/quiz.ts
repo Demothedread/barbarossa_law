@@ -173,12 +173,11 @@ export const useQuizStore = defineStore("quiz", {
       try {
         const { updateQuestionUsage } = useApi();
         const anonymousId =
-          localStorage.getItem("barbarossa_anonymous_id") ||
-          crypto.randomUUID();
+          localStorage.getItem("monobloc_anonymous_id") || crypto.randomUUID();
 
         // Ensure we have an anonymous ID stored
-        if (!localStorage.getItem("barbarossa_anonymous_id")) {
-          localStorage.setItem("barbarossa_anonymous_id", anonymousId);
+        if (!localStorage.getItem("monobloc_anonymous_id")) {
+          localStorage.setItem("monobloc_anonymous_id", anonymousId);
         }
 
         await updateQuestionUsage(
@@ -190,8 +189,8 @@ export const useQuizStore = defineStore("quiz", {
           undefined, // user_id (for logged-in users, future)
           anonymousId,
         );
-      } catch (error) {
-        console.warn("Failed to track question usage:", error);
+      } catch {
+        // Failed to track question usage - non-critical
       }
     },
 

@@ -147,18 +147,18 @@ const scoreLabel = computed(() => {
 const scoreCommentary = computed(() => {
   const p = scorePercent.value;
   if (p >= 90) {
-    return "Congratulations on your bourgeois genetic advantage and accumulated cultural capital. You might actually pass this thing.";
+    return "Congratulations. You're doing this on a free, unaccredited, probably-illegal bar review site and outperforming people who paid $4,000. Let that sink in.";
   }
   if (p >= 80) {
-    return "Acceptable performance. You've demonstrated the minimum competence NCBE reluctantly permits. Unlike those $4,000 courses, we won't pretend this makes you 'empowered.'";
+    return "Acceptable performance. You've demonstrated the adequacy that is Deez' Eazy-Breezy's entire brand promise. Unlike those $4,000 courses, we won't pretend this makes you 'empowered.' But you're doing fine.";
   }
   if (p >= 65) {
-    return "You're in the danger zone - the same statistical purgatory where bar examiners love to watch candidates squirm. Study harder or prepare to fund NCBE's next licensing fee increase.";
+    return "You're in the danger zone — that statistical purgatory where examiners watch candidates squirm. But hey, at least your bar review is free. Study more. Come back. We'll be here.";
   }
   if (p >= 50) {
-    return "At this rate, you might want to consider becoming a Republican sycophant and start groveling for a job on a site formerly known as Twitter. The legal profession may not be your destiny.";
+    return "Listen, Rome wasn't built in a day and neither is bar exam competence. The good news: this site is free, the questions are unlimited, and nobody named Brad is going to email you about it. Keep at it.";
   }
-  return "Perhaps you should be born better, or steal from your friends to afford one of those $4,000 courses. Or give up on your dreams and start thinking practically about alternative careers.";
+  return "We're not going to sugarcoat it. But we're also not going to charge you $4,000 to hear bad news from someone named Brad. Practice more. It's free. That's literally our whole thing.";
 });
 
 const formattedTime = computed(() => {

@@ -44,8 +44,8 @@
           </div>
           <div class="clubhouse-hero__visual">
             <div class="moon-badge">
-              <span class="moon-badge__text">Est. 2026</span>
-              <span class="moon-badge__location">The Void of Student Debt</span>
+              <span class="moon-badge__text">monobloc.com</span>
+              <span class="moon-badge__location">Free. Adequate. Yours.</span>
             </div>
           </div>
         </div>
@@ -169,16 +169,16 @@ const memberStats = computed(() => {
 });
 
 const quickOptions = [
-  { type: "mix", name: "Mixed", desc: "The full spectrum of pain" },
+  { type: "mix", name: "Mixed", desc: "The full no-frills experience" },
   {
     type: "mbe",
     name: "MBE Only",
-    desc: "NCBE's finest $200/question content",
+    desc: "The questions they don't want you to have",
   },
   {
     type: "generated",
     name: "AI Generated",
-    desc: "Infinite suffering, zero licensing fees",
+    desc: "Infinite practice, zero licensing fees",
   },
 ];
 

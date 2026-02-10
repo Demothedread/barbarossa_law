@@ -1,13 +1,24 @@
 /**
  * Centralized Copy Management Store
  * All website text content in one place for easy editing
+ *
+ * PARODY NOTICE: This content is satirical commentary on the bar exam
+ * preparation industry. Any resemblance to actual bar prep courses
+ * charging $4,000+ is entirely intentional and protected speech.
+ * Or maybe the whole site is a surreal parody. Who knows! Let's spend
+ * weeks litigating that.
+ *
+ * monobloc.com — Deez' Eazy-Breezy Bar Review Bonanza
  */
 import { defineStore } from "pinia";
+// @ts-ignore - Typekit font import
+// import url("https://use.typekit.net/wow2lwe.css");
 
 export interface CopyStyle {
   fontFamily?: string;
   fontSize?: string;
   fontWeight?: string;
+  fontStyle?: string;
   color?: string;
   lineHeight?: string;
 }
@@ -116,14 +127,15 @@ export interface SiteCopy {
 // Default font styles
 const defaultStyles: Record<string, CopyStyle> = {
   heading1: {
-    fontFamily: "'Orbitron', sans-serif",
+    fontFamily: "'good-times', sans-serif",
     fontSize: "3rem",
-    fontWeight: "700",
+    fontWeight: "900",
   },
   heading2: {
-    fontFamily: "'Orbitron', sans-serif",
+    fontFamily: "'good-times', sans-serif",
     fontSize: "1.5rem",
-    fontWeight: "600",
+    fontStyle: "italic",
+    fontWeight: "500",
   },
   heading3: {
     fontFamily: "'Space Grotesk', sans-serif",
@@ -131,25 +143,30 @@ const defaultStyles: Record<string, CopyStyle> = {
     fontWeight: "600",
   },
   tagline: {
-    fontFamily: "'Space Grotesk', sans-serif",
+    fontFamily: "'tilt-neon', sans-serif",
     fontSize: "1.5rem",
     fontWeight: "400",
   },
   body: {
-    fontFamily: "'Space Grotesk', sans-serif",
+    fontFamily: "'ff-chambers-sans-web','Space Grotesk', sans-serif",
     fontSize: "1rem",
     fontWeight: "400",
     lineHeight: "1.6",
   },
   button: {
-    fontFamily: "'Space Grotesk', sans-serif",
+    fontFamily: "'new-astro-soft', sans-serif",
     fontSize: "0.875rem",
-    fontWeight: "600",
+    fontWeight: "300",
   },
   label: {
-    fontFamily: "'Space Grotesk', sans-serif",
+    fontFamily: "'galix-mono', sans-serif",
     fontSize: "0.75rem",
-    fontWeight: "500",
+    fontWeight: "700",
+  },
+  callout: {
+    fontFamily: "'good-times', sans-serif",
+    fontSize: "2rem",
+    fontWeight: "700",
   },
 };
 
@@ -167,157 +184,215 @@ export const useCopyStore = defineStore("copy", {
     styles: defaultStyles,
     content: {
       global: {
-        siteName: copy("Barbarossa Bar Prep", "heading1"),
-        tagline: copy("The Cheap Bar Review", "tagline"),
-        established: copy("Est. 2026", "label"),
-        location: copy("The Void of Student Debt", "label"),
+        siteName: copy("Deez' Eazy-Breezy", "heading1"),
+        tagline: copy(
+          "The Adequate, Unaccredited, Probably Illegal, but Arguably Ethical Bar Review",
+        ),
+        established: copy("monobloc.com • Est. 2026", "label"),
+        location: copy("For the Benefit of Sick Puppies & Kids with Cancer Who Can't Read Good", "label"),
       },
       home: {
         hero: {
-          title: copy("Barbarossa Bar Prep", "heading1"),
-          tagline: copy("Because $4,000 is for suckers", "tagline"),
+          title: copy("Deez' Eazy-Breezy Bar Review Bonanza", "heading1"),
+          tagline: copy("No Frills. Generic. The Baseline of What You Need.", "tagline"),
           description: [
             copy(
-              "Welcome to Barbarossa — where the only thing that truly matters is the Bar. You know this because it's literally in our name. Twice. Which, incoincidentally, is the maximum number of times \"bar\" can legally appear inside a single word without violating a well known law of linguistics and several state statutes. Go ahead and try to think of a word with more. You won't. You can't. Because they don't exist.",
+              "The California bar exam costs $878. Plus a $250 late fee. Plus a $153 'laptop fee' — and no, they don't give you a laptop. That's just the privilege of using your own."
             ),
             copy(
-              "Did you stumble into Barbarian? Or the Barbary Pirates? You're just borrowing from the same ancestral realm...",
+              "For those playing along at home, that is..."
+            ),
+            copy("$1,281.00!", "callout"),
+            copy(
+              "There's never enough seats at nearby testing locations. So add flights. A hotel for two nights. Lost wages for two MIDWEEK exam days. Conservatively, you're budgeting $2,000 just to sit for the bar."
             ),
             copy(
-              'Fun little etymology fact to impress your brother\'s father-in-law: The word Barber comes from Barbary Pirates. The Barbary in there comes from Barbarian. Barbarian comes from Barbarossa. Barbarossa means "the ones with red-beards."',
+              "Maybe that doesn't sound like a lot. If so, great — this site probably isn't for you. But since you're here anyway, some perspective:"
             ),
             copy(
-              "Which is to say, historically speaking, you're not just studying for the Bar. You're about to enter an ancient tradition of arguing about rules they did not invent, with words they don't understand, towards outcomes they do not agree with, on behalf of those they can hardly stand while likely opposing the very few they actually can. But I digress.",
+              "    • $2,100 is roughly what the average SNAP recipient receives in a year."
             ),
             copy(
-              "Could we have gone with something like bar-bar-bar bar-ba bar-anne? Sure. The Beatles did. We could. It's catchy. It's got lot more bars. Objectively almost 2x the bars. Wait, Peter, we should. Damn it. It's a better name.",
+              "    • $2,100 is two months' rent for a studio apartment in the average U.S. city."
             ),
             copy(
-              "Hey Peter, It's me. Listen, when you come from your break let's take another gander at the name, starting to cool on barbarossa. The brain balls are yearning for more bars. Can you pick up some cheerios? Love you. Kiss kiss.",
+              "    • $2,100 is more than the annual average income in nearly 20 countries."
             ),
             copy(
-              "But here's the problem: I already spent all my money on this name. The domain is bought. So unless someone is willing to Venmo me for barbara-anne-dot-com, we're sticking with Barbarossa, arr.",
+              "Context, not criticism. Bar exams are resource-intensive. Maybe they ought to cost more than two months of somewhere to live, or one year of something to eat."
+            ),
+            copy(
+              "But bar prep review courses can cost 3-4x as much as the exam itself."
+            ),
+            copy(
+              "And if you want to tell me that's because they provide a superior educational experience — fine. At that price, they should be a luxury, not a necessity. Let them point to their passage numbers and say it's because they have the best TEACHERS, the best METHODS."
+            ),
+            copy(
+              "But some charge $1,000 just to access databases of actual questions from past exams — because they can afford to license the rights. And twice that if you want their outlines, too."
+            ),
+            copy(
+              "That's information. That's knowledge. That's power."
+            ),
+            copy(
+              "Bar exams are expensive. Bar review courses triple what is already an expensive undertaking. Most of us couldn't afford them if our firms or our loan balances weren't subsidizing them. There's no real alternative — not when the majors control digital access to outlines and practice questions. You're asking students to take a nuanced test full of unfamiliar questions, then saying: for $1,000 extra, I can show you thousands of real ones. Otherwise? Here's thirty. GOOD LUCK. And then you're surprised when someone goes to the library, scans a few books from twenty years ago, and builds a database of decent — yet clearly inferior, obviously! — practice questions for themselves and anyone else who could use them."
+            ),
+            copy(
+              "Barbri, Themis, Kaplan: If that's a threat to your business model, I invite you to spend your students' money guarding your gatekeeper licenses instead of building a better product. Bridge trolls gonna bridge troll. So go ahead and sue Deez' Eazy-Breezy Bar Review for the benefit of sick puppies and kids with cancer who can't read good but would like to and want to do other things good as well."
+            ),
+            copy(
+              "The ABA says there are 'approved' ways to prepare for the bar. The NCBE says there are 'licensed' questions you must pay tribute to access. We say: NA NA NA WE'RE NOT LISTENING NA NA NA CAN'T HEAR YOU.",
+            ),
+            copy(
+              "The Deez' Eazy-Breezy Guarantee: This bar prep course is adequate. Not 'industry-leading.' Not 'revolutionary.' Not backed by 'decades of proven methodology.' Just... adequate. We wouldn't recommend it, honestly. But if you need some practice questions — here you go.",
+            ),
+            copy(
+              "PRESTIGIOUS FEATURES: Unlike courses that assign you a 'Success Coach' named Brad who emails you motivational quotes, we assign you nothing. No coach. No quotes. Just questions and the void.",
+            ),
+            copy(
+              "WHY 'DEEZ'? Because 'bar' appears twice. That's it. That's the whole reason. The NCBE only has 'bar' once. Checkmate, regulatory monopoly.",
+            ),
+            copy(
+              "DISCLAIMER: DEEZ' EAZY-BREEZY BAR REVIEW BONANZA is made explicitly for the benefit of the community and is not affiliated with, endorsed by, or even acknowledged by any state bar association, the ABA, the NCBE, or frankly anyone with credentials. This is probably fine. Or maybe the whole thing is a surreal parody. Who knows! Let's spend weeks litigating that.",
             ),
           ],
           funFact: copy(
-            "Fun Fact! Barbary comes from Barbarian. BARBARIAN CAME FROM BARBAROSSA — the redheaded ones.",
+            "We host this at monobloc.com because I bought the domain a while back and it was cheap. Not free. But cheap. Like this site.",
           ),
           barbaraAnne: copy(
-            "barbarbar-barbarbarannnnnne? like the beatles song? well thats more bars than barbarossa. a lot more. well we just ruined what was a very good name. I can't change it now. I spent all my money on the site name already. can i even buy barbara anne?",
+            "I wanted to call the site Barbara Anne's Bar Prep. There's clearly a correlation between the number of 'bars' in a name and the quality of bar prep. Imagine..."
           ),
-          beachBoysButton: copy("🏖️ Wouldn't It Be Nice?", "button"),
-          beachBoysButtonActive: copy("🌌 Back to the Stars", "button"),
-          winning: copy("winning", "tagline"),
-          ctaPrimary: copy("Start Practicing", "button"),
-          ctaSecondary: copy("Quick Start", "button"),
+          beachBoysButton: copy("🏖️ Bar-Bar-Bar-Barbar-baranne", "button"),
+                                                         M                                                                                                                     beachBoysButtonActive: copy("🌌 Back to Adequate Prep", "button"),
+          winning: copy("adequate", "tagline"),
+          ctaPrimary: copy("Begin Adequate Preparation", "button"),
+          ctaSecondary: copy("Skip the Pep Talk", "button"),
         },
         stats: {
-          title: copy("Your Question Set Metrics", "heading2"),
+          title: copy("Your Metrics (Unverified)", "heading2"),
           labels: {
-            totalRounds: copy("Sets Did", "label"),
-            avgScore: copy("Average Score", "label"),
-            bestScore: copy("Best Set", "label"),
-            streak: copy("DAILY STREAK", "label"),
-            correctTotal: copy("Total Correct", "label"),
+            totalRounds: copy("Sets Endured", "label"),
+            avgScore: copy("Average (Not a Predictor)", "label"),
+            bestScore: copy("Peak Performance", "label"),
+            streak: copy("CONSECUTIVE DAY BONUS (there is no bonus)", "label"),
+            correctTotal: copy("Questions Survived", "label"),
           },
         },
         quickStart: {
-          title: copy("Quick Start", "heading2"),
-          description: copy("Jump right into practice mode"),
+          title: copy("Immediate Suffering", "heading2"),
+          description: copy(
+            "Skip the inspirational messaging and face the questions",
+          ),
         },
       },
       about: {
-        title: copy("About This Site", "heading2"),
-        heroTitle: copy("Barbarossa Bar Prep", "heading1"),
+        title: copy("About This Endeavor (Such As It Is)", "heading2"),
+        heroTitle: copy("Deez' Eazy-Breezy Bar Review Bonanza", "heading1"),
         heroTagline: copy(
-          "The Cheap Bar Review That Doesn't Pretend to Care",
+          "The Adequate, Unaccredited, Probably Illegal, but Arguably Ethical Bar Review",
           "tagline",
         ),
         sections: {
           whyWeExist: {
-            title: copy("Why We Exist", "heading3"),
+            title: copy(
+              "Our Mission Statement (Per No One's Guidelines)",
+              "heading3",
+            ),
             paragraphs: [
               copy(
-                'Because the bar exam preparation industry is a racket. BARBRI charges $4,000+ to "empower your learning journey" while NCBE charges exorbitant licensing fees for questions they wrote decades ago. Meanwhile, the entire legal industry wrings its hands wondering why the profession lacks diversity.',
+                'At Deez\' Eazy-Breezy, we are COMMITTED to EMPOWERING your JOURNEY toward bar exam ADEQUACY through our PROPRIETARY methodology of... showing you questions. That\'s it. That\'s the methodology. Other courses charge $4,000+ for "spiral instructional design" and "adaptive learning algorithms." We charge nothing for acknowledging those are just marketing words.',
               ),
               copy(
-                'We built this site because studying for the bar shouldn\'t cost more than a semester of law school. No "spiral instructional design." No "Pass Predictor™." No coaches named Brad. Just questions and your crushing anxiety.',
+                'We PROUDLY DECLINE to offer: Success Coaches™, Pass Predictors™, Personalized Study Plans™, or emails from someone named Brad telling you "You\'ve got this!" We find such theater undignified. You are an adult facing a gatekeeping exam designed by the NCBE. You do not need Brad. Also this whole site may be couched inside fun little mini-games, for legal purposes, that probably won\'t succeed. Or is the whole thing a surreal parody? Let\'s litigate.',
               ),
             ],
           },
           ncbeProblem: {
-            title: copy("The NCBE Problem", "heading3"),
+            title: copy(
+              "A Word About the NCBE (With Appropriate Gravitas)",
+              "heading3",
+            ),
             paragraphs: [
               copy(
-                "The National Conference of Bar Examiners holds a monopoly on the MBE, charging jurisdictions enormous licensing fees that get passed on to you. They've made the bar exam a $5,000+ ordeal that disproportionately burdens first-generation lawyers and those without family wealth.",
+                "The National Conference of Bar Examiners — that venerable institution — has, through decades of tireless work, constructed a licensing regime of such elegant complexity that becoming a lawyer now costs more than a small car. We salute their commitment to... whatever it is they're committed to. Certainly not accessibility.",
               ),
               copy(
-                "Their copyright threats mean we can't even show you real past questions without paying their tribute. This is not how professional licensing should work in a democratic society.",
+                "Their COPYRIGHTED questions — written by committees in the 1980s — remain so PROPRIETARY that showing one to a friend is technically a federal crime. We assume this is what the Founders intended when they wrote the First Amendment.",
               ),
             ],
           },
           whatWeDo: {
-            title: copy("What We Actually Do", "heading3"),
+            title: copy("Our Modest Offerings", "heading3"),
             paragraphs: [
               copy(
-                "We provide practice questions covering MBE subjects, track your progress, and offer AI-powered explanations. No gamification theater. No \"you're doing great!\" when you're not. Just honest feedback and the questions you need to practice.",
+                "We provide practice questions. We track your scores. We offer AI explanations that are probably accurate. Is this revolutionary? No. Is it 'industry-leading'? Absolutely not. It's no frills. It's generic. But it's the baseline of what you need. And it's free. At monobloc.com. Because that's the domain I own.",
               ),
             ],
           },
         },
         truths: [
-          copy("Bar prep courses are overpriced."),
-          copy("NCBE is a monopoly."),
-          copy('65% is "passing" - set your expectations accordingly.'),
           copy(
-            'Your law school\'s pass rate is a better predictor than any "Pass Predictor™".',
+            "This course is adequate. We wouldn't recommend it, but here you are.",
           ),
-          copy("The bar exam tests test-taking, not lawyering."),
-          copy("Most practicing attorneys couldn't pass the bar today."),
           copy(
-            "The legal profession gatekeeps to protect incumbents, not the public.",
+            "The NCBE is a nonprofit. They made $50M last year. Nonprofits are fun.",
+          ),
+          copy(
+            "The ABA 'accredits' law schools. Bar prep courses remain unaccredited. Curious.",
+          ),
+          copy(
+            '65% is passing. The NCBE calls this "minimum competence." Inspiring.',
+          ),
+          copy("Your Pass Predictor™ is astrology for people with JDs."),
+          copy(
+            "Most partners at your future firm couldn't pass this exam today.",
+          ),
+          copy(
+            "This site is free because why is this stuff so expensive.",
+          ),
+          copy(
+            "Ba-ba-ba, ba-Barbara Ann would have been a better name. We acknowledge this.",
           ),
         ],
         footer: {
           motto: copy(
-            "\"Unlike those $4,000 courses, we won't pretend you'll be 'empowered.'\"",
+            "\"We're not great. We're not even good. But we're here, and we're free. monobloc.com\"",
           ),
           established: copy(
-            "Est. 2026 • The Void of Student Debt • Earth",
+            "Est. 2026 • Not ABA Accredited • Not NCBE Approved • Probably Illegal • Arguably Ethical",
             "label",
           ),
         },
       },
       quiz: {
         setup: {
-          title: copy("Quiz Setup", "heading2"),
-          subjectLabel: copy("Subject", "label"),
-          countLabel: copy("Number of Questions", "label"),
-          typeLabel: copy("Question Type", "label"),
-          startButton: copy("Start Quiz", "button"),
+          title: copy("Configure Your Ordeal", "heading2"),
+          subjectLabel: copy("Subject (NCBE Taxonomy)", "label"),
+          countLabel: copy("Quantity of Suffering", "label"),
+          typeLabel: copy("Question Provenance", "label"),
+          startButton: copy("Commence Adequacy", "button"),
         },
         active: {
-          questionLabel: copy("Question", "label"),
-          timerLabel: copy("Time", "label"),
-          submitButton: copy("Submit Answer", "button"),
-          nextButton: copy("Next Question", "button"),
+          questionLabel: copy("Query", "label"),
+          timerLabel: copy("Elapsed", "label"),
+          submitButton: copy("Commit to This Answer", "button"),
+          nextButton: copy("Face the Next One", "button"),
         },
         review: {
-          title: copy("Quiz Results", "heading2"),
-          scoreLabel: copy("Score", "label"),
-          correctLabel: copy("Correct", "label"),
-          incorrectLabel: copy("Incorrect", "label"),
+          title: copy("Assessment of Your Attempts", "heading2"),
+          scoreLabel: copy("Performance Index", "label"),
+          correctLabel: copy("Survived", "label"),
+          incorrectLabel: copy("Did Not Survive", "label"),
         },
       },
       nav: {
-        home: copy("Home", "button"),
-        quiz: copy("Quiz", "button"),
-        study: copy("Study", "button"),
+        home: copy("Return", "button"),
+        quiz: copy("Questions", "button"),
+        study: copy("Materials", "button"),
         essays: copy("Essays", "button"),
-        statistics: copy("Statistics", "button"),
-        about: copy("About", "button"),
-        signIn: copy("Sign In", "button"),
-        signOut: copy("Sign Out", "button"),
+        statistics: copy("Metrics", "button"),
+        about: copy("Disclosures", "button"),
+        signIn: copy("Identify", "button"),
+        signOut: copy("Retreat", "button"),
       },
     },
   }),
@@ -466,8 +541,8 @@ export const useCopyStore = defineStore("copy", {
       try {
         const imported = JSON.parse(json);
         this.content = imported;
-      } catch (e) {
-        console.error("Failed to import copy:", e);
+      } catch {
+        // Invalid JSON - ignore silently
       }
     },
   },

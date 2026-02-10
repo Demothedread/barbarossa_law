@@ -245,8 +245,8 @@ onMounted(async () => {
     years.value = yearsRes;
     stats.value = statsRes;
     recentEssays.value = essaysRes.essays;
-  } catch (err) {
-    console.error("Failed to load essay data:", err);
+  } catch {
+    // Failed to load essay data - page will show empty state
   } finally {
     loading.value = false;
   }

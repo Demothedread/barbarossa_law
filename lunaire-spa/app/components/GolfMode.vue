@@ -14,7 +14,7 @@
             </div>
           </div>
 
-          <h1 class="space-title">BARBAROSSA'S</h1>
+          <h1 class="space-title">DEEZ' EAZY-BREEZY</h1>
           <h2 class="crater-title">CRATER GOLF CLUB</h2>
           <div class="latin-motto">"Hostis Humanis Generis"</div>
           <div class="motto-translation">Enemy of All Mankind</div>
@@ -39,7 +39,7 @@
       <div class="scorecard-header">
         <div class="course-name">
           <span class="pirate-flag">🏴‍☠️</span>
-          BARBAROSSA'S CRATER GOLF CLUB
+          DEEZ' EAZY-BREEZY CRATER GOLF CLUB
         </div>
         <div class="round-info">
           Hole {{ currentIndex + 1 }} of {{ questions.length }}
@@ -359,7 +359,7 @@
             🏴‍☠️ Ahoy! A true master of the crater course! 🏴‍☠️
           </p>
           <p v-else-if="totalScore <= questions.length * 2">
-            ⛳ Solid round, matey! Barbarossa approves.
+            ⛳ Solid round, matey! Adequate and then some.
           </p>
           <p v-else>💀 Back to the practice green, landlubber!</p>
         </div>

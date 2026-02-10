@@ -1,6 +1,6 @@
 /**
  * Golf Scoring Composable
- * Implements Barbarossa's Crater Golf Club scoring system
+ * Implements Deez' Eazy-Breezy Crater Golf Club scoring system
  *
  * Scoring:
  * - Birdie (-1): Correct + under 90 seconds

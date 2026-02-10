@@ -182,7 +182,8 @@
           </div>
           <div v-else class="empty-state">
             <p>
-              No sessions yet. Time to start funding NCBE's retirement plan.
+              No sessions yet. Start practicing — it's free, it's adequate, it's
+              at monobloc.com.
             </p>
             <NuxtLink to="/quiz/setup" class="btn btn--primary">
               Start Studying
@@ -260,15 +261,15 @@ const overallCommentary = computed(() => {
   const total = totalSessions.value;
 
   if (total === 0) {
-    return "You haven't started yet. NCBE appreciates your procrastination - it increases their repeat customer rate.";
+    return "You haven't started yet. The NCBE appreciates your procrastination — it increases their repeat customer rate. Meanwhile, we're over here. Free. Adequate. Waiting.";
   }
   if (avg >= 80) {
-    return "Your bourgeois genetic advantage is showing. Keep this up and you might actually join the legal profession's elite gatekeeping club.";
+    return "Genuinely impressive. Keep this up and you might actually join the legal profession's gatekeeping ranks. Deez' Eazy-Breezy takes no credit for your success, obviously.";
   }
   if (avg >= 65) {
-    return "You're hovering in the statistical danger zone where bar examiners love to watch candidates sweat. Unlike those $4,000 courses, we won't sugarcoat it.";
+    return "You're hovering in the statistical danger zone where bar examiners love to watch candidates sweat. Unlike those $4,000 courses, we won't sugarcoat it. But at least you're not paying $4,000 to hear that.";
   }
-  return "At this rate, consider pivoting to a career in political groveling or influencer marketing. The legal profession thanks you for your application fee contributions.";
+  return "We sincerely believe in you. But the numbers don't yet. Keep going — this site is free and the questions are unlimited. That's our whole selling point.";
 });
 
 const subjectStats = computed(() => {

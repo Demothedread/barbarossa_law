@@ -342,8 +342,8 @@ const toggleExplanation = async (questionId: string) => {
     // Track review on backend
     try {
       await api.trackReview(questionId);
-    } catch (e) {
-      console.error("Failed to track review:", e);
+    } catch {
+      // Failed to track review - non-critical
     }
   }
 
@@ -369,8 +369,8 @@ const toggleExplanation = async (questionId: string) => {
       if (exp) {
         explanations.value[questionId] = exp;
       }
-    } catch (e) {
-      console.error("Failed to fetch explanation:", e);
+    } catch {
+      // Failed to fetch explanation - will try again on next expand
     } finally {
       loadingExplanations.value.delete(questionId);
       loadingExplanations.value = new Set(loadingExplanations.value);
@@ -396,11 +396,8 @@ const submitFeedback = async (questionId: string, thumbsUp: boolean) => {
     dailyTracker.recordExplanationFeedback(questionId, thumbsUp, subject);
 
     // If thumbs up, the backend will cache the explanation automatically
-    if (thumbsUp) {
-      console.log("Explanation approved and will be cached for future use");
-    }
-  } catch (e) {
-    console.error("Failed to save feedback:", e);
+  } catch {
+    // Feedback save failed - non-critical, continue silently
   } finally {
     feedbackLoading.value.delete(questionId);
     feedbackLoading.value = new Set(feedbackLoading.value);
@@ -426,9 +423,8 @@ const getAnonymousId = (): string => {
 };
 
 // Handle vote event from QuestionVoteButtons component
-const handleQuestionVoted = (vote: "up" | "down") => {
-  console.log("Question voted:", vote);
-  // Could add toast notification or other UI feedback here
+const handleQuestionVoted = (_vote: "up" | "down") => {
+  // Vote recorded - could add toast notification here
 };
 
 // Redirect if no result

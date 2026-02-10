@@ -147,8 +147,8 @@ export const useApi = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(result),
       });
-    } catch (error) {
-      console.error("Failed to submit quiz result:", error);
+    } catch {
+      // Failed to submit quiz result - non-critical
     }
   };
 

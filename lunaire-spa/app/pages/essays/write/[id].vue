@@ -310,7 +310,6 @@ const submitForGrading = async () => {
       timerInterval = null;
     }
   } catch (err) {
-    console.error("Grading error:", err);
     alert(
       `Failed to grade essay: ${err instanceof Error ? err.message : "Unknown error"}`,
     );
@@ -340,7 +339,6 @@ onMounted(async () => {
     const { prompt: fetchedPrompt } = await api.fetchEssayPrompt(promptId);
     prompt.value = fetchedPrompt;
   } catch (err) {
-    console.error("Failed to fetch prompt:", err);
     error.value =
       err instanceof Error ? err.message : "Failed to load essay prompt";
   } finally {

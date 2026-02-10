@@ -10,7 +10,7 @@ definePageMeta({
 });
 
 useHead({
-  title: "Study Calendar | Barbarossa",
+  title: "Study Calendar | Deez' Eazy-Breezy",
   meta: [
     {
       name: "description",

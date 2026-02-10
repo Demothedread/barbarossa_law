@@ -2,8 +2,8 @@
   <nav class="app-nav">
     <!-- Brand -->
     <NuxtLink to="/" class="app-nav__brand">
-      <span class="app-nav__title">Barbarossa </span>
-      <span class="app-nav__tagline"> NO FRILLS ALL THRILLS </span>
+      <span class="app-nav__title">Deez' Eazy-Breezy </span>
+      <span class="app-nav__tagline"> ADEQUATE & FREE </span>
     </NuxtLink>
 
     <!-- Navigation Links -->

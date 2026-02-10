@@ -7,14 +7,15 @@
         </div>
         <div class="panel__body about-content">
           <div class="about-hero">
-            <h1>Barbarossa Bar Prep</h1>
+            <h1>Deez' Eazy-Breezy Bar Review Bonanza</h1>
             <p class="tagline">
-              The Cheap Bar Review That Doesn't Pretend to Care
+              The Adequate, Unaccredited, Probably Illegal, but Arguably Ethical
+              Bar Review
             </p>
           </div>
 
           <div class="about-section">
-            <h3>Why We Exist</h3>
+            <h3>Why This Exists</h3>
             <p>
               Because the bar exam preparation industry is a racket. BARBRI
               charges $4,000+ to "empower your learning journey" while NCBE
@@ -23,10 +24,11 @@
               wondering why the profession lacks diversity.
             </p>
             <p>
-              We built this site because studying for the bar shouldn't cost
-              more than a semester of law school. No "spiral instructional
-              design." No "Pass Predictor™." No coaches named Brad. Just
-              questions and your crushing anxiety.
+              We built this because studying for the bar shouldn't cost more
+              than a semester of law school. No "spiral instructional design."
+              No "Pass Predictor&trade;." No coaches named Brad. Just questions
+              and your crushing anxiety. It's no frills. It's generic. But it's
+              the baseline of what you need. And it's free. At monobloc.com.
             </p>
           </div>
 
@@ -40,9 +42,10 @@
               without family wealth.
             </p>
             <p>
-              Their copyright threats mean we can't even show you real past
-              questions without paying their tribute. This is not how
-              professional licensing should work in a democratic society.
+              Their copyright threats mean we can't show you real past questions
+              without paying tribute. This is not how professional licensing
+              should work in a democratic society. Or maybe this whole site is a
+              surreal parody. Who knows! Let's spend weeks litigating that.
             </p>
           </div>
 
@@ -52,17 +55,20 @@
               We provide practice questions covering MBE subjects, track your
               progress, and offer AI-powered explanations. No gamification
               theater. No "you're doing great!" when you're not. Just honest
-              feedback and the questions you need to practice.
+              feedback and the questions you need to practice. Also it's couched
+              in fun little mini-games, for legal purposes, that probably won't
+              succeed.
             </p>
           </div>
 
           <div class="about-footer">
             <p class="club-motto">
-              "Unlike those $4,000 courses, we won't pretend you'll be
-              'empowered.'"
+              "We're not great. We're not even good. But we're here, and we're
+              free. monobloc.com"
             </p>
             <p class="established">
-              Est. 2026 • The Void of Student Debt • Earth
+              Est. 2026 &bull; Not ABA Accredited &bull; Not NCBE Approved
+              &bull; Probably Illegal &bull; Arguably Ethical
             </p>
           </div>
         </div>
@@ -74,19 +80,23 @@
         </div>
         <div class="panel__body">
           <ol class="rules-list">
-            <li>Bar prep courses are overpriced.</li>
-            <li>NCBE is a monopoly.</li>
-            <li>65% is "passing" - set your expectations accordingly.</li>
             <li>
-              Your law school's pass rate is a better predictor than any "Pass
-              Predictor™".
+              This course is adequate. We wouldn't recommend it, but here you
+              are.
+            </li>
+            <li>
+              NCBE is a nonprofit. They made $50M last year. Nonprofits are fun.
+            </li>
+            <li>
+              65% is "passing" &mdash; the NCBE calls this "minimum competence."
+              Inspiring.
+            </li>
+            <li>
+              Your Pass Predictor&trade; is astrology for people with JDs.
             </li>
             <li>The bar exam tests test-taking, not lawyering.</li>
             <li>Most practicing attorneys couldn't pass the bar today.</li>
-            <li>
-              The legal profession gatekeeps to protect incumbents, not the
-              public.
-            </li>
+            <li>This site is free because why is this stuff so expensive.</li>
           </ol>
         </div>
       </div>

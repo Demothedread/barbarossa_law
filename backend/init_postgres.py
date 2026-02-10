@@ -335,10 +335,50 @@ def import_questions_from_csv(conn):
     
     print(f"Importing questions from {csv_path}...")
     
+    def is_shifted_row(row):
+        """Detect if a CSV row has columns shifted by one position.
+        
+        In shifted rows, the subtopic column was missing from the data,
+        causing all subsequent fields to shift left. The telltale sign is
+        that choice_d contains a single answer letter (A-D) instead of
+        actual choice text.
+        """
+        cd = row.get('choice_d', '').strip()
+        answer = row.get('answer', '').strip()
+        return len(cd) == 1 and cd in 'ABCD' and len(answer) > 1
+    
+    def fix_shifted_row(row):
+        """Correct a shifted row by moving fields to proper positions."""
+        return {
+            'idx': row.get('idx', ''),
+            'dataset': row.get('dataset', ''),
+            'example_id': row.get('example_id', ''),
+            'prompt_id': row.get('prompt_id', ''),
+            'source': row.get('source', ''),
+            'subject': row.get('subject', ''),
+            'subtopic': '',
+            'question_number': row.get('subtopic', ''),
+            'prompt': row.get('question_number', ''),
+            'question': row.get('prompt', ''),
+            'choice_a': row.get('question', ''),
+            'choice_b': row.get('choice_a', ''),
+            'choice_c': row.get('choice_b', ''),
+            'choice_d': row.get('choice_c', ''),
+            'answer': row.get('choice_d', ''),
+            'gold_passage': row.get('answer', ''),
+            'gold_idx': row.get('gold_passage', ''),
+        }
+    
     questions = []
+    shifted_count = 0
     with open(csv_path, 'r', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         for row in reader:
+            # Detect and fix column-shifted rows
+            if is_shifted_row(row):
+                row = fix_shifted_row(row)
+                shifted_count += 1
+            
             questions.append((
                 row.get('idx', ''),
                 row.get('dataset', ''),
@@ -359,6 +399,9 @@ def import_questions_from_csv(conn):
                 0,  # generated
                 row.get('subtopic', '')
             ))
+    
+    if shifted_count > 0:
+        print(f"  Fixed {shifted_count} column-shifted rows during import")
     
     if questions:
         insert_query = '''

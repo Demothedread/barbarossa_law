@@ -215,16 +215,16 @@ onMounted(async () => {
 async function loadSubjects() {
   try {
     subjects.value = await api.fetchSubjects();
-  } catch (err) {
-    console.error("Failed to load subjects:", err);
+  } catch {
+    // Failed to load subjects
   }
 }
 
 async function loadStats() {
   try {
     stats.value = await api.getGenerationStats();
-  } catch (err) {
-    console.error("Failed to load stats:", err);
+  } catch {
+    // Failed to load stats
   }
 }
 
@@ -237,8 +237,8 @@ async function loadSubtopics() {
   try {
     const result = await api.getSubtopicWeights(selectedSubject.value);
     subtopicWeights.value = result.weights;
-  } catch (err) {
-    console.error("Failed to load subtopic weights:", err);
+  } catch {
+    // Failed to load subtopic weights
   }
 }
 
@@ -262,7 +262,7 @@ async function generateQuestions() {
         "Applying fallback if needed...",
         "Saving to database...",
       ];
-      progressText.value = messages[Math.floor(Math.random() * messages.length)];
+      progressText.value = messages[Math.floor(Math.random() * messages.length)] ?? "Processing...";
     }
   }, 1500);
 
@@ -278,9 +278,9 @@ async function generateQuestions() {
 
     // Refresh stats
     await loadStats();
-  } catch (err: any) {
-    progressText.value = `Error: ${err.message}`;
-    console.error("Generation failed:", err);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    progressText.value = `Error: ${message}`;
   } finally {
     clearInterval(progressInterval);
     setTimeout(() => {

@@ -220,8 +220,11 @@
             class="inning-dot"
             :class="{
               current: idx === currentIndex,
-              hit: answers[idx] === questions[idx].answer,
-              out: answers[idx] && answers[idx] !== questions[idx].answer,
+              hit: questions[idx] && answers[idx] === questions[idx].answer,
+              out:
+                questions[idx] &&
+                answers[idx] &&
+                answers[idx] !== questions[idx].answer,
             }"
             @click="goToQuestion(idx)"
           ></span>
@@ -414,8 +417,8 @@ const loadSubjects = async () => {
   try {
     const response = await fetchSubjects();
     subjects.value = response || [];
-  } catch (error) {
-    console.warn("Could not load subjects:", error);
+  } catch {
+    // Failed to load subjects - use empty list
   }
 };
 

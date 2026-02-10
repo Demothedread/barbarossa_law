@@ -129,4 +129,47 @@ joyride꞉copy-manager꞉> show-info
 joyride꞉copy-manager꞉> 
 ; Unable to resolve symbol: text
 joyride꞉copy-manager꞉> 
-cd
+cd; Connecting using "joyride" project type.
+; Connecting ...
+; Reading port file: file:///Users/jreback/Projects/barbarossa_law/.joyride/.nrepl-port ...
+; Using host:port localhost:65380 ...
+; Hooking up nREPL sessions on port 65380...
+; nREPL connection failed, port 65380: AggregateError
+; Failed connecting.
+; Prompting for nREPL connection...
+; Hooking up nREPL sessions on port 65385...
+; nREPL connection failed, port 65385: AggregateError
+; Failed connecting.
+; Hooking up nREPL sessions on port 1015...
+; nREPL connection failed, port 1015: AggregateError
+; Failed connecting.
+; Hooking up nREPL sessions on port 1010...
+; nREPL connection failed, port 1010: AggregateError
+; Failed connecting.
+; Connect aborted.
+; Jacking in...
+; Connecting using "Clojure (projectless)" project type.
+; Using host:port localhost:61802 ...
+; Hooking up nREPL sessions on port 61802...
+; Connected session: joyride, port: 61802
+; Evaluating code from settings: 'calva.autoEvaluateCode.onConnect.clj'
+nil
+joyride꞉copy-manager꞉> 
+; Jack-in done.
+joyride꞉copy-manager꞉> 
+{
+  "awaitResult": true,
+  "code": "(require '[copy-manager :as cm] :reload)\n(cm/show-stats)"
+}
+; Invalid token: :
+joyride꞉copy-manager꞉> 
+"awaitResult": true,
+  "code": "(require '[copy-manager :as cm] :reload)\n(cm/show-stats)"
+"(require '[copy-manager :as cm] :reload)\n(cm/show-stats)"
+joyride꞉copy-manager꞉> 
+awaitResult: true,
+true
+joyride꞉copy-manager꞉> 
+code: (require [copy-manager :as cm] :reload)\n(cm/show-stats)
+#<Promise[pending:12]>
+joyride꞉copy-manager꞉> 

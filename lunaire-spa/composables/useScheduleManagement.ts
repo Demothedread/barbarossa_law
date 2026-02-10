@@ -12,8 +12,8 @@ export function useScheduleManagement() {
         const data = JSON.parse(stored);
         tasks.value = data.tasks || [];
         scheduleData.value = data.schedule || [];
-      } catch (e) {
-        console.error("Failed to load schedule:", e);
+      } catch {
+        // Failed to load schedule - will use empty state
       }
     }
   }

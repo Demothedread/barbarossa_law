@@ -130,20 +130,23 @@ export function useGameAudio() {
       clone.volume = volumeOverride ?? config.value.volume;
       await clone.play();
       return clone;
-    } catch (error) {
-      console.warn(`Failed to play audio: ${path}`, error);
+    } catch {
+      // Audio playback failed silently - user experience unaffected
+      return undefined;
     }
   };
 
   // Play random winner sound
   const playWinnerSound = () => {
     const sound = winnerSounds[Math.floor(Math.random() * winnerSounds.length)];
+    if (!sound) return;
     return playAudioFile(sound);
   };
 
   // Play random loser sound
   const playLoserSound = () => {
     const sound = loserSounds[Math.floor(Math.random() * loserSounds.length)];
+    if (!sound) return;
     return playAudioFile(sound);
   };
 

@@ -2751,6 +2751,118 @@ def get_essay_prompt(prompt_id):
         return jsonify({'error': str(e)}), 500
 
 
+# =============================================================================
+# AI CHAT ENDPOINT - Study Assistant
+# =============================================================================
+
+@app.route('/api/ai/chat', methods=['POST'])
+def ai_chat():
+    """
+    AI Chat endpoint for the study assistant widget.
+    Uses OpenAI's API with the vector store for context-aware responses.
+    """
+    if not vector_store_service:
+        return jsonify({
+            'error': 'AI service not configured',
+            'message': 'OpenAI API key not set'
+        }), 503
+    
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'No data provided'}), 400
+    
+    message = data.get('message', '').strip()
+    conversation_history = data.get('history', [])
+    
+    if not message:
+        return jsonify({'error': 'Message is required'}), 400
+    
+    try:
+        # Build the conversation context
+        system_prompt = """You are a knowledgeable study assistant specializing in California Bar Exam preparation. 
+You have access to comprehensive legal materials through a vector store containing bar exam content.
+
+Your role is to:
+1. Answer questions about legal concepts, rules, and doctrines
+2. Explain legal principles in clear, understandable terms
+3. Provide examples and hypotheticals to illustrate concepts
+4. Help students understand how to apply legal rules to fact patterns
+5. Clarify common misconceptions and tricky areas
+
+Be concise but thorough. When appropriate, mention which subjects or topics the question relates to.
+If you're unsure about something, say so rather than making up information.
+
+Format your responses with clear structure:
+- Use bullet points for lists
+- Bold key terms when introducing them
+- Provide brief examples where helpful"""
+
+        # Use the vector store service's async method via asyncio
+        import asyncio
+        
+        async def get_ai_response():
+            import aiohttp
+
+            # Build messages array with history
+            messages = [{"role": "system", "content": system_prompt}]
+            
+            # Add conversation history (last 10 exchanges to stay within context limits)
+            for entry in conversation_history[-10:]:
+                messages.append({
+                    "role": entry.get("role", "user"),
+                    "content": entry.get("content", "")
+                })
+            
+            # Add current message
+            messages.append({"role": "user", "content": message})
+            
+            # Call OpenAI Chat API
+            async with aiohttp.ClientSession() as session:
+                headers = {
+                    "Authorization": f"Bearer {vector_store_service.api_key}",
+                    "Content-Type": "application/json"
+                }
+                
+                payload = {
+                    "model": "gpt-4o-mini",
+                    "messages": messages,
+                    "max_tokens": 1000,
+                    "temperature": 0.7
+                }
+                
+                async with session.post(
+                    "https://api.openai.com/v1/chat/completions",
+                    headers=headers,
+                    json=payload
+                ) as response:
+                    if response.status != 200:
+                        error_text = await response.text()
+                        raise Exception(f"OpenAI API error: {response.status} - {error_text}")
+                    
+                    result = await response.json()
+                    return result['choices'][0]['message']['content']
+        
+        # Run the async function
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            response_text = loop.run_until_complete(get_ai_response())
+        finally:
+            loop.close()
+        
+        return jsonify({
+            'response': response_text,
+            'success': True
+        })
+        
+    except Exception as e:
+        print(f"AI Chat error: {e}")
+        return jsonify({
+            'error': 'Failed to get AI response',
+            'message': str(e)
+        }), 500
+
+
 @app.route('/api/essay-prompts/subjects', methods=['GET'])
 def get_essay_subjects():
     """Get all available essay subjects with counts."""

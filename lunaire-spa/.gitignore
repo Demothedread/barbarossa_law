@@ -24,3 +24,6 @@ logs
 !.env.example
 
 pnpm-lock.yaml
+
+MBE/
+.MBE/

@@ -234,13 +234,13 @@ const modes = [
   {
     value: "golf",
     name: "Golf",
-    desc: "Lunar country club theme",
+    desc: "Lunar mini-game theme",
     icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 18v-6"/><path d="M12 12l6-4-6-6v10"/><ellipse cx="12" cy="20" rx="4" ry="2"/></svg>`,
   },
   {
     value: "football",
     name: "Football",
-    desc: "Overtime bar review battle",
+    desc: "Overtime review battle",
     icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="12" rx="10" ry="6" transform="rotate(45 12 12)"/><path d="M7 7l10 10"/><path d="M9 12h6"/><path d="M12 9v6"/></svg>`,
   },
 ];
@@ -260,11 +260,11 @@ const startQuiz = async () => {
   try {
     // Get anonymous ID for smart question selection
     const anonymousId =
-      localStorage.getItem("barbarossa_anonymous_id") || crypto.randomUUID();
+      localStorage.getItem("monobloc_anonymous_id") || crypto.randomUUID();
 
     // Ensure we have an anonymous ID stored
-    if (!localStorage.getItem("barbarossa_anonymous_id")) {
-      localStorage.setItem("barbarossa_anonymous_id", anonymousId);
+    if (!localStorage.getItem("monobloc_anonymous_id")) {
+      localStorage.setItem("monobloc_anonymous_id", anonymousId);
     }
 
     // Use smart question selection to avoid repeats
@@ -292,8 +292,7 @@ const startQuiz = async () => {
     quizStore.setQuestions(questions);
 
     router.push("/quiz/play");
-  } catch (error) {
-    console.error("Failed to load questions:", error);
+  } catch {
     toastStore.error("Failed to load questions. Check your connection.");
   } finally {
     loading.value = false;

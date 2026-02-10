@@ -175,7 +175,8 @@
               :class="{
                 current: idx === currentIndex,
                 answered: answers[idx] !== null,
-                correct: answers[idx] === questions[idx].answer,
+                correct:
+                  questions[idx] && answers[idx] === questions[idx].answer,
               }"
               @click="goToQuestion(idx)"
             ></span>

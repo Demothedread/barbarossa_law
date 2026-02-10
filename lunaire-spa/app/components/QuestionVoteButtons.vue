@@ -114,8 +114,8 @@ async function loadVoteStatus() {
     voteCounts.value = status.vote_counts;
     isModelQuestion.value = status.is_model_question;
     approvalStatus.value = status.approval_status;
-  } catch (err) {
-    console.error("Failed to load vote status:", err);
+  } catch {
+    // Failed to load vote status - will use default state
   }
 }
 
@@ -148,8 +148,8 @@ async function vote(voteType: "up" | "down") {
       isModel: isModelQuestion.value,
       approval: approvalStatus.value,
     });
-  } catch (err) {
-    console.error("Failed to vote:", err);
+  } catch {
+    // Failed to vote - will allow retry
   } finally {
     isVoting.value = false;
   }

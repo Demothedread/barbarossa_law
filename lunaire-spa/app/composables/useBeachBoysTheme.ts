@@ -142,8 +142,8 @@ export const useBeachBoysTheme = () => {
         osc.start(audioContext.currentTime + note.time);
         osc.stop(audioContext.currentTime + note.time + 0.2);
       });
-    } catch (error) {
-      console.log("Could not play surf jingle:", error);
+    } catch {
+      // Could not play surf jingle - audio may not be available
     }
   };
 
@@ -221,8 +221,6 @@ export const useBeachBoysTheme = () => {
     setTimeout(() => {
       document.body.classList.remove("beach-boys-transition-in");
     }, 800);
-
-    console.log("🏖️🌊🎸 Beach Boys Theme ACTIVATED! Good vibrations! 🎸🌊🏖️");
   };
 
   /**
@@ -238,7 +236,6 @@ export const useBeachBoysTheme = () => {
       document.body.classList.remove("beach-boys-theme");
       document.body.classList.remove("beach-boys-transition-out");
       removeDecorativeElements();
-      console.log("🏖️ Beach Boys Theme deactivated");
     }, 500);
   };
 

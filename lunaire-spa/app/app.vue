@@ -20,6 +20,9 @@
     <!-- Toast Container -->
     <ToastContainer />
 
+    <!-- Offline Indicator -->
+    <OfflineIndicator />
+
     <!-- Auth Modal -->
     <AuthModal />
   </div>
