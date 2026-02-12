@@ -25,11 +25,11 @@ except ImportError:
     sys.exit(1)
 
 
-DATABASE_URL = os.environ.get('DATABASE_URL')
+DATABASE_URL = os.environ.get('SUPABASE_DB_URL') or os.environ.get('DATABASE_URL')
 
 if not DATABASE_URL:
-    print("ERROR: DATABASE_URL environment variable not set")
-    print("Set it to your Render PostgreSQL connection string")
+    print("ERROR: No database URL set.")
+    print("Set SUPABASE_DB_URL or DATABASE_URL environment variable.")
     sys.exit(1)
 
 
@@ -423,7 +423,7 @@ def import_questions_from_csv(conn):
 def main():
     """Main initialization function."""
     print("=" * 50)
-    print("Barbarossa Law Quiz - PostgreSQL Initialization")
+    print("Deez' Eazy-Breezy Bar Review - PostgreSQL Initialization")
     print("=" * 50)
     
     try:

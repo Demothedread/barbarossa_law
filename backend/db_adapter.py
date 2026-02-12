@@ -8,8 +8,9 @@ import sqlite3
 from contextlib import contextmanager
 from pathlib import Path
 
-# Check if we're in production (Render) or development
-DATABASE_URL = os.environ.get('DATABASE_URL')
+# Check if we're in production (Supabase/Render) or development
+# Supports both Supabase (SUPABASE_DB_URL) and Render (DATABASE_URL) connection strings
+DATABASE_URL = os.environ.get('SUPABASE_DB_URL') or os.environ.get('DATABASE_URL')
 IS_PRODUCTION = DATABASE_URL is not None
 
 if IS_PRODUCTION:

@@ -8,8 +8,8 @@ import sqlite3
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-# Database configuration
-DATABASE_URL = os.environ.get('DATABASE_URL')
+# Database configuration - supports Supabase or Render PostgreSQL
+DATABASE_URL = os.environ.get('SUPABASE_DB_URL') or os.environ.get('DATABASE_URL')
 USE_POSTGRES = bool(DATABASE_URL)
 
 # DB_PATH is either a connection string (PostgreSQL) or Path object (SQLite)

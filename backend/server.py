@@ -44,14 +44,16 @@ CORS(app,
      methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'])
 
 # Database configuration - use PostgreSQL in production, SQLite locally
-DATABASE_URL = os.environ.get('DATABASE_URL')
+# Supports both Render (DATABASE_URL) and Supabase (SUPABASE_DB_URL) connection strings
+DATABASE_URL = os.environ.get('SUPABASE_DB_URL') or os.environ.get('DATABASE_URL')
 USE_POSTGRES = bool(DATABASE_URL)
 
 # DB_PATH is either a connection string (PostgreSQL) or Path object (SQLite)
 DB_PATH: Union[str, Path]
 if USE_POSTGRES:
     DB_PATH = DATABASE_URL  # type: ignore[assignment]  # Connection string for PostgreSQL
-    print("Using PostgreSQL database")
+    db_provider = 'Supabase' if os.environ.get('SUPABASE_DB_URL') else 'Render'
+    print(f"Using PostgreSQL database ({db_provider})")
 else:
     DB_PATH = Path(__file__).parent.parent / 'law_quiz.db'
     print(f"Using SQLite database at {DB_PATH}")
@@ -819,7 +821,7 @@ def health_check():
 def root():
     """Root endpoint - redirect or info page"""
     return jsonify({
-        'name': 'Barbarossa Bar Prep API',
+        'name': "Deez' Eazy-Breezy Bar Review API",
         'version': '1.0.0',
         'docs': '/api/health',
         'status': 'running',
@@ -2916,7 +2918,7 @@ def get_essay_years():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5001))
     debug = os.environ.get('FLASK_ENV') != 'production'
-    print(f"Starting Barbarossa API server on port {port}...")
+    print(f"Starting Deez' Eazy-Breezy API server on port {port}...")
     print(f"Database: {'PostgreSQL' if USE_POSTGRES else 'SQLite'}")
     print(f"CORS origins: {CORS_ORIGINS}")
     app.run(host='0.0.0.0', port=port, debug=debug)

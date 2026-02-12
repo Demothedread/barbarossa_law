@@ -1,7 +1,7 @@
 {
-  "name": "barbarossa-law",
+  "name": "monobloc",
   "version": "3.0.0",
-  "description": "Barbarossa Bar Prep - California Bar Exam preparation with Nuxt/Vue",
+  "description": "Deez' Eazy-Breezy Bar Review Bonanza - The Adequate, Unaccredited, Probably Illegal Bar Review at monobloc.com",
   "private": true,
   "scripts": {
     "dev": "cd lunaire-spa && npm run dev",

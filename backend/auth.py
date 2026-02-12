@@ -15,8 +15,8 @@ import bcrypt
 import jwt
 from flask import current_app, g, jsonify, request
 
-# PostgreSQL support
-DATABASE_URL = os.environ.get('DATABASE_URL')
+# PostgreSQL support (Supabase or Render)
+DATABASE_URL = os.environ.get('SUPABASE_DB_URL') or os.environ.get('DATABASE_URL')
 USE_POSTGRES = bool(DATABASE_URL)
 
 # JWT Secret key - in production this should be a secure random key

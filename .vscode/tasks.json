@@ -3,7 +3,7 @@
   "inputs": [],
   "tasks": [
     {
-      "label": "Barbarossa: Copy Manager",
+      "label": "Monobloc: Copy Manager",
       "type": "shell",
       "command": "echo 'Use Cmd+Shift+P and search for Joyride: Run Workspace Script'",
       "problemMatcher": []

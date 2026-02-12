@@ -1,8 +1,8 @@
-# ☠️ BARBAROSSA BAR PREP
+# 🪑 DEEZ' EAZY-BREEZY BAR REVIEW BONANZA
 
-> The Cheap Bar Review - Because $4,000 is for suckers.
+> The Adequate, Unaccredited, Probably Illegal, but Arguably Ethical Bar Review — monobloc.com
 
-California Bar Exam preparation with AI-powered explanations, advanced analytics, and a retrofuturist space pirate aesthetic.
+California Bar Exam preparation with AI-powered explanations, advanced analytics, and a retrofuturist space pirate aesthetic. It's no frills. It's generic. But it's the baseline of what you need. And it's free.
 
 ## 🚀 Tech Stack
 
@@ -13,7 +13,7 @@ California Bar Exam preparation with AI-powered explanations, advanced analytics
 
 ## ⚡ Features
 
-- 🏴‍☠️ Retrofuturist space pirate design
+- 🪑 Retrofuturist space pirate design
 - 📚 1500+ MBE-style practice questions
 - 🤖 AI-powered answer explanations (OpenAI)
 - 📊 Performance analytics by subject/subtopic

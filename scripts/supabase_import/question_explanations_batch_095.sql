@@ -1,0 +1,8 @@
+INSERT INTO question_explanations (question_id, correct_answer, choice_a_explanation, choice_b_explanation, choice_c_explanation, choice_d_explanation, subtopic, ai_explanation, created_at, updated_at)
+VALUES
+('887', 'A', 'CORRECT. Properly applies the legal rule.', 'Incorrect.', 'Incorrect.', 'Incorrect.', NULL, 'OACK: Offer + Acceptance + Consideration + No Defenses | MY LEGS for SOF: Marriage, Year+, Land, Executor, Goods $500+, Surety | Mailbox: acceptance on dispatch.', '2026-02-05 02:10:17', NULL),
+('888', 'B', 'Incorrect.', 'CORRECT. Properly applies the legal rule.', 'Incorrect.', 'Incorrect.', NULL, 'OACK: Offer + Acceptance + Consideration + No Defenses | MY LEGS for SOF: Marriage, Year+, Land, Executor, Goods $500+, Surety | Mailbox: acceptance on dispatch.', '2026-02-05 02:10:17', NULL),
+('889', 'B', 'Incorrect.', 'CORRECT. Properly applies the legal rule.', 'Incorrect.', 'Incorrect.', NULL, '4th ESCAPIST: Exigent, Search incident, Consent, Auto, Plain view, Inventory, Stop & frisk, Terry | Miranda = custody + interrogation.', '2026-02-05 02:10:17', NULL),
+('890', 'A', 'CORRECT. Properly applies the legal rule.', 'Incorrect.', 'Incorrect.', 'Incorrect.', NULL, 'OACK: Offer + Acceptance + Consideration + No Defenses | MY LEGS for SOF: Marriage, Year+, Land, Executor, Goods $500+, Surety | Mailbox: acceptance on dispatch.', '2026-02-05 02:10:17', NULL),
+('891', 'A', 'CORRECT. Properly applies the legal rule.', 'Incorrect.', 'Incorrect.', 'Incorrect.', NULL, 'FRAMEWORK: State action → Provision → Scrutiny → Survives? | CAMPER for 1st Amendment | SSR for Equal Protection: Strict (race), Intermediate (gender), Rational (economic).', '2026-02-05 02:10:17', NULL)
+ON CONFLICT (question_id) DO NOTHING;

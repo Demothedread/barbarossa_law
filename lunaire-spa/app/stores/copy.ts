@@ -189,55 +189,57 @@ export const useCopyStore = defineStore("copy", {
           "The Adequate, Unaccredited, Probably Illegal, but Arguably Ethical Bar Review",
         ),
         established: copy("monobloc.com • Est. 2026", "label"),
-        location: copy("For the Benefit of Sick Puppies & Kids with Cancer Who Can't Read Good", "label"),
+        location: copy(
+          "For the Benefit of Sick Puppies & Kids with Cancer Who Can't Read Good",
+          "label",
+        ),
       },
       home: {
         hero: {
           title: copy("Deez' Eazy-Breezy Bar Review Bonanza", "heading1"),
-          tagline: copy("No Frills. Generic. The Baseline of What You Need.", "tagline"),
+          tagline: copy(
+            "No Frills. Generic. The Baseline of What You Need.",
+            "tagline",
+          ),
           description: [
             copy(
-              "The California bar exam costs $878. Plus a $250 late fee. Plus a $153 'laptop fee' — and no, they don't give you a laptop. That's just the privilege of using your own."
+              "The California bar exam costs $878. Plus a $250 late fee. Plus a $153 'laptop fee' — and no, they don't give you a laptop. That's just the privilege of using your own.",
             ),
-            copy(
-              "For those playing along at home, that is..."
-            ),
+            copy("For those playing along at home, that is..."),
             copy("$1,281.00!", "callout"),
             copy(
-              "There's never enough seats at nearby testing locations. So add flights. A hotel for two nights. Lost wages for two MIDWEEK exam days. Conservatively, you're budgeting $2,000 just to sit for the bar."
+              "There's never enough seats at nearby testing locations. So add flights. A hotel for two nights. Lost wages for two MIDWEEK exam days. Conservatively, you're budgeting $2,000 just to sit for the bar.",
             ),
             copy(
-              "Maybe that doesn't sound like a lot. If so, great — this site probably isn't for you. But since you're here anyway, some perspective:"
+              "Maybe that doesn't sound like a lot. If so, great — this site probably isn't for you. But since you're here anyway, some perspective:",
             ),
             copy(
-              "    • $2,100 is roughly what the average SNAP recipient receives in a year."
+              "    • $2,100 is roughly what the average SNAP recipient receives in a year.",
             ),
             copy(
-              "    • $2,100 is two months' rent for a studio apartment in the average U.S. city."
+              "    • $2,100 is two months' rent for a studio apartment in the average U.S. city.",
             ),
             copy(
-              "    • $2,100 is more than the annual average income in nearly 20 countries."
+              "    • $2,100 is more than the annual average income in nearly 20 countries.",
             ),
             copy(
-              "Context, not criticism. Bar exams are resource-intensive. Maybe they ought to cost more than two months of somewhere to live, or one year of something to eat."
+              "Context, not criticism. Bar exams are resource-intensive. Maybe they ought to cost more than two months of somewhere to live, or one year of something to eat.",
             ),
             copy(
-              "But bar prep review courses can cost 3-4x as much as the exam itself."
+              "But bar prep review courses can cost 3-4x as much as the exam itself.",
             ),
             copy(
-              "And if you want to tell me that's because they provide a superior educational experience — fine. At that price, they should be a luxury, not a necessity. Let them point to their passage numbers and say it's because they have the best TEACHERS, the best METHODS."
+              "And if you want to tell me that's because they provide a superior educational experience — fine. At that price, they should be a luxury, not a necessity. Let them point to their passage numbers and say it's because they have the best TEACHERS, the best METHODS.",
             ),
             copy(
-              "But some charge $1,000 just to access databases of actual questions from past exams — because they can afford to license the rights. And twice that if you want their outlines, too."
+              "But some charge $1,000 just to access databases of actual questions from past exams — because they can afford to license the rights. And twice that if you want their outlines, too.",
+            ),
+            copy("That's information. That's knowledge. That's power."),
+            copy(
+              "Bar exams are expensive. Bar review courses triple what is already an expensive undertaking. Most of us couldn't afford them if our firms or our loan balances weren't subsidizing them. There's no real alternative — not when the majors control digital access to outlines and practice questions. You're asking students to take a nuanced test full of unfamiliar questions, then saying: for $1,000 extra, I can show you thousands of real ones. Otherwise? Here's thirty. GOOD LUCK. And then you're surprised when someone goes to the library, scans a few books from twenty years ago, and builds a database of decent — yet clearly inferior, obviously! — practice questions for themselves and anyone else who could use them.",
             ),
             copy(
-              "That's information. That's knowledge. That's power."
-            ),
-            copy(
-              "Bar exams are expensive. Bar review courses triple what is already an expensive undertaking. Most of us couldn't afford them if our firms or our loan balances weren't subsidizing them. There's no real alternative — not when the majors control digital access to outlines and practice questions. You're asking students to take a nuanced test full of unfamiliar questions, then saying: for $1,000 extra, I can show you thousands of real ones. Otherwise? Here's thirty. GOOD LUCK. And then you're surprised when someone goes to the library, scans a few books from twenty years ago, and builds a database of decent — yet clearly inferior, obviously! — practice questions for themselves and anyone else who could use them."
-            ),
-            copy(
-              "Barbri, Themis, Kaplan: If that's a threat to your business model, I invite you to spend your students' money guarding your gatekeeper licenses instead of building a better product. Bridge trolls gonna bridge troll. So go ahead and sue Deez' Eazy-Breezy Bar Review for the benefit of sick puppies and kids with cancer who can't read good but would like to and want to do other things good as well."
+              "Barbri, Themis, Kaplan: If that's a threat to your business model, I invite you to spend your students' money guarding your gatekeeper licenses instead of building a better product. Bridge trolls gonna bridge troll. So go ahead and sue Deez' Eazy-Breezy Bar Review for the benefit of sick puppies and kids with cancer who can't read good but would like to and want to do other things good as well.",
             ),
             copy(
               "The ABA says there are 'approved' ways to prepare for the bar. The NCBE says there are 'licensed' questions you must pay tribute to access. We say: NA NA NA WE'RE NOT LISTENING NA NA NA CAN'T HEAR YOU.",
@@ -259,10 +261,10 @@ export const useCopyStore = defineStore("copy", {
             "We host this at monobloc.com because I bought the domain a while back and it was cheap. Not free. But cheap. Like this site.",
           ),
           barbaraAnne: copy(
-            "I wanted to call the site Barbara Anne's Bar Prep. There's clearly a correlation between the number of 'bars' in a name and the quality of bar prep. Imagine..."
+            "I wanted to call the site Barbara Anne's Bar Prep. There's clearly a correlation between the number of 'bars' in a name and the quality of bar prep. Imagine...",
           ),
           beachBoysButton: copy("🏖️ Bar-Bar-Bar-Barbar-baranne", "button"),
-                                                         M                                                                                                                     beachBoysButtonActive: copy("🌌 Back to Adequate Prep", "button"),
+          beachBoysButtonActive: copy("🌌 Back to Adequate Prep", "button"),
           winning: copy("adequate", "tagline"),
           ctaPrimary: copy("Begin Adequate Preparation", "button"),
           ctaSecondary: copy("Skip the Pep Talk", "button"),
@@ -302,7 +304,7 @@ export const useCopyStore = defineStore("copy", {
                 'At Deez\' Eazy-Breezy, we are COMMITTED to EMPOWERING your JOURNEY toward bar exam ADEQUACY through our PROPRIETARY methodology of... showing you questions. That\'s it. That\'s the methodology. Other courses charge $4,000+ for "spiral instructional design" and "adaptive learning algorithms." We charge nothing for acknowledging those are just marketing words.',
               ),
               copy(
-                'We PROUDLY DECLINE to offer: Success Coaches™, Pass Predictors™, Personalized Study Plans™, or emails from someone named Brad telling you "You\'ve got this!" We find such theater undignified. You are an adult facing a gatekeeping exam designed by the NCBE. You do not need Brad. Also this whole site may be couched inside fun little mini-games, for legal purposes, that probably won\'t succeed. Or is the whole thing a surreal parody? Let\'s litigate.',
+                "We PROUDLY DECLINE to offer: Success Coaches™, Pass Predictors™, Personalized Study Plans™, or emails from someone named Brad telling you \"You've got this!\" We find such theater undignified. You are an adult facing a gatekeeping exam designed by the NCBE. You do not need Brad. Also this whole site may be couched inside fun little mini-games, for legal purposes, that probably won't succeed. Or is the whole thing a surreal parody? Let's litigate.",
               ),
             ],
           },
@@ -346,9 +348,7 @@ export const useCopyStore = defineStore("copy", {
           copy(
             "Most partners at your future firm couldn't pass this exam today.",
           ),
-          copy(
-            "This site is free because why is this stuff so expensive.",
-          ),
+          copy("This site is free because why is this stuff so expensive."),
           copy(
             "Ba-ba-ba, ba-Barbara Ann would have been a better name. We acknowledge this.",
           ),

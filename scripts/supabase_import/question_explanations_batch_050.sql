@@ -1,0 +1,13 @@
+INSERT INTO question_explanations (question_id, correct_answer, choice_a_explanation, choice_b_explanation, choice_c_explanation, choice_d_explanation, subtopic, ai_explanation, created_at, updated_at)
+VALUES
+('437', 'A', 'CORRECT. Properly applies the legal rule.', 'Incorrect.', 'Incorrect.', 'Incorrect.', NULL, 'SMJ: Federal question, Diversity | PJ: Minimum contacts | Erie: state substantive, federal procedural.', '2026-02-05 02:10:17', NULL),
+('438', 'C', 'Incorrect.', 'Incorrect.', 'CORRECT. Properly applies the legal rule.', 'Incorrect.', NULL, 'SMJ: Federal question, Diversity | PJ: Minimum contacts | Erie: state substantive, federal procedural.', '2026-02-05 02:10:17', NULL),
+('439', 'A', 'CORRECT. Properly applies the legal rule.', 'Incorrect.', 'Incorrect.', 'Incorrect.', NULL, 'SMJ: Federal question, Diversity | PJ: Minimum contacts | Erie: state substantive, federal procedural.', '2026-02-05 02:10:17', NULL),
+('440', 'B', 'Incorrect.', 'CORRECT. Properly applies the legal rule.', 'Incorrect.', 'Incorrect.', NULL, 'SMJ: Federal question, Diversity | PJ: Minimum contacts | Erie: state substantive, federal procedural.', '2026-02-05 02:10:17', NULL),
+('441', 'B', 'Incorrect.', 'CORRECT. Properly applies the legal rule.', 'Incorrect.', 'Incorrect.', NULL, 'SMJ: Federal question, Diversity | PJ: Minimum contacts | Erie: state substantive, federal procedural.', '2026-02-05 02:10:17', NULL),
+('442', 'C', 'Incorrect.', 'Incorrect.', 'CORRECT. Properly applies the legal rule.', 'Incorrect.', NULL, 'SMJ: Federal question, Diversity | PJ: Minimum contacts | Erie: state substantive, federal procedural.', '2026-02-05 02:10:17', NULL),
+('443', 'B', 'Incorrect.', 'CORRECT. Properly applies the legal rule.', 'Incorrect.', 'Incorrect.', NULL, 'SMJ: Federal question, Diversity | PJ: Minimum contacts | Erie: state substantive, federal procedural.', '2026-02-05 02:10:17', NULL),
+('444', 'A', 'CORRECT. Properly applies the legal rule.', 'Incorrect.', 'Incorrect.', 'Incorrect.', NULL, 'SMJ: Federal question, Diversity | PJ: Minimum contacts | Erie: state substantive, federal procedural.', '2026-02-05 02:10:17', NULL),
+('445', 'D', 'Incorrect.', 'Incorrect.', 'Incorrect.', 'CORRECT. Properly applies the legal rule.', NULL, 'SMJ: Federal question, Diversity | PJ: Minimum contacts | Erie: state substantive, federal procedural.', '2026-02-05 02:10:17', NULL),
+('446', 'A', 'CORRECT. Properly applies the legal rule.', 'Incorrect.', 'Incorrect.', 'Incorrect.', NULL, 'SMJ: Federal question, Diversity | PJ: Minimum contacts | Erie: state substantive, federal procedural.', '2026-02-05 02:10:17', NULL)
+ON CONFLICT (question_id) DO NOTHING;

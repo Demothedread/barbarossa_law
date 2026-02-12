@@ -37,6 +37,8 @@
   ],
   "env": {
     "API_BASE": "https://barbarossa-api.onrender.com/api",
-    "NUXT_PUBLIC_API_BASE": "https://barbarossa-api.onrender.com/api"
+    "NUXT_PUBLIC_API_BASE": "https://barbarossa-api.onrender.com/api",
+    "SUPABASE_URL": "https://hrcepttoscyhbntaqema.supabase.co",
+    "SUPABASE_KEY": "sb_publishable_mYuEPYf3kgDZDmx2X3ZkgQ_B5RXkhUP"
   }
 }
