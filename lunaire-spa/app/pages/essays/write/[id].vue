@@ -375,7 +375,7 @@ onUnmounted(() => {
 .loading-spinner {
   width: 48px;
   height: 48px;
-  border: 3px solid rgba(0, 255, 200, 0.1);
+  border: 3px solid rgba(0, 71, 255, 0.08);
   border-top-color: var(--nebula-teal);
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -404,8 +404,8 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: flex-start;
   padding: 16px 24px;
-  border-bottom: 1px solid rgba(65, 90, 119, 0.3);
-  background: rgba(27, 38, 59, 0.5);
+  border-bottom: 1px solid var(--bevel-dark);
+  background: rgba(0, 0, 0, 0.06);
 }
 
 .header-left {
@@ -441,14 +441,14 @@ onUnmounted(() => {
 
 .meta-badge {
   padding: 4px 10px;
-  background: rgba(65, 90, 119, 0.3);
-  border-radius: 4px;
+  background: var(--bevel-dark);
+  border-radius: 0;
   font-size: 0.75rem;
   color: var(--star-silver);
 }
 
 .subject-badge {
-  background: rgba(0, 255, 200, 0.1);
+  background: rgba(0, 71, 255, 0.08);
   color: var(--nebula-teal);
 }
 
@@ -497,8 +497,8 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   background: var(--space-navy);
-  border: 1px solid rgba(65, 90, 119, 0.3);
-  border-radius: 12px;
+  border: 1px solid var(--bevel-dark);
+  border-radius: 0;
   overflow: hidden;
 }
 
@@ -507,8 +507,8 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  background: rgba(27, 38, 59, 0.5);
-  border-bottom: 1px solid rgba(65, 90, 119, 0.3);
+  background: rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid var(--bevel-dark);
 }
 
 .panel__title {
@@ -540,8 +540,8 @@ onUnmounted(() => {
 .model-answer {
   margin-top: 24px;
   padding: 16px;
-  background: rgba(65, 90, 119, 0.2);
-  border-radius: 8px;
+  background: var(--bevel-dark);
+  border-radius: 0;
   border-left: 3px solid var(--solar-gold);
 }
 
@@ -568,9 +568,9 @@ onUnmounted(() => {
   height: 100%;
   min-height: 400px;
   padding: 16px;
-  background: rgba(27, 38, 59, 0.3);
-  border: 1px solid rgba(65, 90, 119, 0.3);
-  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--bevel-dark);
+  border-radius: 0;
   color: var(--lunar-white);
   font-size: 1rem;
   line-height: 1.7;
@@ -637,8 +637,8 @@ onUnmounted(() => {
 
 .grader-badge {
   padding: 6px 12px;
-  background: rgba(65, 90, 119, 0.3);
-  border-radius: 4px;
+  background: var(--bevel-dark);
+  border-radius: 0;
   font-size: 0.8rem;
   color: var(--star-silver);
 }
@@ -646,8 +646,8 @@ onUnmounted(() => {
 /* Feedback Section */
 .feedback-section {
   padding: 16px;
-  background: rgba(27, 38, 59, 0.3);
-  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 0;
 }
 
 .feedback-title {
@@ -664,8 +664,8 @@ onUnmounted(() => {
 /* Rubric Section */
 .rubric-section {
   padding: 16px;
-  background: rgba(27, 38, 59, 0.3);
-  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 0;
 }
 
 .rubric-title {
@@ -682,8 +682,8 @@ onUnmounted(() => {
 
 .rubric-item {
   padding: 12px;
-  background: rgba(65, 90, 119, 0.2);
-  border-radius: 8px;
+  background: var(--bevel-dark);
+  border-radius: 0;
   border-left: 3px solid var(--star-silver);
 }
 
@@ -734,7 +734,7 @@ onUnmounted(() => {
 /* Buttons */
 .btn {
   padding: 10px 20px;
-  border-radius: 6px;
+  border-radius: 0;
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s;
@@ -757,7 +757,7 @@ onUnmounted(() => {
 
 .btn--ghost {
   background: transparent;
-  border: 1px solid rgba(65, 90, 119, 0.5);
+  border: 1px solid var(--bevel-dark);
   color: var(--star-silver);
 }
 

@@ -89,7 +89,7 @@ export const tortsData: SubjectData = {
       id: "negligence",
       name: "Negligence",
       icon: "🎯",
-      color: "#00ffc8",
+      color: "var(--accent-blue)",
       frequency: 5,
       description:
         "The unintentional tort. Δ fails to act as a reasonable person → harm results.",
@@ -1850,7 +1850,7 @@ export const mbeSubjects = [
     id: "torts",
     name: "Torts",
     icon: "⚠️",
-    color: "#00ffc8",
+    color: "var(--accent-blue)",
     weight: "25%",
     tagline: "Wrongs, Remedies & Reasonable People",
     topicCount: 6,

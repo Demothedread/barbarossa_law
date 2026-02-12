@@ -116,7 +116,7 @@
 .about-hero {
   margin-bottom: 40px;
   padding-bottom: 32px;
-  border-bottom: 1px solid rgba(65, 90, 119, 0.3);
+  border-bottom: 1px solid var(--bevel-dark);
 }
 
 .about-hero h1 {
@@ -159,7 +159,7 @@
 .about-footer {
   margin-top: 48px;
   padding-top: 32px;
-  border-top: 1px solid rgba(65, 90, 119, 0.3);
+  border-top: 1px solid var(--bevel-dark);
   text-align: center;
 }
 
@@ -189,7 +189,7 @@
   display: flex;
   gap: 12px;
   padding: 16px 0;
-  border-bottom: 1px solid rgba(65, 90, 119, 0.2);
+  border-bottom: 1px solid var(--bevel-dark);
   color: var(--lunar-white);
   line-height: 1.5;
 }
@@ -205,8 +205,8 @@
   font-family: var(--font-display);
   font-size: 0.85rem;
   color: var(--nebula-teal);
-  background: rgba(0, 255, 200, 0.1);
-  border-radius: 4px;
+  background: rgba(0, 71, 255, 0.08);
+  border-radius: 0;
 }
 
 .rules-list li:last-child {

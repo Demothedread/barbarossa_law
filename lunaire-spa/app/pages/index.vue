@@ -192,15 +192,15 @@ const startQuickRound = (type: string) => {
 
 <style scoped>
 .clubhouse {
-  height: 100%;
-  overflow: hidden;
+  min-height: 100%;
+  overflow-y: auto;
 }
 
 .clubhouse-hero {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 100%;
+  min-height: 400px;
   gap: 40px;
 }
 
@@ -212,17 +212,16 @@ const startQuickRound = (type: string) => {
   font-family: "strenuous", var(--font-display);
   font-size: 2.8rem;
   font-weight: 200;
-  color: var(--solar-gold);
+  color: var(--accent-blue);
   margin-bottom: 8px;
   letter-spacing: 0.15em;
-  text-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
 }
 
 .clubhouse-hero__tagline {
   font-family: "good-times", var(--font-display);
   font-size: 0.85rem;
   font-weight: 300;
-  color: var(--star-silver);
+  color: var(--ink-soft);
   letter-spacing: 0.25em;
   text-transform: uppercase;
   margin-bottom: 20px;
@@ -231,7 +230,7 @@ const startQuickRound = (type: string) => {
 .clubhouse-hero__desc {
   font-family: var(--font-legal);
   font-size: 1.1rem;
-  color: var(--lunar-white);
+  color: var(--ink);
   max-width: 420px;
   margin-bottom: 32px;
   line-height: 1.7;
@@ -253,27 +252,20 @@ const startQuickRound = (type: string) => {
   justify-content: center;
   width: 180px;
   height: 180px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle at 30% 30%,
-    rgba(65, 90, 119, 0.6) 0%,
-    rgba(13, 27, 42, 0.8) 100%
-  );
-  border: 2px solid rgba(255, 215, 0, 0.3);
-  box-shadow:
-    0 0 40px rgba(255, 215, 0, 0.1),
-    inset 0 0 20px rgba(0, 0, 0, 0.3);
+  background: var(--frame);
+  border: 3px solid var(--accent-yellow);
+  box-shadow: var(--shadow-lg);
 }
 
 .moon-badge__text {
   font-family: var(--font-display);
   font-size: 1.25rem;
-  color: var(--solar-gold);
+  color: var(--accent-yellow);
 }
 
 .moon-badge__location {
   font-size: 0.65rem;
-  color: var(--star-silver);
+  color: rgba(255, 255, 255, 0.7);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin-top: 4px;
@@ -287,70 +279,15 @@ const startQuickRound = (type: string) => {
 
 .stat-card--featured {
   padding: 24px;
-  background: linear-gradient(
-    135deg,
-    rgba(0, 255, 200, 0.1) 0%,
-    rgba(0, 255, 200, 0.05) 100%
-  );
-  border-color: var(--nebula-teal);
+  background: rgba(0, 71, 255, 0.06);
+  border-color: var(--accent-blue);
 }
 
 .stat-card--featured .stat-card__value {
   font-size: 3rem;
 }
 
-/* Modal */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--z-modal);
-  backdrop-filter: blur(4px);
-}
-
-.modal {
-  width: 100%;
-  max-width: 480px;
-  background: var(--space-navy);
-  border: 1px solid rgba(65, 90, 119, 0.5);
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.modal__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  background: rgba(27, 38, 59, 0.5);
-  border-bottom: 1px solid rgba(65, 90, 119, 0.3);
-}
-
-.modal__header h3 {
-  font-size: 1rem;
-  color: var(--nebula-teal);
-}
-
-.modal__close {
-  background: none;
-  border: none;
-  color: var(--star-silver);
-  font-size: 1.5rem;
-  cursor: pointer;
-}
-
-.modal__body {
-  padding: 20px;
-}
-
-.modal__body p {
-  color: var(--star-silver);
-  margin-bottom: 20px;
-}
-
+/* Quick Start Options */
 .quick-options {
   display: flex;
   flex-direction: column;
@@ -362,28 +299,39 @@ const startQuickRound = (type: string) => {
   flex-direction: column;
   gap: 4px;
   padding: 16px;
-  background: rgba(27, 38, 59, 0.4);
-  border: 1px solid rgba(65, 90, 119, 0.3);
-  border-radius: 8px;
+  background: var(--paper);
+  border: 2px solid;
+  border-color: var(--bevel-light) var(--bevel-dark) var(--bevel-dark)
+    var(--bevel-light);
   text-align: left;
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
 .quick-option:hover {
-  background: rgba(0, 255, 200, 0.1);
-  border-color: var(--nebula-teal);
+  background: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+  border-color: var(--accent-blue);
+}
+
+.quick-option:active {
+  transform: translateY(1px);
+  border-color: var(--bevel-dark) var(--bevel-light) var(--bevel-light)
+    var(--bevel-dark);
 }
 
 .quick-option__name {
   font-family: var(--font-display);
   font-size: 0.9rem;
-  color: var(--lunar-white);
+  color: var(--ink);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .quick-option__desc {
   font-size: 0.8rem;
-  color: var(--star-silver);
+  color: var(--ink-soft);
 }
 
 /* Beach Boys Button */

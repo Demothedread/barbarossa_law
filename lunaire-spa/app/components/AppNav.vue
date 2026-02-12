@@ -39,7 +39,9 @@
           {{ authStore.displayName }}
         </button>
         <div v-if="showDropdown" class="user-dropdown__menu">
-          <button @click="handleLogout">Sign Out</button>
+          <button @click="handleLogout">
+            {{ copyStore.content.nav.signOut.text }}
+          </button>
         </div>
       </div>
 
@@ -50,7 +52,7 @@
         @click="authStore.openAuthModal('login')"
       >
         <IconUser />
-        Sign In
+        {{ copyStore.content.nav.signIn.text }}
       </button>
     </div>
   </nav>
@@ -58,20 +60,22 @@
 
 <script setup lang="ts">
 import { useAuthStore } from "~/stores/auth";
+import { useCopyStore } from "~/stores/copy";
 
 const route = useRoute();
 const authStore = useAuthStore();
+const copyStore = useCopyStore();
 const showDropdown = ref(false);
 
-const navLinks = [
-  { path: "/", label: "Home" },
-  { path: "/quiz/setup", label: "Practice" },
-  { path: "/essays", label: "Essays" },
+const navLinks = computed(() => [
+  { path: "/", label: copyStore.content.nav.home.text },
+  { path: "/quiz/setup", label: copyStore.content.nav.quiz.text },
+  { path: "/essays", label: copyStore.content.nav.essays.text },
   { path: "/calendar", label: "Calendar" },
-  { path: "/study", label: "Study" },
-  { path: "/statistics", label: "Statistics" },
-  { path: "/about", label: "About" },
-];
+  { path: "/study", label: copyStore.content.nav.study.text },
+  { path: "/statistics", label: copyStore.content.nav.statistics.text },
+  { path: "/about", label: copyStore.content.nav.about.text },
+]);
 
 const isActive = (path: string) => {
   if (path === "/") return route.path === "/";
@@ -115,12 +119,14 @@ onMounted(() => {
   top: 100%;
   right: 0;
   margin-top: 0.5rem;
-  background: var(--color-surface, #1a1a2e);
-  border: 1px solid var(--color-border, #333);
-  border-radius: 8px;
+  background: var(--paper);
+  border: 2px solid;
+  border-color: var(--bevel-light) var(--bevel-dark) var(--bevel-dark)
+    var(--bevel-light);
   padding: 0.5rem;
   min-width: 120px;
   z-index: 100;
+  box-shadow: var(--shadow-lg);
 }
 
 .user-dropdown__menu button {
@@ -128,13 +134,16 @@ onMounted(() => {
   padding: 0.5rem 1rem;
   background: none;
   border: none;
-  color: var(--color-text, #fff);
+  color: var(--ink);
   text-align: left;
   cursor: pointer;
-  border-radius: 4px;
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .user-dropdown__menu button:hover {
-  background: var(--color-bg, #0a0a1a);
+  background: var(--concrete);
 }
 </style>

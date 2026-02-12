@@ -424,7 +424,7 @@ watch(
   inset: 0;
   z-index: 0;
   overflow: hidden;
-  background: radial-gradient(ellipse at center, #0d1b2a 0%, #050510 100%);
+  background: var(--concrete);
 }
 
 /* Star Layers - Create depth with parallax */
@@ -455,15 +455,15 @@ watch(
       rgba(255, 255, 255, 0.8),
       transparent
     ),
-    radial-gradient(1px 1px at 500px 80px, rgba(0, 255, 200, 0.5), transparent),
+    radial-gradient(1px 1px at 500px 80px, rgba(0, 71, 255, 0.3), transparent),
     radial-gradient(
       2px 2px at 150px 300px,
-      rgba(255, 215, 0, 0.4),
+      rgba(255, 214, 0, 0.4),
       transparent
     ),
     radial-gradient(
       1px 1px at 350px 250px,
-      rgba(178, 102, 255, 0.5),
+      rgba(123, 47, 190, 0.3),
       transparent
     );
   background-size: 600px 400px;
@@ -496,9 +496,9 @@ watch(
     ellipse at center,
     transparent 0%,
     transparent 40%,
-    rgba(0, 255, 200, 0.02) 60%,
-    rgba(0, 255, 200, 0.05) 80%,
-    rgba(0, 255, 200, 0.1) 100%
+    rgba(0, 71, 255, 0.02) 60%,
+    rgba(0, 71, 255, 0.05) 80%,
+    rgba(0, 71, 255, 0.08) 100%
   );
   opacity: 0;
   transition: opacity 0.5s ease;
@@ -564,21 +564,16 @@ watch(
   flex-direction: column;
 
   /* Glassmorphism */
-  background: linear-gradient(
-    135deg,
-    rgba(13, 27, 42, 0.85) 0%,
-    rgba(27, 38, 59, 0.75) 50%,
-    rgba(13, 27, 42, 0.85) 100%
-  );
+  background: var(--glass-surface);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 
   /* Borders & Glow */
-  border: 1px solid rgba(0, 255, 200, 0.2);
-  border-radius: 24px;
+  border: 1px solid rgba(0, 71, 255, 0.12);
+  border-radius: 0;
   box-shadow:
-    0 0 60px rgba(0, 255, 200, 0.1),
-    0 0 120px rgba(0, 255, 200, 0.05),
+    0 0 60px rgba(0, 71, 255, 0.08),
+    0 0 120px rgba(0, 71, 255, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 0.1),
     inset 0 -1px 0 rgba(0, 0, 0, 0.3);
 
@@ -606,9 +601,9 @@ watch(
   align-items: center;
   justify-content: space-between;
   padding: 16px 24px;
-  border-bottom: 1px solid rgba(0, 255, 200, 0.15);
+  border-bottom: 1px solid rgba(0, 71, 255, 0.1);
   background: rgba(0, 0, 0, 0.2);
-  border-radius: 24px 24px 0 0;
+  border-radius: 0;
 }
 
 .hud-left,
@@ -631,7 +626,7 @@ watch(
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--solar-gold);
-  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  /* text-shadow removed */
 }
 
 /* Progress Ring */
@@ -661,7 +656,7 @@ watch(
 }
 
 .ring-bg {
-  stroke: rgba(65, 90, 119, 0.3);
+  stroke: var(--bevel-dark);
 }
 
 .ring-fill {
@@ -690,8 +685,8 @@ watch(
   font-weight: 600;
   padding: 6px 12px;
   background: rgba(0, 0, 0, 0.3);
-  border-radius: 6px;
-  border: 1px solid rgba(65, 90, 119, 0.3);
+  border-radius: 0;
+  border: 1px solid var(--bevel-dark);
 }
 
 .timer--good {
@@ -721,8 +716,8 @@ watch(
   justify-content: center;
   width: 36px;
   height: 36px;
-  background: rgba(255, 107, 53, 0.1);
-  border: 1px solid rgba(255, 107, 53, 0.3);
+  background: rgba(232, 55, 44, 0.08);
+  border: 1px solid rgba(232, 55, 44, 0.15);
   border-radius: 50%;
   color: var(--plasma-orange);
   cursor: pointer;
@@ -739,8 +734,8 @@ watch(
    GLASS PANELS
    ═══════════════════════════════════════════════════════════════ */
 .glass-panel {
-  background: rgba(13, 27, 42, 0.5);
-  border: 1px solid rgba(65, 90, 119, 0.2);
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--bevel-dark);
   backdrop-filter: blur(10px);
 }
 
@@ -749,7 +744,7 @@ watch(
   display: flex;
   flex-direction: column;
   margin: 16px 24px 8px;
-  border-radius: 16px;
+  border-radius: 0;
   overflow: hidden;
 }
 
@@ -758,8 +753,8 @@ watch(
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  background: rgba(0, 255, 200, 0.05);
-  border-bottom: 1px solid rgba(0, 255, 200, 0.1);
+  background: rgba(0, 71, 255, 0.05);
+  border-bottom: 1px solid rgba(0, 71, 255, 0.08);
 }
 
 .panel-badge {
@@ -770,9 +765,9 @@ watch(
   text-transform: uppercase;
   letter-spacing: 0.1em;
   padding: 4px 12px;
-  background: rgba(0, 255, 200, 0.1);
-  border-radius: 20px;
-  border: 1px solid rgba(0, 255, 200, 0.2);
+  background: rgba(0, 71, 255, 0.08);
+  border-radius: 0;
+  border: 1px solid rgba(0, 71, 255, 0.12);
 }
 
 .panel-content {
@@ -786,7 +781,7 @@ watch(
 .question-prompt {
   margin-bottom: 20px;
   padding-bottom: 20px;
-  border-bottom: 1px solid rgba(65, 90, 119, 0.2);
+  border-bottom: 1px solid var(--bevel-dark);
   color: var(--star-silver);
   font-size: 0.95rem;
 }
@@ -807,7 +802,7 @@ watch(
 .choices-panel {
   margin: 8px 24px 16px;
   padding: 16px;
-  border-radius: 16px;
+  border-radius: 0;
 }
 
 .choices-grid {
@@ -822,9 +817,9 @@ watch(
   align-items: flex-start;
   gap: 12px;
   padding: 16px;
-  background: rgba(27, 38, 59, 0.5);
-  border: 1px solid rgba(65, 90, 119, 0.3);
-  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--bevel-dark);
+  border-radius: 0;
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: left;
@@ -838,7 +833,7 @@ watch(
   background: linear-gradient(
     135deg,
     transparent 0%,
-    rgba(0, 255, 200, 0.05) 100%
+    rgba(0, 71, 255, 0.05) 100%
   );
   opacity: 0;
   transition: opacity 0.2s ease;
@@ -868,9 +863,9 @@ watch(
   font-size: 0.9rem;
   font-weight: 700;
   color: var(--nebula-teal);
-  background: rgba(0, 255, 200, 0.1);
-  border: 1px solid rgba(0, 255, 200, 0.3);
-  border-radius: 8px;
+  background: rgba(0, 71, 255, 0.08);
+  border: 1px solid rgba(0, 71, 255, 0.15);
+  border-radius: 0;
   transition: all 0.2s ease;
 }
 
@@ -895,7 +890,7 @@ watch(
 /* Choice States */
 .choice-card--selected {
   border-color: var(--nebula-teal);
-  background: rgba(0, 255, 200, 0.1);
+  background: rgba(0, 71, 255, 0.08);
 }
 
 .choice-card--selected .choice-letter {
@@ -905,19 +900,19 @@ watch(
 
 .choice-card--correct {
   border-color: var(--nebula-teal);
-  background: rgba(0, 255, 200, 0.15);
+  background: rgba(0, 71, 255, 0.1);
   animation: glow-correct 0.5s ease;
 }
 
 .choice-card--correct .choice-indicator {
   opacity: 1;
   background: var(--nebula-teal);
-  box-shadow: 0 0 10px var(--nebula-teal);
+  box-shadow: var(--shadow-sm);
 }
 
 .choice-card--incorrect {
   border-color: var(--plasma-orange);
-  background: rgba(255, 107, 53, 0.15);
+  background: rgba(232, 55, 44, 0.1);
   animation: shake 0.4s ease;
 }
 
@@ -930,10 +925,10 @@ watch(
 @keyframes glow-correct {
   0%,
   100% {
-    box-shadow: 0 0 20px rgba(0, 255, 200, 0.3);
+    box-shadow: var(--shadow-sm);
   }
   50% {
-    box-shadow: 0 0 40px rgba(0, 255, 200, 0.5);
+    box-shadow: var(--shadow-lg);
   }
 }
 
@@ -964,9 +959,9 @@ watch(
   align-items: center;
   justify-content: space-between;
   padding: 16px 24px;
-  border-top: 1px solid rgba(65, 90, 119, 0.2);
+  border-top: 1px solid var(--bevel-dark);
   background: rgba(0, 0, 0, 0.2);
-  border-radius: 0 0 24px 24px;
+  border-radius: 0;
 }
 
 .nav-btn {
@@ -979,14 +974,14 @@ watch(
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  border-radius: 8px;
+  border-radius: 0;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .nav-btn--prev {
   background: transparent;
-  border: 1px solid rgba(65, 90, 119, 0.5);
+  border: 1px solid var(--bevel-dark);
   color: var(--star-silver);
 }
 
@@ -997,7 +992,7 @@ watch(
 
 .nav-btn--next,
 .nav-btn--complete {
-  background: linear-gradient(135deg, var(--nebula-teal) 0%, #00b894 100%);
+  background: var(--accent-blue);
   border: none;
   color: var(--void-black);
 }
@@ -1005,7 +1000,7 @@ watch(
 .nav-btn--next:hover:not(:disabled),
 .nav-btn--complete:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 255, 200, 0.3);
+  box-shadow: var(--shadow-lg);
 }
 
 .nav-btn:disabled {
@@ -1026,7 +1021,7 @@ watch(
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--nebula-teal);
-  text-shadow: 0 0 10px rgba(0, 255, 200, 0.5);
+  /* text-shadow removed */
 }
 
 .score-divider {
@@ -1049,12 +1044,12 @@ watch(
 
   .quiz-card {
     height: 95%;
-    border-radius: 16px;
+    border-radius: 0;
   }
 
   .card-hud {
     padding: 12px 16px;
-    border-radius: 16px 16px 0 0;
+    border-radius: 0 16px 0 0;
   }
 
   .card-nav {

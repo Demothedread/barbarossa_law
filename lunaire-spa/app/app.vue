@@ -1,7 +1,7 @@
 <template>
   <div class="app-root">
-    <!-- Animated starfield background -->
-    <div class="starfield" />
+    <!-- Constructivist geometric background -->
+    <div class="geo-bg" />
 
     <!-- Main app layout -->
     <div class="app-layout" :class="{ 'app-layout--no-dock': !showDock }">

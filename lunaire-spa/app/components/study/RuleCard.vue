@@ -253,8 +253,8 @@ function getConnectionName(id: string): string {
 
 <style scoped>
 .rule-card {
-  background: rgba(13, 27, 42, 0.85);
-  border: 1px solid rgba(65, 90, 119, 0.4);
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.4);
   border-radius: 10px;
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -264,20 +264,19 @@ function getConnectionName(id: string): string {
 
 .rule-card:hover {
   border-color: var(--nebula-teal);
-  box-shadow: 0 0 20px rgba(0, 255, 200, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .rule-card--expanded {
   border-color: var(--nebula-teal);
-  box-shadow:
-    0 0 30px rgba(0, 255, 200, 0.15),
+  box-shadow: var(--shadow-md),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
   cursor: default;
 }
 
 .rule-card--highlight {
   border-color: var(--solar-gold);
-  box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+  box-shadow: var(--shadow-md);
 }
 
 /* Header */
@@ -290,7 +289,7 @@ function getConnectionName(id: string): string {
 }
 
 .rule-card__header:hover {
-  background: rgba(0, 255, 200, 0.03);
+  background: rgba(0, 71, 255, 0.03);
 }
 
 .rule-card__freq {
@@ -302,12 +301,12 @@ function getConnectionName(id: string): string {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: rgba(65, 90, 119, 0.4);
+  background: rgba(0, 0, 0, 0.4);
 }
 
 .rule-card__dot--active {
   background: var(--nebula-teal);
-  box-shadow: 0 0 4px rgba(0, 255, 200, 0.5);
+  box-shadow: 0 0 4px rgba(0, 71, 255, 0.3);
 }
 
 .rule-card__name {
@@ -328,7 +327,7 @@ function getConnectionName(id: string): string {
 /* Body */
 .rule-card__body {
   padding: 0 18px 18px;
-  border-top: 1px solid rgba(65, 90, 119, 0.2);
+  border-top: 1px solid var(--bevel-dark);
 }
 
 /* Mnemonic */
@@ -337,11 +336,11 @@ function getConnectionName(id: string): string {
   padding: 10px 14px;
   background: linear-gradient(
     135deg,
-    rgba(178, 102, 255, 0.15),
-    rgba(178, 102, 255, 0.05)
+    rgba(123, 47, 190, 0.3),
+    rgba(123, 47, 190, 0.3)
   );
-  border: 1px solid rgba(178, 102, 255, 0.3);
-  border-radius: 8px;
+  border: 1px solid rgba(123, 47, 190, 0.3);
+  border-radius: 0;
   font-family: var(--font-display);
   font-size: 0.8rem;
   color: var(--cosmic-purple);
@@ -364,7 +363,7 @@ function getConnectionName(id: string): string {
   color: var(--star-silver);
   margin-bottom: 8px;
   padding-bottom: 4px;
-  border-bottom: 1px solid rgba(65, 90, 119, 0.2);
+  border-bottom: 1px solid var(--bevel-dark);
 }
 
 .rule-card__section-label--clickable {
@@ -398,8 +397,8 @@ function getConnectionName(id: string): string {
 
 .rule-card__element {
   padding: 10px 14px;
-  background: rgba(27, 38, 59, 0.5);
-  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 0;
   border-left: 3px solid var(--solar-gold);
 }
 
@@ -460,11 +459,11 @@ function getConnectionName(id: string): string {
   padding: 12px 16px;
   background: linear-gradient(
     135deg,
-    rgba(0, 255, 200, 0.08),
-    rgba(0, 255, 200, 0.02)
+    rgba(0, 71, 255, 0.08),
+    rgba(0, 71, 255, 0.02)
   );
-  border: 1px solid rgba(0, 255, 200, 0.2);
-  border-radius: 8px;
+  border: 1px solid rgba(0, 71, 255, 0.12);
+  border-radius: 0;
 }
 
 .rule-card__test-name {
@@ -501,7 +500,7 @@ function getConnectionName(id: string): string {
   padding: 10px 14px;
   background: rgba(255, 107, 53, 0.06);
   border: 1px solid rgba(255, 107, 53, 0.2);
-  border-radius: 8px;
+  border-radius: 0;
 }
 
 .rule-card__exception--override {
@@ -600,9 +599,9 @@ function getConnectionName(id: string): string {
 .rule-card__case {
   margin-top: 14px;
   padding: 10px 14px;
-  background: rgba(178, 102, 255, 0.08);
-  border: 1px solid rgba(178, 102, 255, 0.2);
-  border-radius: 8px;
+  background: rgba(123, 47, 190, 0.3);
+  border: 1px solid rgba(123, 47, 190, 0.3);
+  border-radius: 0;
   font-family: var(--font-legal);
   font-size: 0.82rem;
   color: var(--cosmic-purple);
@@ -627,9 +626,9 @@ function getConnectionName(id: string): string {
 
 .rule-card__conn-badge {
   padding: 4px 10px;
-  background: rgba(0, 255, 200, 0.1);
-  border: 1px solid rgba(0, 255, 200, 0.3);
-  border-radius: 20px;
+  background: rgba(0, 71, 255, 0.08);
+  border: 1px solid rgba(0, 71, 255, 0.15);
+  border-radius: 0;
   font-family: var(--font-display);
   font-size: 0.65rem;
   color: var(--nebula-teal);
@@ -640,7 +639,7 @@ function getConnectionName(id: string): string {
 }
 
 .rule-card__conn-badge:hover {
-  background: rgba(0, 255, 200, 0.2);
+  background: rgba(0, 71, 255, 0.12);
   transform: translateY(-1px);
 }
 

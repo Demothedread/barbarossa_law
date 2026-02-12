@@ -156,8 +156,8 @@ function navigateToSubject(subject: (typeof mbeSubjects)[number]) {
   left: 50%;
   transform: translate(-50%, -50%) perspective(800px) rotateX(60deg);
   background-image:
-    linear-gradient(rgba(65, 90, 119, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(65, 90, 119, 0.08) 1px, transparent 1px);
+    linear-gradient(rgba(0, 0, 0, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.08) 1px, transparent 1px);
   background-size: 60px 60px;
   mask-image: radial-gradient(
     ellipse 60% 50% at 50% 50%,
@@ -206,7 +206,7 @@ function navigateToSubject(subject: (typeof mbeSubjects)[number]) {
   color: var(--solar-gold);
   text-transform: uppercase;
   letter-spacing: 0.2em;
-  text-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
+  /* text-shadow removed */
 }
 
 .study-landing__title-sub {
@@ -275,9 +275,9 @@ function navigateToSubject(subject: (typeof mbeSubjects)[number]) {
 /* Front face */
 .subject-block__front {
   padding: 28px 22px;
-  background: rgba(13, 27, 42, 0.9);
-  border: 1px solid rgba(65, 90, 119, 0.4);
-  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  border-radius: 0;
   backdrop-filter: blur(12px);
   position: relative;
   z-index: 2;
@@ -303,7 +303,7 @@ function navigateToSubject(subject: (typeof mbeSubjects)[number]) {
   left: 4px;
   right: -4px;
   height: 12px;
-  border-radius: 8px 8px 0 0;
+  border-radius: 0 8px 0 0;
   transform: skewX(-4deg);
   z-index: 1;
   display: flex;
@@ -326,7 +326,7 @@ function navigateToSubject(subject: (typeof mbeSubjects)[number]) {
   right: -6px;
   bottom: -4px;
   width: 10px;
-  border-radius: 0 8px 8px 0;
+  border-radius: 0;
   transform: skewY(-4deg);
   z-index: 1;
 }
@@ -367,8 +367,8 @@ function navigateToSubject(subject: (typeof mbeSubjects)[number]) {
 
 .subject-block__badge {
   padding: 2px 8px;
-  background: rgba(0, 255, 200, 0.15);
-  border: 1px solid rgba(0, 255, 200, 0.3);
+  background: rgba(0, 71, 255, 0.1);
+  border: 1px solid rgba(0, 71, 255, 0.15);
   border-radius: 10px;
   font-family: var(--font-display);
   font-size: 0.55rem;
@@ -405,7 +405,7 @@ function navigateToSubject(subject: (typeof mbeSubjects)[number]) {
   text-align: center;
   margin-top: 48px;
   padding-top: 24px;
-  border-top: 1px solid rgba(65, 90, 119, 0.2);
+  border-top: 1px solid var(--bevel-dark);
 }
 
 .study-landing__legend {
@@ -433,7 +433,7 @@ function navigateToSubject(subject: (typeof mbeSubjects)[number]) {
 
 .study-landing__legend-dot--ready {
   background: var(--nebula-teal);
-  box-shadow: 0 0 8px rgba(0, 255, 200, 0.5);
+  box-shadow: 0 0 8px rgba(0, 71, 255, 0.3);
 }
 
 .study-landing__legend-dot--soon {

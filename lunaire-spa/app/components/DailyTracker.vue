@@ -119,13 +119,9 @@ onMounted(() => {
 <style scoped>
 .daily-tracker {
   padding: 16px;
-  background: linear-gradient(
-    135deg,
-    rgba(27, 38, 59, 0.6) 0%,
-    rgba(13, 27, 42, 0.8) 100%
-  );
-  border: 1px solid rgba(65, 90, 119, 0.3);
-  border-radius: 12px;
+  background: var(--paper);
+  border: 1px solid var(--bevel-dark);
+  border-radius: 0;
 }
 
 .tracker-header {
@@ -178,14 +174,14 @@ onMounted(() => {
 
 .progress-bar {
   height: 8px;
-  background: rgba(65, 90, 119, 0.3);
-  border-radius: 4px;
+  background: var(--bevel-dark);
+  border-radius: 0;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  border-radius: 4px;
+  border-radius: 0;
   transition: width 0.3s ease;
 }
 
@@ -207,7 +203,7 @@ onMounted(() => {
 }
 
 .goal-badge--complete {
-  background: rgba(0, 255, 200, 0.2);
+  background: rgba(0, 71, 255, 0.12);
   color: var(--nebula-teal);
   border: 1px solid var(--nebula-teal);
 }
@@ -222,10 +218,10 @@ onMounted(() => {
   background: linear-gradient(
     90deg,
     rgba(255, 215, 0, 0.1) 0%,
-    rgba(255, 107, 53, 0.1) 100%
+    rgba(232, 55, 44, 0.08) 100%
   );
-  border-radius: 8px;
-  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 0;
+  border: 1px solid rgba(255, 214, 0, 0.3);
 }
 
 .streak-icon {

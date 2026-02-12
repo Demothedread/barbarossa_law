@@ -454,7 +454,7 @@ onMounted(() => {
   justify-content: space-between;
   margin-bottom: 32px;
   padding-bottom: 24px;
-  border-bottom: 1px solid rgba(65, 90, 119, 0.3);
+  border-bottom: 1px solid var(--bevel-dark);
 }
 
 .review-header__center {
@@ -503,9 +503,9 @@ onMounted(() => {
   padding: 8px 16px;
   font-size: 0.85rem;
   color: var(--star-silver);
-  background: rgba(27, 38, 59, 0.4);
-  border: 1px solid rgba(65, 90, 119, 0.3);
-  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--bevel-dark);
+  border-radius: 0;
   cursor: pointer;
   transition: all var(--transition-fast);
 }
@@ -516,13 +516,13 @@ onMounted(() => {
 
 .filter-btn--active {
   color: var(--nebula-teal);
-  background: rgba(0, 255, 200, 0.1);
+  background: rgba(0, 71, 255, 0.08);
   border-color: var(--nebula-teal);
 }
 
 .filter-btn--wrong.filter-btn--active {
   color: var(--plasma-orange);
-  background: rgba(255, 107, 53, 0.1);
+  background: rgba(232, 55, 44, 0.08);
   border-color: var(--plasma-orange);
 }
 
@@ -534,13 +534,9 @@ onMounted(() => {
 }
 
 .review-card {
-  background: linear-gradient(
-    135deg,
-    rgba(27, 38, 59, 0.8) 0%,
-    rgba(13, 27, 42, 0.9) 100%
-  );
-  border: 1px solid rgba(65, 90, 119, 0.3);
-  border-radius: 12px;
+  background: var(--paper);
+  border: 1px solid var(--bevel-dark);
+  border-radius: 0;
   overflow: hidden;
 }
 
@@ -596,7 +592,7 @@ onMounted(() => {
   color: var(--star-silver);
   margin-bottom: 12px;
   padding-bottom: 12px;
-  border-bottom: 1px solid rgba(65, 90, 119, 0.2);
+  border-bottom: 1px solid var(--bevel-dark);
   line-height: 1.6;
 }
 
@@ -620,18 +616,18 @@ onMounted(() => {
   align-items: flex-start;
   gap: 12px;
   padding: 12px 16px;
-  background: rgba(27, 38, 59, 0.4);
-  border: 1px solid rgba(65, 90, 119, 0.2);
-  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--bevel-dark);
+  border-radius: 0;
 }
 
 .review-choice--correct {
-  background: rgba(0, 255, 200, 0.1);
+  background: rgba(0, 71, 255, 0.08);
   border-color: var(--nebula-teal);
 }
 
 .review-choice--incorrect {
-  background: rgba(255, 107, 53, 0.1);
+  background: rgba(232, 55, 44, 0.08);
   border-color: var(--plasma-orange);
 }
 
@@ -646,7 +642,7 @@ onMounted(() => {
   font-size: 0.85rem;
   font-weight: 700;
   color: var(--star-silver);
-  background: rgba(65, 90, 119, 0.3);
+  background: var(--bevel-dark);
   border-radius: 50%;
 }
 
@@ -674,22 +670,22 @@ onMounted(() => {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: 0;
 }
 
 .correct-marker {
   color: var(--nebula-teal);
-  background: rgba(0, 255, 200, 0.15);
+  background: rgba(0, 71, 255, 0.1);
 }
 
 .your-marker {
   color: var(--plasma-orange);
-  background: rgba(255, 107, 53, 0.15);
+  background: rgba(232, 55, 44, 0.1);
 }
 
 /* Explanation Section */
 .explanation-section {
-  border-top: 1px solid rgba(65, 90, 119, 0.2);
+  border-top: 1px solid var(--bevel-dark);
   padding-top: 16px;
 }
 
@@ -723,7 +719,7 @@ onMounted(() => {
   margin-top: 16px;
   padding: 16px;
   background: rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
+  border-radius: 0;
 }
 
 .explanation-loading {
@@ -757,7 +753,7 @@ onMounted(() => {
   gap: 12px;
   margin-top: 20px;
   padding-top: 16px;
-  border-top: 1px solid rgba(65, 90, 119, 0.3);
+  border-top: 1px solid var(--bevel-dark);
 }
 
 .feedback-label {
@@ -774,7 +770,7 @@ onMounted(() => {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: 2px solid rgba(65, 90, 119, 0.5);
+  border: 2px solid var(--bevel-dark);
   background: transparent;
   cursor: pointer;
   font-size: 1.1rem;
@@ -835,7 +831,7 @@ onMounted(() => {
 .loading-spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(65, 90, 119, 0.3);
+  border: 2px solid var(--bevel-dark);
   border-top-color: var(--nebula-teal);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -861,7 +857,7 @@ onMounted(() => {
   gap: 16px;
   margin-top: 40px;
   padding-top: 24px;
-  border-top: 1px solid rgba(65, 90, 119, 0.3);
+  border-top: 1px solid var(--bevel-dark);
 }
 
 /* Responsive */

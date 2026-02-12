@@ -40,8 +40,8 @@ const showOfflineMode = () => {
   justify-content: center;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  border-top: 2px solid var(--warning-yellow, #fbbf24);
+  background: var(--paper);
+  border-top: 3px solid var(--accent-yellow, #ffd600);
   z-index: 9998;
 }
 
@@ -52,15 +52,17 @@ const showOfflineMode = () => {
 
 .offline-indicator__text {
   font-size: 0.875rem;
-  color: var(--lunar-white, #fff);
+  color: var(--ink);
 }
 
 .offline-indicator__action {
   padding: 0.375rem 0.75rem;
-  background: var(--warning-yellow, #fbbf24);
-  color: #1a1a2e;
-  border: none;
-  border-radius: 4px;
+  background: var(--accent-yellow, #ffd600);
+  color: var(--ink);
+  border: 2px solid;
+  border-color: var(--bevel-light) var(--bevel-dark) var(--bevel-dark)
+    var(--bevel-light);
+  border-radius: 0;
   font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;

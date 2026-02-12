@@ -1164,7 +1164,7 @@ onUnmounted(() => {
   letter-spacing: 4px;
   margin: 0;
   color: #f0c14b;
-  text-shadow: 0 0 20px rgba(240, 193, 75, 0.5);
+  /* text-shadow removed */
 }
 
 .subtitle {
@@ -1172,7 +1172,7 @@ onUnmounted(() => {
   font-weight: 600;
   letter-spacing: 8px;
   margin: 0;
-  color: #00ffc8;
+  color: var(--accent-blue);
 }
 
 .game-info {
@@ -1205,7 +1205,7 @@ onUnmounted(() => {
 .difficulty-btn {
   padding: 20px 30px;
   border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
+  border-radius: 0;
   background: rgba(255, 255, 255, 0.05);
   color: #fff;
   cursor: pointer;
@@ -1219,14 +1219,14 @@ onUnmounted(() => {
 
 .opponent-btn:hover:not(.disabled),
 .difficulty-btn:hover {
-  border-color: #00ffc8;
-  background: rgba(0, 255, 200, 0.1);
+  border-color: var(--accent-blue);
+  background: rgba(0, 71, 255, 0.08);
 }
 
 .opponent-btn.active,
 .difficulty-btn.active {
-  border-color: #00ffc8;
-  background: rgba(0, 255, 200, 0.2);
+  border-color: var(--accent-blue);
+  background: rgba(0, 71, 255, 0.12);
 }
 
 .opponent-btn.disabled {
@@ -1246,7 +1246,7 @@ onUnmounted(() => {
   color: #000;
   font-size: 0.7rem;
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: 0;
 }
 
 .difficulty-btn .name {
@@ -1327,7 +1327,7 @@ onUnmounted(() => {
 .speed-choice {
   padding: 15px;
   border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
+  border-radius: 0;
   background: rgba(255, 255, 255, 0.05);
   color: #fff;
   cursor: pointer;
@@ -1338,17 +1338,17 @@ onUnmounted(() => {
 }
 
 .speed-choice:hover:not(.disabled) {
-  border-color: #00ffc8;
+  border-color: var(--accent-blue);
 }
 
 .speed-choice.selected {
-  border-color: #00ffc8;
-  background: rgba(0, 255, 200, 0.2);
+  border-color: var(--accent-blue);
+  background: rgba(0, 71, 255, 0.12);
 }
 
 .speed-choice .letter {
   font-weight: 700;
-  color: #00ffc8;
+  color: var(--accent-blue);
 }
 
 .submit-speed-btn {
@@ -1356,8 +1356,8 @@ onUnmounted(() => {
   font-size: 1.1rem;
   font-weight: 700;
   border: none;
-  border-radius: 8px;
-  background: #00ffc8;
+  border-radius: 0;
+  background: var(--accent-blue);
   color: #000;
   cursor: pointer;
 }
@@ -1374,7 +1374,7 @@ onUnmounted(() => {
   width: 20px;
   height: 20px;
   border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #00ffc8;
+  border-top-color: var(--accent-blue);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -1420,7 +1420,7 @@ onUnmounted(() => {
 .choice-btn {
   padding: 30px 40px;
   border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 12px;
+  border-radius: 0;
   background: rgba(255, 255, 255, 0.05);
   color: #fff;
   cursor: pointer;
@@ -1441,8 +1441,8 @@ onUnmounted(() => {
 }
 
 .choice-btn.defense:hover {
-  border-color: #00ffc8;
-  background: rgba(0, 255, 200, 0.2);
+  border-color: var(--accent-blue);
+  background: rgba(0, 71, 255, 0.12);
 }
 
 /* Game Interface */
@@ -1456,7 +1456,7 @@ onUnmounted(() => {
   align-items: center;
   padding: 15px 30px;
   background: rgba(0, 0, 0, 0.3);
-  border-radius: 12px;
+  border-radius: 0;
   margin-bottom: 20px;
 }
 
@@ -1467,9 +1467,9 @@ onUnmounted(() => {
 }
 
 .scoreboard .team.possession {
-  background: rgba(0, 255, 200, 0.1);
+  background: rgba(0, 71, 255, 0.08);
   padding: 10px 15px;
-  border-radius: 8px;
+  border-radius: 0;
 }
 
 .scoreboard .icon {
@@ -1507,14 +1507,14 @@ onUnmounted(() => {
   margin: 20px 0;
   padding: 10px;
   background: rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
+  border-radius: 0;
 }
 
 .field {
   position: relative;
   height: 80px;
   background: linear-gradient(90deg, #1a5a1a 0%, #2d7d2d 50%, #1a5a1a 100%);
-  border-radius: 8px;
+  border-radius: 0;
   overflow: hidden;
   display: flex;
 }
@@ -1575,7 +1575,7 @@ onUnmounted(() => {
   gap: 30px;
   padding: 15px;
   background: rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
+  border-radius: 0;
   margin-bottom: 20px;
 }
 
@@ -1589,7 +1589,7 @@ onUnmounted(() => {
 }
 
 .possession-indicator {
-  color: #00ffc8;
+  color: var(--accent-blue);
   font-weight: 600;
 }
 
@@ -1620,7 +1620,7 @@ onUnmounted(() => {
   padding: 25px 30px;
   min-width: 180px;
   border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
+  border-radius: 0;
   background: rgba(255, 255, 255, 0.05);
   color: #fff;
   cursor: pointer;
@@ -1632,13 +1632,13 @@ onUnmounted(() => {
 }
 
 .play-btn:hover {
-  border-color: #00ffc8;
-  background: rgba(0, 255, 200, 0.1);
+  border-color: var(--accent-blue);
+  background: rgba(0, 71, 255, 0.08);
 }
 
 .play-btn.selected {
-  border-color: #00ffc8;
-  background: rgba(0, 255, 200, 0.2);
+  border-color: var(--accent-blue);
+  background: rgba(0, 71, 255, 0.12);
 }
 
 .play-icon {
@@ -1660,8 +1660,8 @@ onUnmounted(() => {
   font-size: 1.1rem;
   font-weight: 700;
   border: none;
-  border-radius: 8px;
-  background: #00ffc8;
+  border-radius: 0;
+  background: var(--accent-blue);
   color: #000;
   cursor: pointer;
   transition: all 0.3s;
@@ -1683,16 +1683,16 @@ onUnmounted(() => {
 }
 
 .your-play {
-  background: rgba(0, 255, 200, 0.2);
+  background: rgba(0, 71, 255, 0.12);
   padding: 8px 15px;
-  border-radius: 20px;
+  border-radius: 0;
   font-weight: 600;
 }
 
 .opponent-status {
   padding: 8px 15px;
-  border-radius: 20px;
-  color: #00ffc8;
+  border-radius: 0;
+  color: var(--accent-blue);
 }
 
 .opponent-status.waiting {
@@ -1701,7 +1701,7 @@ onUnmounted(() => {
 
 .question-card {
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
+  border-radius: 0;
   padding: 25px;
   margin-bottom: 20px;
 }
@@ -1726,7 +1726,7 @@ onUnmounted(() => {
 .answer-btn {
   padding: 18px 20px;
   border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
+  border-radius: 0;
   background: rgba(255, 255, 255, 0.05);
   color: #fff;
   cursor: pointer;
@@ -1742,13 +1742,13 @@ onUnmounted(() => {
 }
 
 .answer-btn.selected {
-  border-color: #00ffc8;
-  background: rgba(0, 255, 200, 0.15);
+  border-color: var(--accent-blue);
+  background: rgba(0, 71, 255, 0.1);
 }
 
 .answer-btn .letter {
   font-weight: 700;
-  color: #00ffc8;
+  color: var(--accent-blue);
   min-width: 25px;
 }
 
@@ -1756,7 +1756,7 @@ onUnmounted(() => {
   position: relative;
   height: 8px;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+  border-radius: 0;
   margin-bottom: 20px;
   overflow: hidden;
 }
@@ -1766,7 +1766,7 @@ onUnmounted(() => {
   top: 0;
   left: 0;
   height: 100%;
-  background: linear-gradient(90deg, #00ffc8 0%, #f0c14b 50%, #ff6b6b 100%);
+  background: linear-gradient(90deg, var(--accent-blue) 0%, #f0c14b 50%, #ff6b6b 100%);
   transition: width 0.1s linear;
 }
 
@@ -1784,7 +1784,7 @@ onUnmounted(() => {
   font-size: 1.2rem;
   font-weight: 700;
   border: none;
-  border-radius: 8px;
+  border-radius: 0;
   background: linear-gradient(135deg, #f0c14b 0%, #e6a700 100%);
   color: #000;
   cursor: pointer;
@@ -1811,7 +1811,7 @@ onUnmounted(() => {
 
 .result-reveal {
   background: rgba(0, 0, 0, 0.3);
-  border-radius: 12px;
+  border-radius: 0;
   padding: 30px;
   margin-bottom: 20px;
 }
@@ -1859,7 +1859,7 @@ onUnmounted(() => {
 }
 
 .answer-best .value {
-  color: #00ffc8;
+  color: var(--accent-blue);
 }
 .answer-second .value {
   color: #f0c14b;
@@ -1871,15 +1871,15 @@ onUnmounted(() => {
 .correct-answer {
   text-align: center;
   padding: 10px;
-  background: rgba(0, 255, 200, 0.1);
-  border-radius: 8px;
+  background: rgba(0, 71, 255, 0.08);
+  border-radius: 0;
   margin-bottom: 20px;
 }
 
 .outcome-display {
   text-align: center;
   padding: 25px;
-  border-radius: 12px;
+  border-radius: 0;
   background: rgba(255, 255, 255, 0.05);
 }
 
@@ -1887,7 +1887,7 @@ onUnmounted(() => {
   background: linear-gradient(
     135deg,
     rgba(240, 193, 75, 0.3) 0%,
-    rgba(0, 255, 200, 0.2) 100%
+    rgba(0, 71, 255, 0.12) 100%
   );
 }
 
@@ -1896,7 +1896,7 @@ onUnmounted(() => {
 }
 
 .outcome-display.big-play {
-  background: rgba(0, 255, 200, 0.2);
+  background: rgba(0, 71, 255, 0.12);
 }
 
 .outcome-icon {
@@ -1913,7 +1913,7 @@ onUnmounted(() => {
 .yards-gained {
   font-size: 2rem;
   font-weight: 800;
-  color: #00ffc8;
+  color: var(--accent-blue);
 }
 
 .next-play-btn {
@@ -1922,8 +1922,8 @@ onUnmounted(() => {
   font-size: 1.2rem;
   font-weight: 700;
   border: none;
-  border-radius: 8px;
-  background: #00ffc8;
+  border-radius: 0;
+  background: var(--accent-blue);
   color: #000;
   cursor: pointer;
 }
@@ -1959,7 +1959,7 @@ onUnmounted(() => {
   font-size: 4rem;
   font-weight: 900;
   color: #f0c14b;
-  text-shadow: 0 0 50px rgba(240, 193, 75, 0.5);
+  /* text-shadow removed */
 }
 
 .scoring-team {
@@ -2040,7 +2040,7 @@ onUnmounted(() => {
 .game-stats .value {
   font-size: 1.8rem;
   font-weight: 700;
-  color: #00ffc8;
+  color: var(--accent-blue);
 }
 
 .game-over-actions {
@@ -2054,13 +2054,13 @@ onUnmounted(() => {
   font-size: 1.1rem;
   font-weight: 600;
   border: none;
-  border-radius: 8px;
+  border-radius: 0;
   cursor: pointer;
   transition: all 0.3s;
 }
 
 .btn--primary {
-  background: #00ffc8;
+  background: var(--accent-blue);
   color: #000;
 }
 
@@ -2071,7 +2071,7 @@ onUnmounted(() => {
 }
 
 .btn--secondary:hover {
-  border-color: #00ffc8;
+  border-color: var(--accent-blue);
 }
 
 /* Transitions */

@@ -12,7 +12,7 @@
         refY="3"
         orient="auto"
       >
-        <polygon points="0 0, 8 3, 0 6" fill="rgba(0, 255, 200, 0.4)" />
+        <polygon points="0 0, 8 3, 0 6" fill="rgba(0, 71, 255, 0.2)" />
       </marker>
       <!-- Glow filter -->
       <filter id="glow">
@@ -37,7 +37,7 @@
       <path
         :d="conn.path"
         fill="none"
-        :stroke="conn.color || 'rgba(0, 255, 200, 0.3)'"
+        :stroke="conn.color || 'rgba(0, 71, 255, 0.15)'"
         stroke-width="1.5"
         :stroke-dasharray="conn.dashed ? '8 4' : 'none'"
         marker-end="url(#arrowhead)"

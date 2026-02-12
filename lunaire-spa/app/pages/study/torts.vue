@@ -331,14 +331,14 @@ const connectionDefs = computed(() => {
     defs.push({
       from: { x: neg.position.x, y: neg.position.y, width: 220, height: 140 },
       to: { x: it.position.x, y: it.position.y, width: 220 },
-      color: "rgba(0, 255, 200, 0.25)",
+      color: "rgba(0, 71, 255, 0.25)",
     });
   }
   if (neg && sl) {
     defs.push({
       from: { x: neg.position.x, y: neg.position.y, width: 220, height: 140 },
       to: { x: sl.position.x, y: sl.position.y, width: 220 },
-      color: "rgba(178, 102, 255, 0.25)",
+      color: "rgba(123, 47, 190, 0.3)",
     });
   }
   if (sl && pl) {
@@ -470,8 +470,8 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 10px 20px;
-  background: rgba(13, 27, 42, 0.9);
-  border-bottom: 1px solid rgba(65, 90, 119, 0.3);
+  background: rgba(0, 0, 0, 0.04);
+  border-bottom: 1px solid var(--bevel-dark);
   backdrop-filter: blur(10px);
   flex-shrink: 0;
   z-index: 10;
@@ -491,13 +491,13 @@ onMounted(() => {
   text-transform: uppercase;
   letter-spacing: 0.1em;
   padding: 6px 12px;
-  border-radius: 4px;
+  border-radius: 0;
   transition: all 0.2s ease;
 }
 
 .torts-study__back:hover {
   color: var(--nebula-teal);
-  background: rgba(0, 255, 200, 0.1);
+  background: rgba(0, 71, 255, 0.08);
 }
 
 .torts-study__breadcrumb {
@@ -557,9 +557,9 @@ onMounted(() => {
 /* View toggle */
 .torts-study__view-toggle {
   display: flex;
-  background: rgba(27, 38, 59, 0.5);
-  border: 1px solid rgba(65, 90, 119, 0.3);
-  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--bevel-dark);
+  border-radius: 0;
   overflow: hidden;
 }
 
@@ -582,7 +582,7 @@ onMounted(() => {
 
 .torts-study__view-btn--active {
   color: var(--nebula-teal);
-  background: rgba(0, 255, 200, 0.12);
+  background: rgba(0, 71, 255, 0.12);
 }
 
 /* Zoom */
@@ -598,9 +598,9 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(27, 38, 59, 0.5);
-  border: 1px solid rgba(65, 90, 119, 0.3);
-  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--bevel-dark);
+  border-radius: 0;
   color: var(--star-silver);
   cursor: pointer;
   font-size: 1rem;
@@ -645,8 +645,8 @@ onMounted(() => {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(65, 90, 119, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(65, 90, 119, 0.06) 1px, transparent 1px);
+    linear-gradient(rgba(0, 0, 0, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.06) 1px, transparent 1px);
   background-size: 40px 40px;
   pointer-events: none;
 }
@@ -665,9 +665,9 @@ onMounted(() => {
   bottom: 16px;
   right: 16px;
   width: 160px;
-  background: rgba(13, 27, 42, 0.9);
-  border: 1px solid rgba(65, 90, 119, 0.3);
-  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--bevel-dark);
+  border-radius: 0;
   overflow: hidden;
   z-index: 5;
 }
@@ -679,7 +679,7 @@ onMounted(() => {
   letter-spacing: 0.1em;
   color: var(--star-silver);
   padding: 6px 10px;
-  border-bottom: 1px solid rgba(65, 90, 119, 0.2);
+  border-bottom: 1px solid var(--bevel-dark);
 }
 
 .torts-study__minimap-canvas {
@@ -703,8 +703,8 @@ onMounted(() => {
 
 .torts-study__minimap-viewport {
   position: absolute;
-  border: 1px solid rgba(0, 255, 200, 0.4);
-  background: rgba(0, 255, 200, 0.05);
+  border: 1px solid rgba(0, 71, 255, 0.2);
+  background: rgba(0, 71, 255, 0.05);
   border-radius: 2px;
   pointer-events: none;
   transition: all 0.1s linear;
@@ -729,8 +729,8 @@ onMounted(() => {
   gap: 12px;
   margin-bottom: 24px;
   padding: 12px 16px;
-  background: rgba(27, 38, 59, 0.4);
-  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 0;
 }
 
 .torts-study__freq-title {
@@ -762,8 +762,8 @@ onMounted(() => {
   align-items: center;
   gap: 14px;
   padding: 16px 20px;
-  background: rgba(13, 27, 42, 0.7);
-  border: 1px solid rgba(65, 90, 119, 0.3);
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--bevel-dark);
   border-left: 4px solid var(--nebula-teal);
   border-radius: 10px;
   cursor: pointer;
@@ -771,8 +771,8 @@ onMounted(() => {
 }
 
 .torts-study__outline-topic-header:hover {
-  background: rgba(0, 255, 200, 0.04);
-  border-color: rgba(0, 255, 200, 0.3);
+  background: rgba(0, 71, 255, 0.04);
+  border-color: rgba(0, 71, 255, 0.15);
 }
 
 .torts-study__outline-topic-icon {
@@ -806,7 +806,7 @@ onMounted(() => {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: rgba(65, 90, 119, 0.4);
+  background: rgba(0, 0, 0, 0.4);
   transition: background 0.2s ease;
 }
 
@@ -832,8 +832,8 @@ onMounted(() => {
 .torts-study__side-panel {
   width: 420px;
   flex-shrink: 0;
-  background: rgba(13, 27, 42, 0.95);
-  border-left: 1px solid rgba(65, 90, 119, 0.3);
+  background: rgba(0, 0, 0, 0.04);
+  border-left: 1px solid var(--bevel-dark);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -845,8 +845,8 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 14px 18px;
-  background: rgba(27, 38, 59, 0.5);
-  border-bottom: 1px solid rgba(65, 90, 119, 0.3);
+  background: rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid var(--bevel-dark);
 }
 
 .torts-study__side-title {
@@ -864,7 +864,7 @@ onMounted(() => {
   font-size: 1.3rem;
   cursor: pointer;
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: 0;
   transition: all 0.2s ease;
 }
 
@@ -878,7 +878,7 @@ onMounted(() => {
   align-items: center;
   gap: 12px;
   padding: 10px 18px;
-  border-bottom: 1px solid rgba(65, 90, 119, 0.15);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
 }
 
 .torts-study__side-weight {
@@ -899,7 +899,7 @@ onMounted(() => {
   font-size: 0.85rem;
   color: var(--star-silver);
   line-height: 1.5;
-  border-bottom: 1px solid rgba(65, 90, 119, 0.15);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
 }
 
 .torts-study__side-rules {

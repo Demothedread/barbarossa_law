@@ -287,9 +287,9 @@ onMounted(async () => {
 
 .filter-select {
   padding: 6px 12px;
-  background: rgba(27, 38, 59, 0.5);
-  border: 1px solid rgba(65, 90, 119, 0.3);
-  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--bevel-dark);
+  border-radius: 0;
   color: var(--lunar-white);
   font-size: 0.85rem;
   cursor: pointer;
@@ -314,7 +314,7 @@ onMounted(async () => {
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(0, 255, 200, 0.1);
+  border: 3px solid rgba(0, 71, 255, 0.08);
   border-top-color: var(--nebula-teal);
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -337,15 +337,15 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   padding: 16px;
-  background: rgba(27, 38, 59, 0.4);
-  border: 1px solid rgba(65, 90, 119, 0.3);
-  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--bevel-dark);
+  border-radius: 0;
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
 .essay-prompt-card:hover {
-  background: rgba(0, 255, 200, 0.05);
+  background: rgba(0, 71, 255, 0.05);
   border-color: var(--nebula-teal);
   transform: translateY(-2px);
 }
@@ -365,8 +365,8 @@ onMounted(async () => {
 
 .card-question {
   padding: 2px 8px;
-  background: rgba(65, 90, 119, 0.3);
-  border-radius: 4px;
+  background: var(--bevel-dark);
+  border-radius: 0;
   font-size: 0.75rem;
   color: var(--star-silver);
 }
@@ -379,14 +379,14 @@ onMounted(async () => {
 .card-subject {
   display: inline-block;
   padding: 4px 10px;
-  background: rgba(0, 255, 200, 0.1);
-  border-radius: 4px;
+  background: rgba(0, 71, 255, 0.08);
+  border-radius: 0;
   font-size: 0.8rem;
   color: var(--nebula-teal);
 }
 
 .card-subject--unknown {
-  background: rgba(65, 90, 119, 0.3);
+  background: var(--bevel-dark);
   color: var(--star-silver);
 }
 
@@ -421,8 +421,8 @@ onMounted(async () => {
 
 .empty-state code {
   padding: 2px 6px;
-  background: rgba(65, 90, 119, 0.3);
-  border-radius: 4px;
+  background: var(--bevel-dark);
+  border-radius: 0;
   font-size: 0.85rem;
 }
 
@@ -461,14 +461,14 @@ onMounted(async () => {
   display: flex;
   justify-content: space-between;
   padding: 8px 12px;
-  background: rgba(27, 38, 59, 0.3);
-  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 0;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .subject-item:hover {
-  background: rgba(0, 255, 200, 0.1);
+  background: rgba(0, 71, 255, 0.08);
 }
 
 .subject-name {
@@ -483,7 +483,7 @@ onMounted(async () => {
 
 /* Recent Essays */
 .recent-essays {
-  border-top: 1px solid rgba(65, 90, 119, 0.3);
+  border-top: 1px solid var(--bevel-dark);
   padding-top: 16px;
 }
 
@@ -498,8 +498,8 @@ onMounted(async () => {
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  background: rgba(27, 38, 59, 0.3);
-  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 0;
 }
 
 .recent-info {

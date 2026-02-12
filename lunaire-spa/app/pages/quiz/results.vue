@@ -227,17 +227,17 @@ const getTrendClass = (percent: number) => {
 
 .score-ring--excellent {
   border-color: var(--nebula-teal);
-  box-shadow: 0 0 30px rgba(0, 255, 200, 0.3);
+  box-shadow: var(--shadow-md);
 }
 
 .score-ring--good {
   border-color: var(--solar-gold);
-  box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+  box-shadow: var(--shadow-md);
 }
 
 .score-ring--needs-work {
   border-color: var(--plasma-orange);
-  box-shadow: 0 0 30px rgba(255, 107, 53, 0.2);
+  box-shadow: var(--shadow-md);
 }
 
 .score-ring__value {
@@ -262,7 +262,7 @@ const getTrendClass = (percent: number) => {
   line-height: 1.6;
   margin-bottom: 20px;
   padding-bottom: 16px;
-  border-bottom: 1px solid rgba(65, 90, 119, 0.2);
+  border-bottom: 1px solid var(--bevel-dark);
   font-style: italic;
 }
 
@@ -270,7 +270,7 @@ const getTrendClass = (percent: number) => {
   display: flex;
   justify-content: space-between;
   padding: 12px 0;
-  border-bottom: 1px solid rgba(65, 90, 119, 0.2);
+  border-bottom: 1px solid var(--bevel-dark);
 }
 
 .detail-label {
@@ -284,7 +284,7 @@ const getTrendClass = (percent: number) => {
 
 .scorecard__breakdown {
   padding-top: 24px;
-  border-top: 1px solid rgba(65, 90, 119, 0.3);
+  border-top: 1px solid var(--bevel-dark);
 }
 
 .breakdown-title {
@@ -313,7 +313,7 @@ const getTrendClass = (percent: number) => {
   justify-content: center;
   width: 48px;
   height: 48px;
-  border-radius: 6px;
+  border-radius: 0;
   border: 1px solid;
   text-decoration: none;
   cursor: pointer;
@@ -322,16 +322,16 @@ const getTrendClass = (percent: number) => {
 
 .question-result:hover {
   transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-md);
 }
 
 .question-result--correct {
-  background: rgba(0, 255, 200, 0.1);
+  background: rgba(0, 71, 255, 0.08);
   border-color: var(--nebula-teal);
 }
 
 .question-result--incorrect {
-  background: rgba(255, 107, 53, 0.1);
+  background: rgba(232, 55, 44, 0.08);
   border-color: var(--plasma-orange);
 }
 
@@ -364,7 +364,7 @@ const getTrendClass = (percent: number) => {
 
 .trend-section {
   padding-top: 24px;
-  border-top: 1px solid rgba(65, 90, 119, 0.3);
+  border-top: 1px solid var(--bevel-dark);
 }
 
 .trend-title {

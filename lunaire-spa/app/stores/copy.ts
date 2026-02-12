@@ -263,9 +263,8 @@ export const useCopyStore = defineStore("copy", {
           barbaraAnne: copy(
             "I wanted to call the site Barbara Anne's Bar Prep. There's clearly a correlation between the number of 'bars' in a name and the quality of bar prep. Imagine...",
           ),
-          beachBoysButton: copy("🏖️ Bar-Bar-Bar-Barbar-baranne", "button"),
+          beachBoysButton: copy("🏖️ Bar-Bar-Bar-Barbara-Anne", "button"),
           beachBoysButtonActive: copy("🌌 Back to Adequate Prep", "button"),
-          winning: copy("adequate", "tagline"),
           ctaPrimary: copy("Begin Adequate Preparation", "button"),
           ctaSecondary: copy("Skip the Pep Talk", "button"),
         },
@@ -285,6 +284,7 @@ export const useCopyStore = defineStore("copy", {
             "Skip the inspirational messaging and face the questions",
           ),
         },
+        winning: copy("adequate", "tagline"),
       },
       about: {
         title: copy("About This Endeavor (Such As It Is)", "heading2"),

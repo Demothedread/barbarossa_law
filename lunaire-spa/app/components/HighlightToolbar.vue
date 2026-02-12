@@ -64,8 +64,8 @@ const toggleColor = (name: string) => {
   width: 28px;
   height: 28px;
   background: transparent;
-  border: 1px solid rgba(65, 90, 119, 0.5);
-  border-radius: 4px;
+  border: 1px solid var(--bevel-dark);
+  border-radius: 0;
   cursor: pointer;
   transition: all var(--transition-fast);
   color: var(--star-silver);
@@ -77,7 +77,7 @@ const toggleColor = (name: string) => {
 
 .highlight-btn--active {
   border-color: var(--nebula-teal);
-  box-shadow: 0 0 8px rgba(0, 255, 200, 0.3);
+  box-shadow: 0 0 8px rgba(0, 71, 255, 0.15);
 }
 
 .highlight-btn--clear:hover {
@@ -103,7 +103,7 @@ const toggleColor = (name: string) => {
 .swatch--nebula {
   background: linear-gradient(
     135deg,
-    rgba(0, 255, 200, 0.6) 0%,
+    rgba(0, 71, 255, 0.6) 0%,
     rgba(100, 255, 218, 0.7) 50%,
     rgba(0, 200, 150, 0.6) 100%
   );

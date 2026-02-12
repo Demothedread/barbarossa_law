@@ -155,9 +155,9 @@ watch(
 }
 
 .auth-modal {
-  background: var(--color-surface, #1a1a2e);
-  border: 1px solid var(--color-border, #333);
-  border-radius: 12px;
+  background: var(--paper);
+  border: 1px solid var(--bevel-dark);
+  border-radius: 0;
   padding: 2rem;
   width: 100%;
   max-width: 400px;
@@ -178,14 +178,14 @@ watch(
 }
 
 .auth-modal__close:hover {
-  color: var(--color-text, #fff);
+  color: var(--ink);
 }
 
 .auth-modal__title {
   margin: 0 0 1.5rem;
   font-size: 1.5rem;
   text-align: center;
-  color: var(--color-text, #fff);
+  color: var(--ink);
 }
 
 .auth-form__field {
@@ -202,10 +202,10 @@ watch(
 .auth-form__field input {
   width: 100%;
   padding: 0.75rem 1rem;
-  background: var(--color-bg, #0a0a1a);
-  border: 1px solid var(--color-border, #333);
-  border-radius: 6px;
-  color: var(--color-text, #fff);
+  background: var(--color-bg, var(--concrete));
+  border: 1px solid var(--bevel-dark);
+  border-radius: 0;
+  color: var(--ink);
   font-size: 1rem;
 }
 
@@ -219,7 +219,7 @@ watch(
   border: 1px solid rgba(239, 68, 68, 0.3);
   color: #ef4444;
   padding: 0.75rem;
-  border-radius: 6px;
+  border-radius: 0;
   margin-bottom: 1rem;
   font-size: 0.875rem;
 }

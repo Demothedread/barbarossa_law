@@ -335,9 +335,9 @@ const startQuiz = async () => {
   padding: 10px 16px;
   font-size: 0.85rem;
   color: var(--star-silver);
-  background: rgba(27, 38, 59, 0.4);
-  border: 1px solid rgba(65, 90, 119, 0.3);
-  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--bevel-dark);
+  border-radius: 0;
   cursor: pointer;
   transition: all var(--transition-fast);
 }
@@ -349,7 +349,7 @@ const startQuiz = async () => {
 
 .subject-btn--active {
   color: var(--nebula-teal);
-  background: rgba(0, 255, 200, 0.1);
+  background: rgba(0, 71, 255, 0.08);
   border-color: var(--nebula-teal);
 }
 
@@ -364,9 +364,9 @@ const startQuiz = async () => {
   flex-direction: column;
   gap: 4px;
   padding: 16px;
-  background: rgba(27, 38, 59, 0.4);
-  border: 1px solid rgba(65, 90, 119, 0.3);
-  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--bevel-dark);
+  border-radius: 0;
   cursor: pointer;
   transition: all var(--transition-fast);
 }
@@ -376,7 +376,7 @@ const startQuiz = async () => {
 }
 
 .radio-card--active {
-  background: rgba(0, 255, 200, 0.1);
+  background: rgba(0, 71, 255, 0.08);
   border-color: var(--nebula-teal);
 }
 
@@ -403,9 +403,9 @@ const startQuiz = async () => {
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--star-silver);
-  background: rgba(27, 38, 59, 0.4);
-  border: 1px solid rgba(65, 90, 119, 0.3);
-  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--bevel-dark);
+  border-radius: 0;
   cursor: pointer;
   transition: all var(--transition-fast);
 }
@@ -433,9 +433,9 @@ const startQuiz = async () => {
   font-size: 1.2rem;
   font-weight: 700;
   color: var(--star-silver);
-  background: rgba(27, 38, 59, 0.4);
-  border: 1px solid rgba(65, 90, 119, 0.3);
-  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--bevel-dark);
+  border-radius: 0;
   text-align: center;
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -489,9 +489,9 @@ const startQuiz = async () => {
   align-items: center;
   gap: 8px;
   padding: 20px 16px;
-  background: rgba(27, 38, 59, 0.4);
-  border: 1px solid rgba(65, 90, 119, 0.3);
-  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--bevel-dark);
+  border-radius: 0;
   cursor: pointer;
   transition: all var(--transition-fast);
   text-align: center;
@@ -502,7 +502,7 @@ const startQuiz = async () => {
 }
 
 .mode-card--active {
-  background: rgba(0, 255, 200, 0.1);
+  background: rgba(0, 71, 255, 0.08);
   border-color: var(--nebula-teal);
 }
 
@@ -586,7 +586,7 @@ const startQuiz = async () => {
   display: flex;
   justify-content: space-between;
   padding: 12px 0;
-  border-bottom: 1px solid rgba(65, 90, 119, 0.2);
+  border-bottom: 1px solid var(--bevel-dark);
 }
 
 .summary-item:last-child {
@@ -607,7 +607,7 @@ const startQuiz = async () => {
 .summary-item--highlight {
   margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid rgba(0, 255, 200, 0.3);
+  border-top: 1px solid rgba(0, 71, 255, 0.15);
 }
 
 .summary-item--highlight .summary-value {

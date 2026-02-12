@@ -71,9 +71,9 @@ const handleAction = (toast: Toast) => {
   align-items: center;
   gap: 0.75rem;
   padding: 0.875rem 1rem;
-  border-radius: 8px;
-  background: var(--midnight-purple, #1a1a2e);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border-radius: 0;
+  background: var(--paper);
+  box-shadow: var(--shadow-md);
   min-width: 280px;
   max-width: 100%;
 }
@@ -101,7 +101,7 @@ const handleAction = (toast: Toast) => {
   border: 1px solid currentColor;
   color: inherit;
   padding: 0.25rem 0.5rem;
-  border-radius: 4px;
+  border-radius: 0;
   font-size: 0.75rem;
   cursor: pointer;
   transition: background-color 0.2s;

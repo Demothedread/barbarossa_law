@@ -125,16 +125,16 @@ const getScoreClass = (score: number) => {
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px;
-  background: rgba(27, 38, 59, 0.4);
-  border: 1px solid rgba(65, 90, 119, 0.3);
-  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--bevel-dark);
+  border-radius: 0;
   color: var(--lunar-white);
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
 .quick-action-btn:hover {
-  background: rgba(0, 255, 200, 0.1);
+  background: rgba(0, 71, 255, 0.08);
   border-color: var(--nebula-teal);
 }
 
@@ -157,8 +157,8 @@ const getScoreClass = (score: number) => {
   display: flex;
   justify-content: space-between;
   padding: 8px 10px;
-  background: rgba(27, 38, 59, 0.3);
-  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 0;
   font-size: 0.85rem;
 }
 

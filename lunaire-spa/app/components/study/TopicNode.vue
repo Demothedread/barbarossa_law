@@ -83,9 +83,9 @@ const freqBarStyle = computed(() => ({
 
 .topic-node__frame {
   padding: 20px;
-  background: rgba(13, 27, 42, 0.9);
-  border: 2px solid rgba(65, 90, 119, 0.4);
-  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.04);
+  border: 2px solid rgba(0, 0, 0, 0.4);
+  border-radius: 0;
   backdrop-filter: blur(12px);
   transition: all 0.3s ease;
   position: relative;
@@ -109,7 +109,7 @@ const freqBarStyle = computed(() => ({
 
 .topic-node--active .topic-node__frame {
   border-color: var(--node-color);
-  background: rgba(13, 27, 42, 0.95);
+  background: rgba(0, 0, 0, 0.04);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.1),
     0 16px 48px rgba(0, 0, 0, 0.6),

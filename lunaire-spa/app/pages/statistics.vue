@@ -342,8 +342,8 @@ const formatSubject = (subject: string) => {
 
 .stat-card--featured {
   padding: 24px;
-  background: rgba(0, 255, 200, 0.05);
-  border-color: rgba(0, 255, 200, 0.2);
+  background: rgba(0, 71, 255, 0.05);
+  border-color: rgba(0, 71, 255, 0.12);
 }
 
 .stat-card--featured .stat-card__value {
@@ -353,9 +353,9 @@ const formatSubject = (subject: string) => {
 .stats-commentary {
   margin-top: 20px;
   padding: 16px;
-  background: rgba(27, 38, 59, 0.4);
+  background: rgba(0, 0, 0, 0.04);
   border-left: 3px solid var(--nebula-teal);
-  border-radius: 0 8px 8px 0;
+  border-radius: 0;
   font-size: 0.9rem;
   font-style: italic;
   color: var(--star-silver);
@@ -422,8 +422,8 @@ const formatSubject = (subject: string) => {
   gap: 16px;
   align-items: center;
   padding: 12px 16px;
-  background: rgba(27, 38, 59, 0.3);
-  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 0;
 }
 
 .history-item__date {
@@ -484,8 +484,8 @@ const formatSubject = (subject: string) => {
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  background: rgba(27, 38, 59, 0.3);
-  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 0;
   border-left: 3px solid transparent;
 }
 

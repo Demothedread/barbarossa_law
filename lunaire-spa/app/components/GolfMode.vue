@@ -925,7 +925,7 @@ onUnmounted(() => {
   font-family: "Impact", "Arial Black", sans-serif;
   font-size: 3rem;
   color: #ffd700;
-  text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+  /* text-shadow removed */
   margin: 0;
   letter-spacing: 0.2em;
 }
@@ -1034,7 +1034,7 @@ onUnmounted(() => {
 .mini-scorecard {
   background: rgba(255, 255, 255, 0.95);
   color: #1a1a1a;
-  border-radius: 8px;
+  border-radius: 0;
   margin: 1rem auto;
   max-width: 700px;
   overflow: hidden;
@@ -1263,7 +1263,7 @@ onUnmounted(() => {
 /* Question Card */
 .question-card {
   background: rgba(255, 255, 255, 0.95);
-  border-radius: 16px;
+  border-radius: 0;
   padding: 2rem;
   color: #1a1a1a;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
@@ -1296,7 +1296,7 @@ onUnmounted(() => {
 .question-prompt {
   background: #f5f5f5;
   padding: 1rem;
-  border-radius: 8px;
+  border-radius: 0;
   margin-bottom: 1rem;
   font-style: italic;
   border-left: 4px solid #1a5a1a;
@@ -1318,14 +1318,14 @@ onUnmounted(() => {
   margin-bottom: 1.5rem;
   padding: 0.5rem;
   background: #f5f5f5;
-  border-radius: 8px;
+  border-radius: 0;
 }
 
 .highlight-btn {
   width: 32px;
   height: 32px;
   border: 2px solid transparent;
-  border-radius: 4px;
+  border-radius: 0;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1364,7 +1364,7 @@ onUnmounted(() => {
   padding: 1rem;
   background: #fff;
   border: 2px solid #ddd;
-  border-radius: 8px;
+  border-radius: 0;
   text-align: left;
   cursor: pointer;
   transition: all 0.2s;
@@ -1417,7 +1417,7 @@ onUnmounted(() => {
 /* Hole Result */
 .hole-result {
   padding: 1.5rem;
-  border-radius: 12px;
+  border-radius: 0;
   text-align: center;
   margin-bottom: 1.5rem;
 }
@@ -1517,7 +1517,7 @@ onUnmounted(() => {
 .results-content {
   background: rgba(255, 255, 255, 0.95);
   color: #1a1a1a;
-  border-radius: 20px;
+  border-radius: 0;
   padding: 3rem;
   max-width: 600px;
   text-align: center;
@@ -1630,7 +1630,7 @@ onUnmounted(() => {
   background: #1a5a1a;
   color: #fff;
   padding: 1.5rem;
-  border-radius: 12px;
+  border-radius: 0;
   margin-bottom: 2rem;
 }
 
