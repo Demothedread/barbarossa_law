@@ -25,10 +25,15 @@
 
     <!-- Auth Modal -->
     <AuthModal />
+
+    <!-- Vercel Analytics -->
+    <Analytics />
   </div>
 </template>
 
 <script setup lang="ts">
+import { Analytics } from "@vercel/analytics/nuxt";
+
 const route = useRoute();
 
 // Hide dock during quiz to maximize focus
