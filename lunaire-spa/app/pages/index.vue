@@ -133,6 +133,7 @@ const router = useRouter();
 const quizStore = useQuizStore();
 const beachBoysTheme = useBeachBoysTheme();
 const copyStore = useCopyStore();
+const api = useApi();
 
 // Get copy from store
 const heroCopy = computed(() => copyStore.content.home.hero);
@@ -182,11 +183,39 @@ const quickOptions = [
   },
 ];
 
-const startQuickRound = (type: string) => {
-  router.push({
-    path: "/quiz/play",
-    query: { subject: "all", n: "9", type },
-  });
+const startQuickRound = async (type: string) => {
+  showQuickStart.value = false;
+
+  try {
+    const anonymousId =
+      localStorage.getItem("monobloc_anonymous_id") || crypto.randomUUID();
+    localStorage.setItem("monobloc_anonymous_id", anonymousId);
+
+    const questions = await api.fetchQuestions(
+      9,
+      "all",
+      type,
+      undefined,
+      anonymousId,
+      true,
+    );
+
+    if (!questions.length) {
+      throw new Error("No questions available");
+    }
+
+    quizStore.updateSettings({
+      subject: "all",
+      questionType: type as "mix" | "mbe" | "generated",
+      questionCount: questions.length,
+      mode: "classic",
+    });
+    quizStore.setQuestions(questions);
+    router.push("/quiz/play");
+  } catch {
+    // Return to the setup page so the user can retry with different options.
+    router.push("/quiz/setup");
+  }
 };
 </script>
 
