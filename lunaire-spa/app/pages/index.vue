@@ -129,10 +129,12 @@ import { useBeachBoysTheme } from "~/composables/useBeachBoysTheme";
 import { useQuizLauncher } from "~/composables/useQuizLauncher";
 import { useCopyStore } from "~/stores/copy";
 import { useQuizStore } from "~/stores/quiz";
+import { useToastStore } from "~/stores/toast";
 
 const router = useRouter();
 const quizStore = useQuizStore();
 const { launchQuiz } = useQuizLauncher();
+const toastStore = useToastStore();
 const beachBoysTheme = useBeachBoysTheme();
 const copyStore = useCopyStore();
 
@@ -191,11 +193,12 @@ const startQuickRound = async (type: string) => {
     await launchQuiz({
       count: 9,
       subject: "all",
-      type: type as "mix" | "mbe" | "generated",
+      type,
     });
     router.push("/quiz/play");
   } catch (error) {
     console.error("Failed to start quick round:", error);
+    toastStore.error("Failed to load questions. Check your connection.");
     // Return to the setup page so the user can retry with different options.
     router.push("/quiz/setup");
   }

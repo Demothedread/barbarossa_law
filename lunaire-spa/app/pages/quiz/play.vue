@@ -380,16 +380,10 @@ const loadQuizFromQuery = async () => {
   const subject = (route.query.subject as string) || "all";
   const count = Number(route.query.n) || 9;
 
-  if (!["mix", "mbe", "generated"].includes(type)) {
-    throw new Error(
-      `Invalid question type '${type}'. Expected: mix, mbe, or generated.`,
-    );
-  }
-
   await launchQuiz({
     count,
     subject,
-    type: type as "mix" | "mbe" | "generated",
+    type,
   });
 };
 

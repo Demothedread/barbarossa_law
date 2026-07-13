@@ -2,6 +2,7 @@ import { useApi } from "~/composables/useApi";
 import { useQuizStore } from "~/stores/quiz";
 
 type QuestionType = "mix" | "mbe" | "generated";
+const questionTypes: QuestionType[] = ["mix", "mbe", "generated"];
 
 export const useQuizLauncher = () => {
   const api = useApi();
@@ -14,8 +15,14 @@ export const useQuizLauncher = () => {
   }: {
     count: number;
     subject: string;
-    type: QuestionType;
+    type: string;
   }) => {
+    if (!questionTypes.includes(type as QuestionType)) {
+      throw new Error(
+        `Invalid question type '${type}'. Expected: mix, mbe, or generated.`,
+      );
+    }
+    const questionType = type as QuestionType;
     const anonymousId =
       localStorage.getItem("monobloc_anonymous_id") || crypto.randomUUID();
     localStorage.setItem("monobloc_anonymous_id", anonymousId);
@@ -23,7 +30,7 @@ export const useQuizLauncher = () => {
     const questions = await api.fetchQuestions(
       count,
       subject,
-      type,
+      questionType,
       undefined,
       anonymousId,
       true,
@@ -31,13 +38,13 @@ export const useQuizLauncher = () => {
 
     if (!questions.length) {
       throw new Error(
-        `No questions available for subject='${subject}', type='${type}', count=${count}`,
+        `No questions available for subject='${subject}', type='${questionType}', count=${count}`,
       );
     }
 
     quizStore.updateSettings({
       subject,
-      questionType: type,
+      questionType,
       questionCount: questions.length,
       mode: "classic",
     });
