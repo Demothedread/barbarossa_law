@@ -205,12 +205,18 @@
 
 <script setup lang="ts">
 import { useTheme } from "~/composables/useTheme";
+import {
+  DEFAULT_QUIZ_OPTIONS,
+  useQuizLauncher,
+} from "~/composables/useQuizLauncher";
 import { useQuizStore } from "~/stores/quiz";
 import { useToastStore } from "~/stores/toast";
 
 const router = useRouter();
+const route = useRoute();
 const quizStore = useQuizStore();
 const toastStore = useToastStore();
+const { launchQuiz } = useQuizLauncher();
 const { modeClass, terminology } = useTheme();
 
 const questionBody = ref<HTMLElement | null>(null);
@@ -372,11 +378,35 @@ const clearHighlights = () => {
 };
 
 // Lifecycle
-onMounted(() => {
-  // Redirect if no questions loaded
+const loadQuizFromQuery = async () => {
+  const type = (route.query.type as string) || DEFAULT_QUIZ_OPTIONS.type;
+  const subject =
+    (route.query.subject as string) || DEFAULT_QUIZ_OPTIONS.subject;
+  const count = Number(route.query.n) || DEFAULT_QUIZ_OPTIONS.count;
+
+  await launchQuiz({
+    count,
+    subject,
+    type,
+  });
+};
+
+onMounted(async () => {
+  // Quick-start links may navigate here before the store has questions.
   if (!quizStore.currentQuestions.length) {
-    router.push("/quiz/setup");
-    return;
+    if (!route.query.type && !route.query.n && !route.query.subject) {
+      router.push("/quiz/setup");
+      return;
+    }
+
+    try {
+      await loadQuizFromQuery();
+    } catch (error) {
+      console.error("Failed to load quiz:", error);
+      toastStore.error("Failed to load questions. Check your connection.");
+      router.push("/quiz/setup");
+      return;
+    }
   }
 
   // Trigger entrance animation

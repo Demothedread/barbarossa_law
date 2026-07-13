@@ -126,11 +126,18 @@
 
 <script setup lang="ts">
 import { useBeachBoysTheme } from "~/composables/useBeachBoysTheme";
+import {
+  DEFAULT_QUIZ_OPTIONS,
+  useQuizLauncher,
+} from "~/composables/useQuizLauncher";
 import { useCopyStore } from "~/stores/copy";
 import { useQuizStore } from "~/stores/quiz";
+import { useToastStore } from "~/stores/toast";
 
 const router = useRouter();
 const quizStore = useQuizStore();
+const { launchQuiz } = useQuizLauncher();
+const toastStore = useToastStore();
 const beachBoysTheme = useBeachBoysTheme();
 const copyStore = useCopyStore();
 
@@ -182,11 +189,22 @@ const quickOptions = [
   },
 ];
 
-const startQuickRound = (type: string) => {
-  router.push({
-    path: "/quiz/play",
-    query: { subject: "all", n: "9", type },
-  });
+const startQuickRound = async (type: string) => {
+  showQuickStart.value = false;
+
+  try {
+    await launchQuiz({
+      count: DEFAULT_QUIZ_OPTIONS.count,
+      subject: DEFAULT_QUIZ_OPTIONS.subject,
+      type,
+    });
+    router.push("/quiz/play");
+  } catch (error) {
+    console.error("Failed to start quick round:", error);
+    toastStore.error("Failed to load questions. Check your connection.");
+    // Return to the setup page so the user can retry with different options.
+    router.push("/quiz/setup");
+  }
 };
 </script>
 

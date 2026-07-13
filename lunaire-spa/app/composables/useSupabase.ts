@@ -1,13 +1,14 @@
 /**
  * Supabase client composable for Nuxt/Vue frontend.
  *
- * Currently, all database access goes through the Flask backend API.
- * This client is available for future direct Supabase features like:
+ * Quiz data currently goes through the Flask backend API. This client is
+ * available for Supabase features like:
  * - Supabase Auth (replacing custom JWT auth)
  * - Realtime subscriptions (live quiz updates)
  * - Storage (essay uploads, PDFs)
  *
  * The Flask backend uses its own psycopg2 connection via SUPABASE_DB_URL.
+ * The browser client must only receive the public/publishable key.
  */
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
