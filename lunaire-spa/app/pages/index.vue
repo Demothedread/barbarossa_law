@@ -195,6 +195,7 @@ const startQuickRound = async (type: string) => {
       9,
       "all",
       type,
+      // userId is reserved for authenticated quiz tracking.
       undefined,
       anonymousId,
       true,
@@ -212,7 +213,8 @@ const startQuickRound = async (type: string) => {
     });
     quizStore.setQuestions(questions);
     router.push("/quiz/play");
-  } catch {
+  } catch (error) {
+    console.error("Failed to start quick round:", error);
     // Return to the setup page so the user can retry with different options.
     router.push("/quiz/setup");
   }

@@ -392,6 +392,7 @@ const loadQuizFromQuery = async () => {
     count,
     subject,
     type,
+    // userId is reserved for authenticated quiz tracking.
     undefined,
     anonymousId,
     true,
@@ -420,7 +421,8 @@ onMounted(async () => {
 
     try {
       await loadQuizFromQuery();
-    } catch {
+    } catch (error) {
+      console.error("Failed to load quiz:", error);
       toastStore.error("Failed to load questions. Check your connection.");
       router.push("/quiz/setup");
       return;
