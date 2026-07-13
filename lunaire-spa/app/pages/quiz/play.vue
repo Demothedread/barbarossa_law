@@ -205,7 +205,7 @@
 
 <script setup lang="ts">
 import { useTheme } from "~/composables/useTheme";
-import { useApi } from "~/composables/useApi";
+import { useQuizLauncher } from "~/composables/useQuizLauncher";
 import { useQuizStore } from "~/stores/quiz";
 import { useToastStore } from "~/stores/toast";
 
@@ -213,7 +213,7 @@ const router = useRouter();
 const route = useRoute();
 const quizStore = useQuizStore();
 const toastStore = useToastStore();
-const api = useApi();
+const { launchQuiz } = useQuizLauncher();
 const { modeClass, terminology } = useTheme();
 
 const questionBody = ref<HTMLElement | null>(null);
@@ -381,34 +381,16 @@ const loadQuizFromQuery = async () => {
   const count = Number(route.query.n) || 9;
 
   if (!["mix", "mbe", "generated"].includes(type)) {
-    throw new Error("Invalid question type");
+    throw new Error(
+      `Invalid question type '${type}'. Expected: mix, mbe, or generated.`,
+    );
   }
 
-  const anonymousId =
-    localStorage.getItem("monobloc_anonymous_id") || crypto.randomUUID();
-  localStorage.setItem("monobloc_anonymous_id", anonymousId);
-
-  const questions = await api.fetchQuestions(
+  await launchQuiz({
     count,
     subject,
-    type,
-    // userId is reserved for authenticated quiz tracking.
-    undefined,
-    anonymousId,
-    true,
-  );
-
-  if (!questions.length) {
-    throw new Error("No questions available");
-  }
-
-  quizStore.updateSettings({
-    subject,
-    questionType: type as "mix" | "mbe" | "generated",
-    questionCount: questions.length,
-    mode: "classic",
+    type: type as "mix" | "mbe" | "generated",
   });
-  quizStore.setQuestions(questions);
 };
 
 onMounted(async () => {
