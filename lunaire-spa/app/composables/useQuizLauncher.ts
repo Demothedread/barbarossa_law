@@ -3,6 +3,11 @@ import { useQuizStore } from "~/stores/quiz";
 
 type QuestionType = "mix" | "mbe" | "generated";
 const questionTypes: QuestionType[] = ["mix", "mbe", "generated"];
+export const DEFAULT_QUIZ_OPTIONS = {
+  count: 9,
+  subject: "all",
+  type: "mix" as QuestionType,
+};
 
 export const useQuizLauncher = () => {
   const api = useApi();

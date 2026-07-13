@@ -126,7 +126,10 @@
 
 <script setup lang="ts">
 import { useBeachBoysTheme } from "~/composables/useBeachBoysTheme";
-import { useQuizLauncher } from "~/composables/useQuizLauncher";
+import {
+  DEFAULT_QUIZ_OPTIONS,
+  useQuizLauncher,
+} from "~/composables/useQuizLauncher";
 import { useCopyStore } from "~/stores/copy";
 import { useQuizStore } from "~/stores/quiz";
 import { useToastStore } from "~/stores/toast";
@@ -191,8 +194,8 @@ const startQuickRound = async (type: string) => {
 
   try {
     await launchQuiz({
-      count: 9,
-      subject: "all",
+      count: DEFAULT_QUIZ_OPTIONS.count,
+      subject: DEFAULT_QUIZ_OPTIONS.subject,
       type,
     });
     router.push("/quiz/play");

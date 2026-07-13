@@ -205,7 +205,10 @@
 
 <script setup lang="ts">
 import { useTheme } from "~/composables/useTheme";
-import { useQuizLauncher } from "~/composables/useQuizLauncher";
+import {
+  DEFAULT_QUIZ_OPTIONS,
+  useQuizLauncher,
+} from "~/composables/useQuizLauncher";
 import { useQuizStore } from "~/stores/quiz";
 import { useToastStore } from "~/stores/toast";
 
@@ -376,9 +379,10 @@ const clearHighlights = () => {
 
 // Lifecycle
 const loadQuizFromQuery = async () => {
-  const type = (route.query.type as string) || "mix";
-  const subject = (route.query.subject as string) || "all";
-  const count = Number(route.query.n) || 9;
+  const type = (route.query.type as string) || DEFAULT_QUIZ_OPTIONS.type;
+  const subject =
+    (route.query.subject as string) || DEFAULT_QUIZ_OPTIONS.subject;
+  const count = Number(route.query.n) || DEFAULT_QUIZ_OPTIONS.count;
 
   await launchQuiz({
     count,
