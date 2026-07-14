@@ -5,7 +5,7 @@ import psycopg2
 # Try with explicit parameters (avoids URL encoding issues with special chars)
 CONNECTION_CONFIGS = {
     "pooler_session_params": {
-        "host": "aws-0-us-east-1.pooler.supabase.com",
+        "host": "aws-1-us-east-1.pooler.supabase.com",
         "port": 5432,
         "dbname": "postgres",
         "user": "postgres.hrcepttoscyhbntaqema",
@@ -14,7 +14,7 @@ CONNECTION_CONFIGS = {
         "sslmode": "require",
     },
     "pooler_transaction_params": {
-        "host": "aws-0-us-east-1.pooler.supabase.com",
+        "host": "aws-1-us-east-1.pooler.supabase.com",
         "port": 6543,
         "dbname": "postgres",
         "user": "postgres.hrcepttoscyhbntaqema",

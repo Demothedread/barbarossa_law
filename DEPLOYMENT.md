@@ -66,7 +66,7 @@ This guide explains how to deploy Barbarossa Law Quiz with:
    - Build: `cd lunaire-spa && npm install && npm run generate`
    - Output: `lunaire-spa/.output/public`
 4. Add environment variable:
-   - `NUXT_PUBLIC_API_BASE`: `https://barbarossa-api.onrender.com/api`
+   - `NUXT_PUBLIC_API_BASE`: `https://barbarossa-api-a231.onrender.com/api`
 5. Deploy!
 
 ## Environment Variables

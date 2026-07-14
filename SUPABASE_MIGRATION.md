@@ -27,7 +27,7 @@ All data has been migrated from local SQLite to Supabase PostgreSQL.
 3. Select **"Session pooler"** (Port 5432) — required for Render (IPv4-only)
 4. Copy the connection string. It looks like:
    ```
-   postgresql://postgres.hrcepttoscyhbntaqema:[PASSWORD]@aws-0-us-east-1.pooler.supabase.com:5432/postgres
+   postgresql://postgres.hrcepttoscyhbntaqema:[PASSWORD]@aws-1-us-east-1.pooler.supabase.com:5432/postgres
    ```
 5. Replace `[PASSWORD]` with your database password: `Barpreppers1!`
 
@@ -43,7 +43,7 @@ All data has been migrated from local SQLite to Supabase PostgreSQL.
 
 | Variable          | Value                                                                                                        |
 | ----------------- | ------------------------------------------------------------------------------------------------------------ |
-| `SUPABASE_DB_URL` | `postgresql://postgres.hrcepttoscyhbntaqema:Barpreppers1!@aws-0-us-east-1.pooler.supabase.com:5432/postgres` |
+| `SUPABASE_DB_URL` | `postgresql://postgres.hrcepttoscyhbntaqema:Barpreppers1!@aws-1-us-east-1.pooler.supabase.com:5432/postgres` |
 | `SUPABASE_URL`    | `https://hrcepttoscyhbntaqema.supabase.co`                                                                   |
 | `SUPABASE_KEY`    | `sb_publishable_mYuEPYf3kgDZDmx2X3ZkgQ_B5RXkhUP`                                                             |
 
@@ -90,10 +90,10 @@ After redeployment, test these endpoints:
 
 ```bash
 # Health check
-curl https://barbarossa-api.onrender.com/api/subjects
+curl https://barbarossa-api-a231.onrender.com/api/subjects
 
 # Questions endpoint
-curl "https://barbarossa-api.onrender.com/api/questions?n=1&subject=EVIDENCE"
+curl "https://barbarossa-api-a231.onrender.com/api/questions?n=1&subject=EVIDENCE"
 
 # Frontend
 open https://barbarossa-prep.vercel.app
@@ -131,7 +131,21 @@ All changes are committed and ready to deploy:
 
 ### "Tenant or user not found"
 
-The Supabase connection pooler may need time to propagate for new projects. Wait 15-30 minutes. If it persists, check your project ref in the connection string.
+This almost always means the **pooler shard prefix is stale**, not that the project is down. Supabase's Supavisor pooler assigns each project to a shard host like `aws-0-<region>.pooler.supabase.com`, `aws-1-<region>.pooler.supabase.com`, etc. Supabase can reassign a project to a different shard over time (e.g. during infra rebalancing), which silently breaks any previously-saved connection string.
+
+To fix:
+1. Go to [Supabase Dashboard → Project Settings → Database → Connect](https://supabase.com/dashboard/project/hrcepttoscyhbntaqema/settings/database) and copy the **current** Session pooler connection string — do not reuse an old one from docs/notes.
+2. Compare the host against what's set in Render (`SUPABASE_DB_URL`). If the shard number (`aws-0` vs `aws-1` vs `aws-2`) differs, update Render's env var and redeploy.
+3. As of **2026-07-14**, this project's correct pooler host is `aws-1-us-east-1.pooler.supabase.com` (previously `aws-0-us-east-1.pooler.supabase.com`, which now fails with this exact error).
+4. If you don't have dashboard access, you can brute-force discover the correct shard from a machine with network access:
+   ```bash
+   for i in 0 1 2 3; do
+     psql "postgresql://postgres.hrcepttoscyhbntaqema:PASSWORD@aws-$i-us-east-1.pooler.supabase.com:5432/postgres" -c "select 1" && echo "shard $i works"
+   done
+   ```
+5. If NO shard works and the REST API (`https://hrcepttoscyhbntaqema.supabase.co/rest/v1/...` with the anon key) also fails, then the project truly is paused/deleted and needs to be restored from the dashboard first.
+
+If it persists after confirming the shard is current, wait 15-30 minutes for pooler propagation on newly-created projects, and double check your project ref in the connection string.
 
 ### "No route to host"
 

@@ -7,13 +7,13 @@
   "installCommand": "npm install",
   "build": {
     "env": {
-      "NUXT_PUBLIC_API_BASE": "https://barbarossa-api.onrender.com/api"
+      "NUXT_PUBLIC_API_BASE": "https://barbarossa-api-a231.onrender.com/api"
     }
   },
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://barbarossa-api.onrender.com/api/:path*"
+      "destination": "https://barbarossa-api-a231.onrender.com/api/:path*"
     }
   ],
   "headers": [
@@ -36,8 +36,8 @@
     }
   ],
   "env": {
-    "API_BASE": "https://barbarossa-api.onrender.com/api",
-    "NUXT_PUBLIC_API_BASE": "https://barbarossa-api.onrender.com/api",
+    "API_BASE": "https://barbarossa-api-a231.onrender.com/api",
+    "NUXT_PUBLIC_API_BASE": "https://barbarossa-api-a231.onrender.com/api",
     "SUPABASE_URL": "https://hrcepttoscyhbntaqema.supabase.co",
     "SUPABASE_KEY": "sb_publishable_mYuEPYf3kgDZDmx2X3ZkgQ_B5RXkhUP"
   }

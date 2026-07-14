@@ -25,7 +25,7 @@ SQLITE_PATH = Path(__file__).parent.parent / 'law_quiz.db'
 # Supabase connection - using session mode pooler for IPv4 compatibility
 # Update these if needed from your Supabase Dashboard > Connect button
 SUPABASE_CONFIG = {
-    "host": "aws-0-us-east-1.pooler.supabase.com",
+    "host": "aws-1-us-east-1.pooler.supabase.com",
     "port": 5432,
     "dbname": "postgres",
     "user": "postgres.hrcepttoscyhbntaqema",

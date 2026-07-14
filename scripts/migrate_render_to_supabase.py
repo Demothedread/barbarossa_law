@@ -13,7 +13,7 @@ Prerequisites:
   - Both DATABASE_URL (Render) and SUPABASE_DB_URL must be set
 
 Usage:
-  RENDER_DATABASE_URL="postgres://..." SUPABASE_DB_URL="postgresql://postgres.hrcepttoscyhbntaqema:password@aws-0-us-east-1.pooler.supabase.com:6543/postgres" python scripts/migrate_render_to_supabase.py
+  RENDER_DATABASE_URL="postgres://..." SUPABASE_DB_URL="postgresql://postgres.hrcepttoscyhbntaqema:password@aws-1-us-east-1.pooler.supabase.com:6543/postgres" python scripts/migrate_render_to_supabase.py
   
   Or set them in .env-local and run:
   python scripts/migrate_render_to_supabase.py
@@ -52,7 +52,7 @@ if not RENDER_DB_URL:
 if not SUPABASE_DB_URL:
     print("ERROR: SUPABASE_DB_URL not set")
     print("Get this from Supabase Dashboard > Project Settings > Database > Connection string (URI)")
-    print("Example: postgresql://postgres.hrcepttoscyhbntaqema:PASSWORD@aws-0-us-east-1.pooler.supabase.com:6543/postgres")
+    print("Example: postgresql://postgres.hrcepttoscyhbntaqema:PASSWORD@aws-1-us-east-1.pooler.supabase.com:6543/postgres")
     sys.exit(1)
 
 
