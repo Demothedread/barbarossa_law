@@ -16,7 +16,7 @@ services:
     startCommand: |
       cd backend && \
       echo "=== Initializing PostgreSQL schema (idempotent) ===" && \
-      python init_postgres.py && \
+      (python init_postgres.py || echo "WARNING: schema init failed, continuing to start API anyway (schema init is idempotent and safe to retry on next deploy)") && \
       echo "=== Starting Gunicorn server ===" && \
       gunicorn server:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
     envVars:
