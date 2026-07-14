@@ -134,6 +134,7 @@ All changes are committed and ready to deploy:
 This almost always means the **pooler shard prefix is stale**, not that the project is down. Supabase's Supavisor pooler assigns each project to a shard host like `aws-0-<region>.pooler.supabase.com`, `aws-1-<region>.pooler.supabase.com`, etc. Supabase can reassign a project to a different shard over time (e.g. during infra rebalancing), which silently breaks any previously-saved connection string.
 
 To fix:
+
 1. Go to [Supabase Dashboard → Project Settings → Database → Connect](https://supabase.com/dashboard/project/hrcepttoscyhbntaqema/settings/database) and copy the **current** Session pooler connection string — do not reuse an old one from docs/notes.
 2. Compare the host against what's set in Render (`SUPABASE_DB_URL`). If the shard number (`aws-0` vs `aws-1` vs `aws-2`) differs, update Render's env var and redeploy.
 3. As of **2026-07-14**, this project's correct pooler host is `aws-1-us-east-1.pooler.supabase.com` (previously `aws-0-us-east-1.pooler.supabase.com`, which now fails with this exact error).
